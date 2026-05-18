@@ -1,0 +1,274 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Sora:wght@600;700;800&display=swap');
+
+@tailwind utilities;
+
+.cup-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.cup-shell-launch {
+  background: #eef5ff;
+}
+
+.cup-device-wrap {
+  display: flex;
+  width: min(100%, 430px);
+  min-height: 100vh;
+  margin: 0 auto;
+}
+
+.cup-device-frame {
+  min-height: 100vh;
+  border-radius: 0;
+}
+
+.cup-launch-frame {
+  background: linear-gradient(180deg, #ffffff 0%, #ffffff 72%, #76a9ff 100%);
+  box-shadow: 0 22px 60px rgba(8, 43, 104, 0.18);
+}
+
+.cup-launch {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  background: linear-gradient(180deg, #ffffff 0%, #ffffff 71%, #72a7ff 100%);
+  color: #ffffff;
+}
+
+.cup-launch-header {
+  display: grid;
+  grid-template-columns: 4.25rem 1fr 4.25rem;
+  align-items: center;
+  min-height: 5.25rem;
+  background: #ffffff;
+  box-shadow: 0 2px 11px rgba(8, 43, 104, 0.18);
+  z-index: 2;
+}
+
+.cup-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 5.25rem;
+  color: #285fb8;
+}
+
+.cup-launch-logo {
+  justify-self: center;
+  width: min(10.5rem, 55vw);
+  height: auto;
+}
+
+.cup-launch-hero {
+  position: relative;
+  min-height: clamp(29rem, 72vh, 44rem);
+  overflow: hidden;
+  isolation: isolate;
+  background: #109bd2;
+}
+
+.cup-launch-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.03);
+  z-index: -1;
+}
+
+.cup-launch-copy {
+  position: absolute;
+  left: 1.45rem;
+  right: 1.45rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-family: Sora, Manrope, sans-serif;
+  font-weight: 800;
+  line-height: 0.92;
+  text-transform: uppercase;
+  text-shadow: 0 3px 12px rgba(8, 43, 104, 0.16);
+}
+
+.cup-launch-copy span {
+  font-size: clamp(1.6rem, 7vw, 2.15rem);
+}
+
+.cup-launch-copy strong {
+  margin-top: 0.3rem;
+  font-size: clamp(2.75rem, 12.5vw, 4.55rem);
+  line-height: 0.9;
+}
+
+.cup-launch-copy-top {
+  top: 5.2rem;
+}
+
+.cup-launch-copy-bottom {
+  bottom: 4.35rem;
+}
+
+.cup-launch-trophy {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: clamp(5.2rem, 31vw, 7.9rem);
+  height: auto;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 18px 22px rgba(63, 43, 10, 0.32));
+}
+
+.cup-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.05rem 0.78rem;
+  padding: 1.7rem 1.35rem calc(6.25rem + env(safe-area-inset-bottom));
+}
+
+.cup-stage-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.2rem;
+  border-radius: 1.1rem;
+  background: #41a4dc;
+  color: #ffffff;
+  font-family: Sora, Manrope, sans-serif;
+  font-size: clamp(1rem, 4.8vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  box-shadow: inset 0 -5px 0 rgba(8, 43, 104, 0.1), 0 10px 20px rgba(8, 43, 104, 0.12);
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.cup-stage-button:hover {
+  background: #258dcc;
+  transform: translateY(-1px);
+}
+
+.cup-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 82%);
+  pointer-events: none;
+}
+
+.cup-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(32px);
+  opacity: 0.7;
+  pointer-events: none;
+  animation: floaty 6s ease-in-out infinite;
+}
+
+.cup-orb-primary {
+  top: -3rem;
+  left: -2rem;
+  width: 15rem;
+  height: 15rem;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.cup-orb-secondary {
+  top: 10rem;
+  right: -3rem;
+  width: 18rem;
+  height: 18rem;
+  background: rgba(255, 125, 0, 0.26);
+  animation-delay: 0.8s;
+}
+
+.cup-orb-tertiary {
+  bottom: -4rem;
+  left: 25%;
+  width: 17rem;
+  height: 17rem;
+  background: rgba(134, 81, 255, 0.22);
+  animation-delay: 1.4s;
+}
+
+.cup-glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(180deg, rgba(7, 31, 77, 0.92), rgba(8, 43, 104, 0.86));
+  box-shadow: 0 30px 80px rgba(4, 16, 44, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+}
+
+.cup-card {
+  @apply relative overflow-hidden rounded-tonner border border-white bg-white p-4 sm:p-6 shadow-[0_16px_40px_rgba(15,23,42,0.12)];
+}
+
+.cup-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, #082b68 0%, #0f5fd7 62%, #ff7d00 100%);
+}
+
+.cup-tab {
+  @apply inline-flex min-w-0 items-center justify-center gap-1 rounded-[1.2rem] border border-slate-200 bg-white px-2 py-3 text-[11px] font-semibold text-slate-500 transition hover:border-tonner-blue/30 hover:bg-slate-50 hover:text-tonner-blue;
+}
+
+.cup-tab-active {
+  @apply border-tonner-blue bg-tonner-blue text-white shadow-[0_12px_24px_rgba(8,43,104,0.22)];
+}
+
+.cup-mini-stat {
+  @apply rounded-[1.35rem] border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-xl;
+}
+
+.cup-mini-label {
+  @apply text-[11px] uppercase tracking-[0.24em] text-tonner-muted;
+}
+
+.cup-mini-value {
+  @apply mt-2 block text-sm font-semibold text-white;
+}
+
+.cup-link-button {
+  @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-tonner-slate transition hover:translate-x-[2px] hover:bg-tonner-orange hover:text-white;
+}
+
+.cup-score-input {
+  @apply w-full rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 text-center text-3xl font-black text-tonner-slate outline-none transition focus:border-tonner-orange focus:ring-2 focus:ring-tonner-orange/20;
+}
+
+.cup-score-box {
+  @apply flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-slate-200 bg-white text-3xl font-black text-tonner-slate shadow-[0_12px_24px_rgba(15,23,42,0.12)];
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease;
+}
+
+@media (max-width: 420px) {
+  .cup-device-frame {
+    min-height: 100vh;
+    border-radius: 0;
+  }
+}

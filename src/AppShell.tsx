@@ -1,0 +1,217 @@
+import { useEffect, useState } from 'react'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+
+import CatalogModule, { type CatalogView } from './modules/catalog/CatalogModule'
+import CupModule from './modules/cup/CupModule'
+import { HubModule, type HubView } from './modules/hub'
+import PaintModule from './modules/paint/PaintModule'
+import type { Product } from './modules/catalog/types'
+
+type GlobalNavKey = 'home' | 'work' | 'favorites' | 'calculator' | 'profile'
+
+const globalNavItems: Array<{ key: GlobalNavKey; label: string; icon: string; to: string }> = [
+  { key: 'home', label: 'Inicio', icon: '/icons/INICIO.png', to: '/' },
+  { key: 'work', label: 'Trabajo', icon: '/icons/TRABAJO.png', to: '/work' },
+  { key: 'favorites', label: 'Favoritos', icon: '/icons/FAVORITOS.png', to: '/favorites' },
+  { key: 'calculator', label: 'Calculadora', icon: '/icons/CALCULADORA.png', to: '/calculator' },
+  { key: 'profile', label: 'Perfil', icon: '/icons/PERFIL.png', to: '/profile' },
+]
+
+const FAVORITES_STORAGE_KEY = 'tonnerapp-favorite-products'
+
+const loadFavoriteProductIds = () => {
+  try {
+    const rawFavorites = window.localStorage.getItem(FAVORITES_STORAGE_KEY)
+    const parsedFavorites = rawFavorites ? JSON.parse(rawFavorites) : []
+    return new Set(typeof parsedFavorites === 'object' && Array.isArray(parsedFavorites) ? parsedFavorites : [])
+  } catch {
+    return new Set<string>()
+  }
+}
+
+const routeToHubView = (view: HubView) => {
+  if (view === 'home') return '/'
+  return `/${view}`
+}
+
+const pathToActiveGlobalKey = (pathname: string): GlobalNavKey | null => {
+  if (pathname === '/') return 'home'
+  if (pathname === '/work') return 'work'
+  if (pathname === '/favorites') return 'favorites'
+  if (pathname === '/calculator') return 'calculator'
+  if (pathname === '/profile') return 'profile'
+  return null
+}
+
+function Splash() {
+  const [loadingPhase, setLoadingPhase] = useState<'intro' | 'exit' | 'done'>('intro')
+
+  useEffect(() => {
+    const exitTimer = window.setTimeout(() => {
+      setLoadingPhase('exit')
+    }, 1700)
+
+    const doneTimer = window.setTimeout(() => {
+      setLoadingPhase('done')
+    }, 2450)
+
+    return () => {
+      window.clearTimeout(exitTimer)
+      window.clearTimeout(doneTimer)
+    }
+  }, [])
+
+  if (loadingPhase === 'done') return null
+
+  return (
+    <main
+      className={`loading-screen ${loadingPhase === 'exit' ? 'is-exiting' : ''}`}
+      aria-label="Cargando TonnerHub"
+    >
+      <img src="/PORTADA CARGA.png" alt="Pinturas Tonner" className="loading-screen__image" />
+      <div className="loading-screen__shine" aria-hidden="true" />
+    </main>
+  )
+}
+
+function HubRoute({ view }: { view: HubView }) {
+  const navigate = useNavigate()
+
+  return (
+    <HubModule
+      key={view}
+      activeView={view}
+      showBottomNav={false}
+      onViewChange={(nextView) => navigate(routeToHubView(nextView))}
+      onOpenCatalog={() => navigate('/catalog')}
+      onOpenCup={() => navigate('/cup')}
+      onOpenPaint={() => navigate('/paint')}
+      onOpenStores={() => navigate('/stores')}
+    />
+  )
+}
+
+function CatalogRoute({
+  view,
+  favoriteProductIds,
+  onToggleFavorite,
+}: {
+  view: CatalogView
+  favoriteProductIds: Set<string>
+  onToggleFavorite: (product: Product) => void
+}) {
+  const navigate = useNavigate()
+
+  return (
+    <CatalogModule
+      key={`${view}-map`}
+      initialView={view}
+      initialStoresMode="map"
+      favoriteProductIds={favoriteProductIds}
+      onToggleFavorite={onToggleFavorite}
+      onHome={() => navigate('/')}
+    />
+  )
+}
+
+export default function AppShell() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [showSplash, setShowSplash] = useState(true)
+  const [favoriteProductIds, setFavoriteProductIds] = useState<Set<string>>(() => loadFavoriteProductIds())
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setShowSplash(false)
+    }, 2450)
+
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  const handleToggleFavorite = (product: Product) => {
+    setFavoriteProductIds((currentFavorites) => {
+      const nextFavorites = new Set(currentFavorites)
+
+      if (nextFavorites.has(product.id)) {
+        nextFavorites.delete(product.id)
+      } else {
+        nextFavorites.add(product.id)
+      }
+
+      window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(Array.from(nextFavorites)))
+
+      return nextFavorites
+    })
+  }
+
+  const activeGlobalKey = pathToActiveGlobalKey(location.pathname)
+  const isCupLaunchRoute = location.pathname === '/cup' || location.pathname === '/cup/'
+  const hideGlobalNav = location.pathname.startsWith('/paint') || (
+    location.pathname.startsWith('/cup') && !isCupLaunchRoute
+  )
+
+  if (showSplash) {
+    return <Splash />
+  }
+
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<HubRoute view="home" />} />
+        <Route path="/work" element={<HubRoute view="work" />} />
+        <Route path="/calculator" element={<HubRoute view="calculator" />} />
+        <Route path="/profile" element={<HubRoute view="profile" />} />
+        <Route path="/paint" element={<PaintModule />} />
+        <Route path="/cup/*" element={<CupModule />} />
+        <Route
+          path="/catalog"
+          element={
+            <CatalogRoute
+              view="catalog"
+              favoriteProductIds={favoriteProductIds}
+              onToggleFavorite={handleToggleFavorite}
+            />
+          }
+        />
+        <Route
+          path="/stores"
+          element={
+            <CatalogRoute
+              view="stores"
+              favoriteProductIds={favoriteProductIds}
+              onToggleFavorite={handleToggleFavorite}
+            />
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <CatalogRoute
+              view="favorites"
+              favoriteProductIds={favoriteProductIds}
+              onToggleFavorite={handleToggleFavorite}
+            />
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {hideGlobalNav ? null : (
+        <nav className="hub-bottom-nav tonner-global-nav" aria-label="Navegación principal">
+          {globalNavItems.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={`hub-bottom-nav__item ${activeGlobalKey === item.key ? 'is-active' : ''}`}
+              aria-label={item.label}
+              aria-pressed={activeGlobalKey === item.key}
+              onClick={() => navigate(item.to)}
+            >
+              <img src={item.icon} alt="" className="hub-bottom-nav__icon" />
+            </button>
+          ))}
+        </nav>
+      )}
+    </>
+  )
+}
