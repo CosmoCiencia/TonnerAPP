@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { TONNER_COLORS } from './colors'
 import { useAppContent } from '../../services/appContent'
+import { getOptimizedImageSrc } from '../../services/imageAssets'
 
 const PAINT_API_URL =
   import.meta.env.VITE_TONNER_PAINT_API_URL ?? 'http://127.0.0.1:8000'
@@ -81,7 +82,7 @@ export default function PaintModule() {
     <main className="paint-page">
       <div className="paint-app">
         <header className="paint-top">
-          <img src="/logo.png" alt="Pinturas Tonner" />
+          <img src={getOptimizedImageSrc('/logo.png')} alt="Pinturas Tonner" decoding="async" />
           <button type="button" aria-label="Volver al inicio" onClick={() => navigate('/')}>
             <img src="/icons/boton regreso.png" alt="" />
           </button>

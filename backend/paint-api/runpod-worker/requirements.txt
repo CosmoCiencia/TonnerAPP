@@ -1,5 +1,4 @@
-runpod
-numpy
-opencv-python-headless
-torch
-segment-anything
+runpod==1.9.0
+numpy==2.3.5
+opencv-python-headless==4.13.0.92
+segment-anything==1.0

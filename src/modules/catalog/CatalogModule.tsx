@@ -9,6 +9,7 @@ import ProductModal from './components/ProductModal';
 import { distributors } from '../distributors/distributors.data';
 import StoresMap from '../distributors/StoresMap';
 import { useAppContent } from '../../services/appContent';
+import { getOptimizedImageSrc } from '../../services/imageAssets';
 
 export type CatalogView = 'catalog' | 'stores' | 'favorites';
 export type StoresMode = 'map' | 'list';
@@ -27,6 +28,9 @@ const lineTabs: Array<{ label: string; value: TonnerLineKey }> = [
   { label: 'Automotriz', value: 'automotriz' },
   { label: 'Maderas', value: 'maderas' },
 ];
+
+const INITIAL_PRODUCT_LIMIT = 8;
+const PRODUCT_LIMIT_STEP = 8;
 
 const getPhoneHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`;
 
@@ -55,7 +59,9 @@ export default function CatalogModule({
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeLine, setActiveLine] = useState<TonnerLineKey>('arquitectonica');
+  const [productLimit, setProductLimit] = useState(INITIAL_PRODUCT_LIMIT);
   const appContent = useAppContent();
+
   useEffect(() => {
     getProducts().then(setProducts);
   }, []);
@@ -66,11 +72,15 @@ export default function CatalogModule({
   );
   const activeBanner = appContent.catalog.lineBanners[activeLine];
   const isLineBanner = activeBanner.image.startsWith('/line-banners/');
+  const optimizedBannerImage = getOptimizedImageSrc(activeBanner.image);
 
   const favoriteProducts = useMemo(
     () => products.filter((product) => favoriteProductIds.has(product.id)),
     [favoriteProductIds, products],
   );
+  const currentProducts = view === 'favorites' ? favoriteProducts : visibleProducts;
+  const displayedProducts = currentProducts.slice(0, productLimit);
+  const hasMoreProducts = productLimit < currentProducts.length;
 
   const handleBack = () => {
     if (selectedProduct) {
@@ -184,14 +194,16 @@ export default function CatalogModule({
               aria-label={activeBanner.title}
             >
               {isLineBanner ? (
-                <img src={activeBanner.image} alt="" className="catalog-hero__banner" />
+                <img src={optimizedBannerImage} alt="" className="catalog-hero__banner" decoding="async" />
               ) : null}
               <div className="catalog-hero__copy">
                 <span>{activeBanner.eyebrow}</span>
                 <h1>{activeBanner.title}</h1>
                 <p>{activeBanner.description}</p>
               </div>
-              {!isLineBanner ? <img src={activeBanner.image} alt="" className="catalog-hero__product" /> : null}
+              {!isLineBanner ? (
+                <img src={optimizedBannerImage} alt="" className="catalog-hero__product" decoding="async" />
+              ) : null}
               <div className="catalog-hero__dots">
                 {lineTabs.map((tab) => (
                   <span key={tab.value} className={activeLine === tab.value ? 'is-active' : ''} />
@@ -205,7 +217,10 @@ export default function CatalogModule({
                   key={tab.value}
                   type="button"
                   className={activeLine === tab.value ? 'is-active' : ''}
-                  onClick={() => setActiveLine(tab.value)}
+                  onClick={() => {
+                    setActiveLine(tab.value);
+                    setProductLimit(INITIAL_PRODUCT_LIMIT);
+                  }}
                 >
                   {tab.label}
                 </button>
@@ -220,20 +235,31 @@ export default function CatalogModule({
             <p>Marca productos con el corazón para consultarlos más rápido desde esta sección.</p>
           </section>
         ) : (
-          <section className="catalog-grid">
-            {(view === 'favorites' ? favoriteProducts : visibleProducts).map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isFavorite={favoriteProductIds.has(product.id)}
-                onToggleFavorite={onToggleFavorite}
-                onViewDetails={(nextProduct) => {
-                  setSelectedProduct(nextProduct);
-                  setView('catalog');
-                }}
-              />
-            ))}
-          </section>
+          <>
+            <section className="catalog-grid">
+              {displayedProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isFavorite={favoriteProductIds.has(product.id)}
+                  onToggleFavorite={onToggleFavorite}
+                  onViewDetails={(nextProduct) => {
+                    setSelectedProduct(nextProduct);
+                    setView('catalog');
+                  }}
+                />
+              ))}
+            </section>
+            {hasMoreProducts ? (
+              <button
+                type="button"
+                className="catalog-load-more"
+                onClick={() => setProductLimit((currentLimit) => currentLimit + PRODUCT_LIMIT_STEP)}
+              >
+                Ver más productos
+              </button>
+            ) : null}
+          </>
         )}
       </main>
     );
@@ -245,7 +271,7 @@ export default function CatalogModule({
         <button type="button" className="catalog-top__back" aria-label="Regresar" onClick={handleBack}>
           <img src="/icons/boton regreso.png" alt="" />
         </button>
-        <img src="/logo.png" alt="Pinturas Tonner" />
+        <img src={getOptimizedImageSrc('/logo.png')} alt="Pinturas Tonner" decoding="async" />
         <button type="button" className="catalog-top__bell" aria-label="Notificaciones">
           <Bell />
         </button>

@@ -6,6 +6,17 @@ import CupModule from './modules/cup/CupModule'
 import { HubModule, type HubView } from './modules/hub'
 import PaintModule from './modules/paint/PaintModule'
 import type { Product } from './modules/catalog/types'
+import { RequireAuth, RequireRole } from './auth/auth.guards'
+import { privateRoles } from './auth/roleAccess'
+import {
+  AccessDeniedScreen,
+  InternalToolsScreen,
+  LoginScreen,
+  PendingApprovalScreen,
+  ProfileScreen,
+  RegisterScreen,
+} from './modules/auth/AuthScreens'
+import { getOptimizedImageSrc } from './services/imageAssets'
 
 type GlobalNavKey = 'home' | 'work' | 'favorites' | 'calculator' | 'profile'
 
@@ -68,7 +79,12 @@ function Splash() {
       className={`loading-screen ${loadingPhase === 'exit' ? 'is-exiting' : ''}`}
       aria-label="Cargando TonnerHub"
     >
-      <img src="/PORTADA CARGA.png" alt="Pinturas Tonner" className="loading-screen__image" />
+      <img
+        src={getOptimizedImageSrc('/PORTADA CARGA.png')}
+        alt="Pinturas Tonner"
+        className="loading-screen__image"
+        decoding="async"
+      />
       <div className="loading-screen__shine" aria-hidden="true" />
     </main>
   )
@@ -146,9 +162,12 @@ export default function AppShell() {
 
   const activeGlobalKey = pathToActiveGlobalKey(location.pathname)
   const isCupLaunchRoute = location.pathname === '/cup' || location.pathname === '/cup/'
+  const isAuthRoute = ['/login', '/register', '/pending-approval', '/access-denied', '/internal'].some((path) =>
+    location.pathname.startsWith(path),
+  )
   const hideGlobalNav = location.pathname.startsWith('/paint') || (
     location.pathname.startsWith('/cup') && !isCupLaunchRoute
-  )
+  ) || isAuthRoute
 
   if (showSplash) {
     return <Splash />
@@ -160,9 +179,28 @@ export default function AppShell() {
         <Route path="/" element={<HubRoute view="home" />} />
         <Route path="/work" element={<HubRoute view="work" />} />
         <Route path="/calculator" element={<HubRoute view="calculator" />} />
-        <Route path="/profile" element={<HubRoute view="profile" />} />
+        <Route path="/profile" element={<ProfileScreen />} />
+        <Route path="/login" element={<LoginScreen />} />
+        <Route path="/register" element={<RegisterScreen />} />
+        <Route path="/pending-approval" element={<PendingApprovalScreen />} />
+        <Route path="/access-denied" element={<AccessDeniedScreen />} />
+        <Route
+          path="/internal"
+          element={
+            <RequireRole roles={privateRoles}>
+              <InternalToolsScreen />
+            </RequireRole>
+          }
+        />
         <Route path="/paint" element={<PaintModule />} />
-        <Route path="/cup/*" element={<CupModule />} />
+        <Route
+          path="/cup/*"
+          element={
+            <RequireAuth>
+              <CupModule />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/catalog"
           element={
@@ -186,11 +224,13 @@ export default function AppShell() {
         <Route
           path="/favorites"
           element={
-            <CatalogRoute
-              view="favorites"
-              favoriteProductIds={favoriteProductIds}
-              onToggleFavorite={handleToggleFavorite}
-            />
+            <RequireAuth>
+              <CatalogRoute
+                view="favorites"
+                favoriteProductIds={favoriteProductIds}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            </RequireAuth>
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

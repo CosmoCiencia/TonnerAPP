@@ -1,0 +1,190 @@
+.
+├── backend
+│   └── paint-api
+│       ├── public
+│       │   └── logo.png
+│       ├── README.md
+│       ├── requirements.txt
+│       ├── runpod-worker
+│       │   ├── Dockerfile
+│       │   ├── handler.py
+│       │   ├── README.md
+│       │   └── requirements.txt
+│       ├── scripts
+│       │   ├── bootstrap-api.sh
+│       │   ├── start-api.sh
+│       │   └── start-full.sh
+│       └── server
+│           ├── api.py
+│           └── __init__.py
+├── eslint.config.js
+├── index.html
+├── package.json
+├── package-lock.json
+├── postcss.config.js
+├── project_tree.txt
+├── project_tree.txt~
+├── public
+│   ├── content
+│   │   └── app-content.json
+│   ├── FONDO POLLATONNER GRUPOS.png
+│   ├── icons
+│   │   ├── boton regreso.png
+│   │   ├── CALCULADORA.png
+│   │   ├── FAVORITOS.png
+│   │   ├── INICIO.png
+│   │   ├── LUPA.png
+│   │   ├── PERFIL.png
+│   │   └── TRABAJO.png
+│   ├── line-banners
+│   │   ├── arquitectonico.png
+│   │   ├── automotriz.png
+│   │   ├── industrial.png
+│   │   └── maderas.png
+│   ├── logo.png
+│   ├── paint-materials
+│   │   ├── madera.png
+│   │   ├── metal.png
+│   │   ├── pared.png
+│   │   ├── plastico.png
+│   │   └── vehiculo.png
+│   ├── PORTADA CARGA.png
+│   ├── PORTAFOLIO.png
+│   ├── products
+│   │   ├── 2-en-1-anticorrosivo-satinado.png
+│   │   ├── anticorrosivo-base-mate.png
+│   │   ├── automativa.png
+│   │   ├── automotiva-industrial.png
+│   │   ├── banos-y-cocinas.png
+│   │   ├── catalizador.png
+│   │   ├── endurecedor-poliuretano.png
+│   │   ├── esmalte-acrilico.png
+│   │   ├── esmalte-epoxico.png
+│   │   ├── esmalton-3-en-1.png
+│   │   ├── esmalton.png
+│   │   ├── especial-xxi.png
+│   │   ├── fondo-acrilico.png
+│   │   ├── fondo-nitro-industrial.png
+│   │   ├── fondo-nitro.png
+│   │   ├── fondo-poliuretano-2k.png
+│   │   ├── laca-acrilica.png
+│   │   ├── laca-catalizada.png
+│   │   ├── laca-latalizada-industrial.png
+│   │   ├── laca-transparante-brillante.png
+│   │   ├── laca-transparente-mate.png
+│   │   ├── maderbond-experto.png
+│   │   ├── maderbond.png
+│   │   ├── masilla-acrilica.png
+│   │   ├── masilla-industrial-nitro.png
+│   │   ├── masilla-nitro.png
+│   │   ├── masilla-rapida.png
+│   │   ├── mono-componente-acrilico.png
+│   │   ├── pantonner.png
+│   │   ├── pasta-para-pulir.png
+│   │   ├── permakill.png
+│   │   ├── pintura-para-canchas.png
+│   │   ├── polieston.png
+│   │   ├── poliuretano.png
+│   │   ├── primer-cromato-de-zinc.png
+│   │   ├── primer-epoxico.png
+│   │   ├── primer-fosfato-de-zinc.png
+│   │   ├── primer-monocomponente.png
+│   │   ├── primer-para-plasticos.png
+│   │   ├── removedor.png
+│   │   ├── secado-flash.png
+│   │   ├── sellador-catalizado.png
+│   │   ├── sellador-nitro.png
+│   │   ├── tintes-para-madera.png
+│   │   ├── tonerama.png
+│   │   ├── tonertex.png
+│   │   ├── trafico-pesado.png
+│   │   ├── ultra-armor.png
+│   │   ├── uretablex.png
+│   │   ├── vinilton.png
+│   │   └── wash-primer.png
+│   ├── PUNTOS DE VENTA.png
+│   ├── TONNER PAINT.png
+│   ├── tonnercup-copa.png
+│   └── tonnercup-fondo.png
+├── README.md
+├── src
+│   ├── AppShell.tsx
+│   ├── App.tsx
+│   ├── index.css
+│   ├── main.tsx
+│   ├── modules
+│   │   ├── catalog
+│   │   │   ├── CatalogModule.tsx
+│   │   │   ├── components
+│   │   │   │   ├── ProductCard.tsx
+│   │   │   │   └── ProductModal.tsx
+│   │   │   ├── lines
+│   │   │   │   ├── arquitectonica.ts
+│   │   │   │   ├── automotriz.ts
+│   │   │   │   ├── industrial.ts
+│   │   │   │   └── maderas.ts
+│   │   │   ├── products.ts
+│   │   │   ├── services.ts
+│   │   │   ├── tonnerLines.ts
+│   │   │   └── types.ts
+│   │   ├── cup
+│   │   │   ├── components
+│   │   │   │   ├── AppShell.tsx
+│   │   │   │   ├── EmptyState.tsx
+│   │   │   │   ├── GroupCard.tsx
+│   │   │   │   ├── LoadingCard.tsx
+│   │   │   │   ├── MatchCard.tsx
+│   │   │   │   ├── MatchStatusPill.tsx
+│   │   │   │   ├── PredictionEditorCard.tsx
+│   │   │   │   ├── RankingTable.tsx
+│   │   │   │   ├── ResultsCard.tsx
+│   │   │   │   ├── SectionIntro.tsx
+│   │   │   │   └── Toast.tsx
+│   │   │   ├── CupModule.tsx
+│   │   │   ├── hooks
+│   │   │   │   ├── useCupData.ts
+│   │   │   │   └── useUserId.ts
+│   │   │   ├── pages
+│   │   │   │   ├── DashboardPage.tsx
+│   │   │   │   ├── HomePage.tsx
+│   │   │   │   ├── PredictionsPage.tsx
+│   │   │   │   ├── RankingPage.tsx
+│   │   │   │   ├── ResultsPage.tsx
+│   │   │   │   └── types.ts
+│   │   │   └── services
+│   │   │       ├── matchesApi.ts
+│   │   │       ├── mockData.ts
+│   │   │       ├── points.ts
+│   │   │       ├── predictionsStore.ts
+│   │   │       ├── teamMeta.ts
+│   │   │       └── types.ts
+│   │   ├── distributors
+│   │   │   ├── colombia.geo.json
+│   │   │   ├── distributors.data.ts
+│   │   │   ├── DistributorsMap.tsx
+│   │   │   ├── StoresMap.tsx
+│   │   │   └── types.ts
+│   │   ├── hub
+│   │   │   ├── HubModule.tsx
+│   │   │   └── index.ts
+│   │   ├── onboarding
+│   │   │   └── userTypes.ts
+│   │   └── paint
+│   │       ├── colors.ts
+│   │       └── PaintModule.tsx
+│   ├── services
+│   │   └── appContent.ts
+│   └── styles
+│       ├── base.css
+│       ├── cards.css
+│       ├── catalog.css
+│       ├── cup.css
+│       ├── mobile.css
+│       └── paint.css
+├── tailwind.config.js
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+
+29 directories, 159 files

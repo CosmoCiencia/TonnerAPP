@@ -1,5 +1,6 @@
 import { Heart } from 'lucide-react';
 import type { Product } from '../types';
+import { getOptimizedImageSrc } from '../../../services/imageAssets';
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +16,7 @@ export default function ProductCard({
   onViewDetails,
 }: ProductCardProps) {
   const productImage = product.image || product.image_url;
+  const optimizedProductImage = productImage ? getOptimizedImageSrc(productImage) : '';
   const productColors = product.colors?.length ? product.colors : (product.tones ?? []);
   const previewColors = productColors.filter((color) => color.hex).slice(0, 3);
   const subtitle = product.segment || product.subline || product.category || product.presentations?.[0] || '';
@@ -22,7 +24,9 @@ export default function ProductCard({
   return (
     <article className="catalog-product-card" onClick={() => onViewDetails?.(product)}>
       <div className="catalog-product-card__image">
-        {productImage ? <img src={productImage} alt={product.name} loading="lazy" /> : null}
+        {optimizedProductImage ? (
+          <img src={optimizedProductImage} alt={product.name} loading="lazy" decoding="async" />
+        ) : null}
       </div>
 
       <div className="catalog-product-card__body">

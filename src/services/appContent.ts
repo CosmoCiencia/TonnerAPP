@@ -85,6 +85,7 @@ export const DEFAULT_APP_CONTENT: TonnerAppContent = {
 }
 
 const contentUrl = import.meta.env.VITE_TONNER_CONTENT_URL?.trim() || '/content/app-content.json'
+let contentRequest: Promise<TonnerAppContent> | null = null
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -141,6 +142,15 @@ function mergeContent(value: unknown): TonnerAppContent {
 }
 
 export async function loadAppContent(): Promise<TonnerAppContent> {
+  if (contentRequest) {
+    return contentRequest
+  }
+
+  contentRequest = fetchAppContent()
+  return contentRequest
+}
+
+async function fetchAppContent(): Promise<TonnerAppContent> {
   try {
     const response = await fetch(contentUrl, { cache: 'no-store' })
 

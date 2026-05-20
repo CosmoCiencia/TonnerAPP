@@ -9,10 +9,16 @@
     "dev:full": "bash backend/paint-api/scripts/start-full.sh",
     "setup:api": "bash backend/paint-api/scripts/bootstrap-api.sh",
     "build": "tsc -b && vite build",
+    "cap:sync": "npm run build && npx cap sync android",
+    "cap:open:android": "npx cap open android",
+    "android": "npm run cap:sync && npx cap open android",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@supabase/supabase-js": "^2.106.0",
     "d3-geo": "^3.1.1",
     "d3-selection": "^3.0.0",
     "d3-transition": "^3.0.1",
@@ -24,6 +30,7 @@
     "react-router-dom": "^7.15.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.3.4",
     "@eslint/js": "^9.39.1",
     "@types/d3-geo": "^3.1.0",
     "@types/d3-selection": "^3.0.11",

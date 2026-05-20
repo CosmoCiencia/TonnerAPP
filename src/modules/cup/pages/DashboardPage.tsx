@@ -2,6 +2,7 @@ import { Bell, Megaphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useAppContent } from '../../../services/appContent';
+import { getOptimizedImageSrc } from '../../../services/imageAssets';
 
 const items = [
   {
@@ -40,19 +41,29 @@ function DashboardPage() {
         <button className="cup-header-icon" type="button" aria-label="Anuncios">
           <Megaphone size={27} strokeWidth={3} />
         </button>
-        <img src="/logo.png" alt="Pinturas Tonner" className="cup-launch-logo" />
+        <img
+          src={getOptimizedImageSrc('/logo.png')}
+          alt="Pinturas Tonner"
+          className="cup-launch-logo"
+          decoding="async"
+        />
         <button className="cup-header-icon" type="button" aria-label="Notificaciones">
           <Bell size={27} strokeWidth={3} />
         </button>
       </header>
 
       <div className="cup-launch-hero">
-        <img src={launch.backgroundImage} alt="" className="cup-launch-bg" />
+        <img src={getOptimizedImageSrc(launch.backgroundImage)} alt="" className="cup-launch-bg" decoding="async" />
         <div className="cup-launch-copy cup-launch-copy-top">
           <span>{launch.topLine}</span>
           <strong>{launch.title}</strong>
         </div>
-        <img src={launch.trophyImage} alt="Copa Mundial" className="cup-launch-trophy" />
+        <img
+          src={getOptimizedImageSrc(launch.trophyImage)}
+          alt="Copa Mundial"
+          className="cup-launch-trophy"
+          decoding="async"
+        />
         <div className="cup-launch-copy cup-launch-copy-bottom">
           <span>{launch.bottomLine}</span>
           <strong>{launch.brand}</strong>

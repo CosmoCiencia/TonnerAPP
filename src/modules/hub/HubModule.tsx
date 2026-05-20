@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { Bell } from 'lucide-react'
 
+import { getOptimizedImageSrc } from '../../services/imageAssets'
+
 export type HubView = 'home' | 'work' | 'favorites' | 'calculator' | 'profile'
 type ProfilePanel = 'distributor' | 'data' | 'preferences' | 'terms' | 'support'
 
@@ -163,7 +165,7 @@ function HubCardsInternal({
               className={`hub-card hub-card--${card.variant}`}
               onClick={openInternalModule}
             >
-              <img src={card.image} alt="" className="hub-card__image" />
+              <img src={getOptimizedImageSrc(card.image)} alt="" className="hub-card__image" decoding="async" />
               <span className="hub-card__title">{card.title}</span>
             </button>
           )
@@ -171,7 +173,7 @@ function HubCardsInternal({
 
         return (
           <a key={card.key} href={card.href} className={`hub-card hub-card--${card.variant}`}>
-            <img src={card.image} alt="" className="hub-card__image" />
+            <img src={getOptimizedImageSrc(card.image)} alt="" className="hub-card__image" decoding="async" />
             <span className="hub-card__title">{card.title}</span>
           </a>
         )
@@ -443,7 +445,12 @@ export function HubModule({
         <button type="button" className="hub-header__back" aria-label="Regresar" onClick={handleBack}>
           <img src="/icons/boton regreso.png" alt="" />
         </button>
-        <img src="/logo.png" alt="Pinturas Tonner" className="hub-header__logo" />
+        <img
+          src={getOptimizedImageSrc('/logo.png')}
+          alt="Pinturas Tonner"
+          className="hub-header__logo"
+          decoding="async"
+        />
         <button
           type="button"
           className="hub-header__bell"
@@ -468,10 +475,15 @@ export function HubModule({
         aria-label="TonnerHub"
       >
         {activeView === 'home' ? (
-          <label className="hub-search">
-            <img src="/icons/LUPA.png" alt="" className="hub-search__icon" />
-            <input type="search" placeholder="Qué vas a pintar hoy?" />
-          </label>
+          <div className="hub-search-row">
+            <label className="hub-search">
+              <img src="/icons/LUPA.png" alt="" className="hub-search__icon" />
+              <input type="search" placeholder="Qué vas a pintar hoy?" />
+            </label>
+            <div className="hub-search-avatar" aria-hidden="true">
+              <img src="/icons/PERFIL.png" alt="" />
+            </div>
+          </div>
         ) : null}
 
         {renderContent()}

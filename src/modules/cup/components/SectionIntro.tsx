@@ -1,6 +1,8 @@
 import { ArrowLeft } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { getOptimizedImageSrc } from '../../../services/imageAssets';
+
 type Props = {
   eyebrow: string;
   title: string;
@@ -16,7 +18,7 @@ function SectionIntro({ eyebrow, title, description }: Props) {
     <div className="mb-6">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="Tonner" className="h-8 w-auto" />
+          <img src={getOptimizedImageSrc('/logo.png')} alt="Tonner" className="h-8 w-auto" decoding="async" />
           <p className="text-xs uppercase tracking-[0.28em] text-tonner-text/65">{eyebrow}</p>
         </div>
 

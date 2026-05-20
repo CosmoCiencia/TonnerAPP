@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TonnerApp</string>
+    <string name="title_activity_main">TonnerApp</string>
+    <string name="package_name">com.tonner.tonnerapp</string>
+    <string name="custom_url_scheme">com.tonner.tonnerapp</string>
+</resources>

@@ -26,6 +26,7 @@ import {
 import { useRef } from 'react';
 import type { UserType } from '../../onboarding/userTypes';
 import type { Product, ProductTone } from '../types';
+import { getOptimizedImageSrc } from '../../../services/imageAssets';
 
 interface Props {
   product: Product | null;
@@ -92,6 +93,7 @@ export default function ProductModal({ product, onClose }: Props) {
   if (!product) return null;
 
   const productImage = product.image || product.image_url;
+  const optimizedProductImage = productImage ? getOptimizedImageSrc(productImage) : '';
   const description = product.description || product.short_description || '';
   const colors = normalizeColors(product);
   const presentations = product.presentations ?? [];
@@ -115,7 +117,7 @@ export default function ProductModal({ product, onClose }: Props) {
         <button type="button" onClick={onClose} aria-label="Volver">
           <ChevronLeft />
         </button>
-        {productImage ? <img src={productImage} alt={product.name} /> : null}
+        {optimizedProductImage ? <img src={optimizedProductImage} alt={product.name} decoding="async" /> : null}
       </section>
 
       <section className="catalog-detail__body">
