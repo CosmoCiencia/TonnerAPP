@@ -65,5 +65,8 @@ Frontend y backend:
 npm run dev:full
 ```
 
-El frontend usa `VITE_TONNER_PAINT_API_URL`, por defecto
-`http://127.0.0.1:8000`.
+El frontend usa `VITE_TONNER_PAINT_API_URL`. Para el pod directo actual:
+
+```bash
+VITE_TONNER_PAINT_API_URL=https://barmvu9avgeu38-8000.proxy.runpod.net
+```

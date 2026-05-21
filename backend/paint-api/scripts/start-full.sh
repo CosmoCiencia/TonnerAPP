@@ -26,7 +26,7 @@ uvicorn server.api:app --host "${TONNER_PAINT_HOST:-127.0.0.1}" --port "${TONNER
 API_PID=$!
 
 cd "$APP_DIR"
-VITE_TONNER_PAINT_API_URL="${VITE_TONNER_PAINT_API_URL:-http://127.0.0.1:8000}" npm run dev &
+npm run dev &
 WEB_PID=$!
 
 wait "$API_PID" "$WEB_PID"

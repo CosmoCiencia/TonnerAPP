@@ -5,8 +5,11 @@ import { TONNER_COLORS } from './colors'
 import { useAppContent } from '../../services/appContent'
 import { getOptimizedImageSrc } from '../../services/imageAssets'
 
-const PAINT_API_URL =
-  import.meta.env.VITE_TONNER_PAINT_API_URL ?? 'http://127.0.0.1:8000'
+const DEFAULT_PAINT_API_URL = 'http://127.0.0.1:8000'
+const PAINT_API_URL = (
+  import.meta.env.VITE_TONNER_PAINT_API_URL?.trim() || DEFAULT_PAINT_API_URL
+).replace(/\/+$/, '')
+const PAINT_TIMEOUT_MS = 120_000
 
 export default function PaintModule() {
   const navigate = useNavigate()
@@ -17,6 +20,7 @@ export default function PaintModule() {
   const [selectedColor, setSelectedColor] = useState(TONNER_COLORS[2])
   const [isPainting, setIsPainting] = useState(false)
   const [flashActive, setFlashActive] = useState(false)
+  const [paintError, setPaintError] = useState<string | null>(null)
 
   const palette = useMemo(
     () => Array.from({ length: 32 }, (_, index) => TONNER_COLORS[index % TONNER_COLORS.length]),
@@ -28,6 +32,7 @@ export default function PaintModule() {
     if (!file) return
 
     setSelectedFile(file)
+    setPaintError(null)
     setFlashActive(true)
     window.setTimeout(() => setFlashActive(false), 250)
 
@@ -37,7 +42,14 @@ export default function PaintModule() {
 
     const reader = new FileReader()
     reader.onload = () => {
-      setPreviewUrl(typeof reader.result === 'string' ? reader.result : null)
+      const nextPreview = typeof reader.result === 'string' ? reader.result : null
+      setPreviewUrl((currentUrl) => {
+        if (currentUrl?.startsWith('blob:')) {
+          URL.revokeObjectURL(currentUrl)
+        }
+
+        return nextPreview
+      })
     }
     reader.readAsDataURL(file)
   }
@@ -46,6 +58,9 @@ export default function PaintModule() {
     if (!selectedFile || isPainting) return
 
     setIsPainting(true)
+    setPaintError(null)
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), PAINT_TIMEOUT_MS)
 
     try {
       const formData = new FormData()
@@ -56,10 +71,17 @@ export default function PaintModule() {
       const response = await fetch(`${PAINT_API_URL}/paint`, {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       })
 
       if (!response.ok) {
-        throw new Error(`Server ${response.status}`)
+        const message = await response.text()
+        throw new Error(message || `Server ${response.status}`)
+      }
+
+      const contentType = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase()
+      if (contentType !== 'image/jpeg') {
+        throw new Error(`Respuesta inesperada: ${contentType || 'sin content-type'}`)
       }
 
       const blob = await response.blob()
@@ -71,9 +93,14 @@ export default function PaintModule() {
         return URL.createObjectURL(blob)
       })
     } catch (error) {
-      window.alert('No se pudo conectar con el servidor.')
+      const message =
+        error instanceof DOMException && error.name === 'AbortError'
+          ? 'La pintura tardó demasiado. Intenta con una imagen más liviana.'
+          : 'No se pudo procesar la imagen.'
+      setPaintError(message)
       console.error(error)
     } finally {
+      window.clearTimeout(timeoutId)
       setIsPainting(false)
     }
   }
@@ -134,6 +161,7 @@ export default function PaintModule() {
 
           <section className="paint-colors">
             <h2>COLORES</h2>
+            {paintError ? <p className="paint-error">{paintError}</p> : null}
             <div className="color-grid" id="colorsGrid">
               {palette.map((color, index) => (
                 <button

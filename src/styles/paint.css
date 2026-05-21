@@ -202,6 +202,14 @@
   letter-spacing: 1px;
 }
 
+.paint-error {
+  margin: -4px 0 12px;
+  color: #c2410c;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .color-grid {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
