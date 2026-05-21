@@ -2,60 +2,54 @@
 
 Backend FastAPI de Tonner Paint dentro de `TonnerApp`.
 
-Este servicio ya no procesa SAM/Torch en el PC local. Ahora funciona como proxy
-seguro hacia RunPod: React llama a `/paint`, este backend envia la imagen a
-RunPod y devuelve la imagen resultante al navegador. La llave de RunPod queda
-solo en el servidor.
+Este servicio procesa la imagen directamente en el pod con GPU. Ya no funciona
+como proxy hacia RunPod Serverless.
 
-El procesamiento SAM para RunPod esta en `runpod-worker/`.
+Flujo:
+
+```txt
+TonnerPaint -> FastAPI /paint -> SAM local GPU -> image/jpeg
+```
 
 ## Variables
 
 Configura estas variables en el entorno donde corra el backend:
 
 ```bash
-RUNPOD_API_KEY=tu_api_key
-RUNPOD_ENDPOINT_ID=tu_endpoint_id
-RUNPOD_ENDPOINT_URL=
-RUNPOD_OPERATION=runsync
-RUNPOD_WAIT_MS=120000
-RUNPOD_TIMEOUT_SECONDS=180
+TONNER_PAINT_SAM_CHECKPOINT=/workspace/sam_vit_b_01ec64.pth
+TONNER_PAINT_SAM_MODEL_TYPE=vit_b
+TONNER_PAINT_MAX_SIDE=1024
+TONNER_PAINT_POINTS_PER_SIDE=16
+TONNER_PAINT_PRED_IOU_THRESH=0.9
+TONNER_PAINT_STABILITY_SCORE_THRESH=0.9
+TONNER_PAINT_MIN_MASK_REGION_AREA=5000
 ```
 
-Puedes ponerlas en `TonnerApp/.env`, exportarlas en la terminal, o crear un
-`.env` propio dentro de `backend/paint-api`. Si usas `RUNPOD_ENDPOINT_URL`,
-puedes apuntar a una URL completa, por ejemplo
-`https://api.runpod.ai/v2/<endpoint_id>/runsync`.
+El backend tambien busca el checkpoint en estas rutas si no se define
+`TONNER_PAINT_SAM_CHECKPOINT`:
 
-## Contrato con RunPod
-
-El proxy envia:
-
-```json
-{
-  "input": {
-    "image_base64": "...",
-    "image_mime_type": "image/jpeg",
-    "filename": "input.jpg",
-    "color": "#0057B8",
-    "opacity": 0.6
-  }
-}
+```txt
+/workspace/sam_vit_b_01ec64.pth
+/workspace/sam/sam_vit_b_01ec64.pth
+/runpod-volume/sam/sam_vit_b_01ec64.pth
 ```
 
-El worker de RunPod puede responder con una imagen base64, un data URI o una URL
-en `output`. Tambien se aceptan claves comunes como `image`, `image_base64`,
-`result`, `image_url` u `output_url`.
+## Endpoints
 
-El worker incluido en `runpod-worker/` responde con `image_base64`.
-
-## Setup
-
-Desde `TonnerApp`:
-
-```bash
-npm run setup:api
+```txt
+GET  /health
+POST /paint
 ```
+
+`POST /paint` recibe `multipart/form-data`:
+
+```txt
+image=@foto.jpg
+color=#0057B8
+opacity=0.6
+```
+
+Devuelve `image/jpeg`.
 
 ## Ejecutar
 

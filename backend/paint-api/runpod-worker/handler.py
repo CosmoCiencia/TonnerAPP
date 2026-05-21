@@ -13,8 +13,29 @@ from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 
 HEX_COLOR_RE = re.compile(r"^#?[0-9a-fA-F]{6}$")
 DEFAULT_CHECKPOINT = "/runpod-volume/sam/sam_vit_b_01ec64.pth"
+CHECKPOINT_FALLBACKS = (
+    "/runpod-volume/sam/sam_vit_b_01ec64.pth",
+    "/workspace/sam_vit_b_01ec64.pth",
+    "/app/sam_vit_b_01ec64.pth",
+)
 
 _MASK_GENERATOR: SamAutomaticMaskGenerator | None = None
+
+
+def resolve_checkpoint() -> Path:
+    configured_checkpoint = os.getenv("TONNER_PAINT_SAM_CHECKPOINT", "").strip()
+    candidates = (configured_checkpoint, *CHECKPOINT_FALLBACKS) if configured_checkpoint else CHECKPOINT_FALLBACKS
+
+    for candidate in candidates:
+        checkpoint = Path(candidate)
+        if checkpoint.exists():
+            return checkpoint
+
+    raise FileNotFoundError(
+        "SAM checkpoint not found. Tried: "
+        f"{', '.join(str(Path(candidate)) for candidate in candidates)}. "
+        "Mount sam_vit_b_01ec64.pth in /runpod-volume/sam/ or set TONNER_PAINT_SAM_CHECKPOINT."
+    )
 
 
 def get_mask_generator() -> SamAutomaticMaskGenerator:
@@ -22,15 +43,9 @@ def get_mask_generator() -> SamAutomaticMaskGenerator:
     if _MASK_GENERATOR is not None:
         return _MASK_GENERATOR
 
-    checkpoint = Path(os.getenv("TONNER_PAINT_SAM_CHECKPOINT", DEFAULT_CHECKPOINT))
+    checkpoint = resolve_checkpoint()
     model_type = os.getenv("TONNER_PAINT_SAM_MODEL_TYPE", "vit_b")
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    if not checkpoint.exists():
-        raise FileNotFoundError(
-            f"SAM checkpoint not found at {checkpoint}. "
-            "Set TONNER_PAINT_SAM_CHECKPOINT or mount the model in /runpod-volume/sam/."
-        )
 
     sam = sam_model_registry[model_type](checkpoint=str(checkpoint))
     sam.to(device=device)

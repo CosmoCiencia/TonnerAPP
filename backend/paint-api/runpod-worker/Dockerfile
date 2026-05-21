@@ -20,4 +20,6 @@ RUN python -m pip install --no-cache-dir --upgrade pip \
 
 COPY handler.py .
 
+RUN python -c "import pathlib, urllib.request; target=pathlib.Path('/app/sam_vit_b_01ec64.pth'); urllib.request.urlretrieve('https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth', target); print('downloaded', target, target.stat().st_size)"
+
 CMD ["python", "-u", "handler.py"]
