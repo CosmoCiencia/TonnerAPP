@@ -70,3 +70,39 @@ El frontend usa `VITE_TONNER_PAINT_API_URL`. Para el pod directo actual:
 ```bash
 VITE_TONNER_PAINT_API_URL=https://barmvu9avgeu38-8000.proxy.runpod.net
 ```
+
+## Startup en RunPod pod directo
+
+El script `scripts/runpod-start-api.sh` está preparado para correr en RunPod con:
+
+```txt
+/workspace/backend/paint-api
+/workspace/sam_vit_b_01ec64.pth
+```
+
+Instalarlo una vez dentro del pod:
+
+```bash
+cd /workspace/backend/paint-api
+bash scripts/install-runpod-startup.sh
+```
+
+Después de cada reinicio:
+
+```bash
+bash /workspace/start-api.sh
+```
+
+Verificar:
+
+```bash
+curl http://127.0.0.1:8000/health
+curl -X POST http://127.0.0.1:8000/paint \
+  -F "image=@/workspace/test.jpg;type=image/jpeg" \
+  -F "color=#0057B8" \
+  -F "opacity=0.6" \
+  --output /workspace/proxy-result.jpg
+```
+
+El script crea/reusa `.venv`, instala dependencias solo si faltan o cambió
+`requirements.txt`, valida CUDA y arranca `uvicorn` en `0.0.0.0:8000`.
