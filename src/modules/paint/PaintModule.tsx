@@ -22,10 +22,7 @@ export default function PaintModule() {
   const [flashActive, setFlashActive] = useState(false)
   const [paintError, setPaintError] = useState<string | null>(null)
 
-  const palette = useMemo(
-    () => Array.from({ length: 32 }, (_, index) => TONNER_COLORS[index % TONNER_COLORS.length]),
-    [],
-  )
+  const palette = useMemo(() => TONNER_COLORS, [])
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -162,6 +159,15 @@ export default function PaintModule() {
           <section className="paint-colors">
             <h2>COLORES</h2>
             {paintError ? <p className="paint-error">{paintError}</p> : null}
+            <button
+              id="applyBtn"
+              className="paint-apply-panel"
+              type="button"
+              disabled={!selectedFile || isPainting}
+              onClick={handleApplyColor}
+            >
+              {isPainting ? 'PROCESANDO...' : 'PROCESAR IMAGEN'}
+            </button>
             <div className="color-grid" id="colorsGrid">
               {palette.map((color, index) => (
                 <button
@@ -177,15 +183,6 @@ export default function PaintModule() {
                 </button>
               ))}
             </div>
-            <button
-              id="applyBtn"
-              className="paint-apply-panel"
-              type="button"
-              disabled={!selectedFile || isPainting}
-              onClick={handleApplyColor}
-            >
-              {isPainting ? 'PROCESANDO...' : 'APLICAR COLOR'}
-            </button>
           </section>
         </section>
 

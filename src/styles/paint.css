@@ -21,7 +21,7 @@
   width: min(100%, 430px);
   min-height: 100dvh;
   margin: 0 auto;
-  overflow: hidden;
+  overflow-x: hidden;
   background: #fff;
   box-shadow: 0 0 0 4px #202020;
 }
@@ -135,7 +135,7 @@
 }
 
 .paint-main {
-  padding-bottom: 48px;
+  padding-bottom: calc(6.2rem + env(safe-area-inset-bottom));
   background: #fff;
 }
 
@@ -188,7 +188,7 @@
 
 .paint-colors {
   margin-top: 15px;
-  padding: 0 49px 18px;
+  padding: 0 49px 0;
   border-top: 1px solid #d7d7d7;
   background: #fff;
   text-align: center;
@@ -212,8 +212,9 @@
 
 .color-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 12px 9px;
+  grid-template-columns: repeat(6, 1fr);
+  margin-top: 16px;
+  gap: 12px 11px;
 }
 
 .color-card {
@@ -247,10 +248,10 @@
 
 .paint-apply-panel {
   width: 100%;
-  margin-top: 16px;
+  margin: 0 0 2px;
   border: 0;
   border-radius: 999px;
-  padding: 12px 18px;
+  padding: 14px 18px;
   background: var(--blue);
   color: #fff;
   font-size: 12px;
