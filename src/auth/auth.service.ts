@@ -89,10 +89,6 @@ export async function signIn({ email, password }: LoginInput) {
 }
 
 export async function signUp({ email, fullName, password }: RegisterInput) {
-  if (import.meta.env.VITE_ENABLE_PUBLIC_REGISTRATION !== 'true') {
-    throw new Error('El registro público está cerrado. Solicita tu cuenta directamente con Pinturas Tonner.')
-  }
-
   const supabase = requireSupabase()
   const { data, error } = await supabase.auth.signUp({
     email: email.trim().toLowerCase(),
