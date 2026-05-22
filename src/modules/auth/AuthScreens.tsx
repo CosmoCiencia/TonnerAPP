@@ -69,7 +69,7 @@ function AuthShell({
     <main className="auth-screen">
       <section className="auth-device">
         <header className="auth-header">
-          <img src={getOptimizedImageSrc('/logo.png')} alt="Pinturas Tonner" decoding="async" />
+          <img src={getOptimizedImageSrc('/logo.webp')} alt="Pinturas Tonner" decoding="async" />
           <span>{eyebrow}</span>
           <h1>{title}</h1>
           <p>{description}</p>
@@ -443,7 +443,7 @@ export function ProfileScreen() {
                 <img src="/icons/boton regreso.png" alt="" />
               </button>
               <img
-                src={getOptimizedImageSrc('/logo.png')}
+                src={getOptimizedImageSrc('/logo.webp')}
                 alt="Pinturas Tonner"
                 className="auth-profile-top__logo"
                 decoding="async"

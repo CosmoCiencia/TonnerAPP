@@ -42,7 +42,7 @@ function DashboardPage() {
           <Megaphone size={27} strokeWidth={3} />
         </button>
         <img
-          src={getOptimizedImageSrc('/logo.png')}
+          src={getOptimizedImageSrc('/logo.webp')}
           alt="Pinturas Tonner"
           className="cup-launch-logo"
           decoding="async"

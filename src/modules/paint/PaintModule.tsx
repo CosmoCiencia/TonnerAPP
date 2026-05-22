@@ -106,7 +106,7 @@ export default function PaintModule() {
     <main className="paint-page">
       <div className="paint-app">
         <header className="paint-top">
-          <img src={getOptimizedImageSrc('/logo.png')} alt="Pinturas Tonner" decoding="async" />
+          <img src={getOptimizedImageSrc('/logo.webp')} alt="Pinturas Tonner" decoding="async" />
           <button type="button" aria-label="Volver al inicio" onClick={() => navigate('/')}>
             <img src="/icons/boton regreso.png" alt="" />
           </button>

@@ -1,23 +1,34 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 
-import CatalogModule, { type CatalogView } from './modules/catalog/CatalogModule'
-import CupModule from './modules/cup/CupModule'
-import { HubModule, type HubView } from './modules/hub'
-import PaintModule from './modules/paint/PaintModule'
+import type { CatalogView } from './modules/catalog/CatalogModule'
+import type { HubView } from './modules/hub'
 import type { Product } from './modules/catalog/types'
 import type { Distributor } from './modules/distributors/types'
 import { RequireAuth, RequireRole } from './auth/auth.guards'
 import { privateRoles } from './auth/roleAccess'
-import {
-  AccessDeniedScreen,
-  InternalToolsScreen,
-  LoginScreen,
-  PendingApprovalScreen,
-  ProfileScreen,
-  RegisterScreen,
-} from './modules/auth/AuthScreens'
 import { getOptimizedImageSrc } from './services/imageAssets'
+
+const HubModule = lazy(() => import('./modules/hub').then((module) => ({ default: module.HubModule })))
+const CatalogModule = lazy(() => import('./modules/catalog/CatalogModule'))
+const CupModule = lazy(() => import('./modules/cup/CupModule'))
+const PaintModule = lazy(() => import('./modules/paint/PaintModule'))
+const AccessDeniedScreen = lazy(() =>
+  import('./modules/auth/AuthScreens').then((module) => ({ default: module.AccessDeniedScreen })),
+)
+const InternalToolsScreen = lazy(() =>
+  import('./modules/auth/AuthScreens').then((module) => ({ default: module.InternalToolsScreen })),
+)
+const LoginScreen = lazy(() => import('./modules/auth/AuthScreens').then((module) => ({ default: module.LoginScreen })))
+const PendingApprovalScreen = lazy(() =>
+  import('./modules/auth/AuthScreens').then((module) => ({ default: module.PendingApprovalScreen })),
+)
+const ProfileScreen = lazy(() =>
+  import('./modules/auth/AuthScreens').then((module) => ({ default: module.ProfileScreen })),
+)
+const RegisterScreen = lazy(() =>
+  import('./modules/auth/AuthScreens').then((module) => ({ default: module.RegisterScreen })),
+)
 
 type GlobalNavKey = 'home' | 'work' | 'favorites' | 'calculator' | 'profile'
 
@@ -116,7 +127,7 @@ function Splash() {
       aria-label="Cargando TonnerHub"
     >
       <img
-        src={getOptimizedImageSrc('/PORTADA CARGA.png')}
+        src={getOptimizedImageSrc('/PORTADA CARGA.webp')}
         alt="Pinturas Tonner"
         className="loading-screen__image"
         decoding="async"
@@ -124,6 +135,10 @@ function Splash() {
       <div className="loading-screen__shine" aria-hidden="true" />
     </main>
   )
+}
+
+function RouteFallback() {
+  return <div className="tonner-route-fallback" aria-hidden="true" />
 }
 
 function HubRoute({ view }: { view: HubView }) {
@@ -240,72 +255,74 @@ export default function AppShell() {
 
   return (
     <>
-      <Routes>
-        <Route path="/" element={<HubRoute view="home" />} />
-        <Route path="/work" element={<HubRoute view="work" />} />
-        <Route path="/calculator" element={<HubRoute view="calculator" />} />
-        <Route path="/profile" element={<ProfileScreen />} />
-        <Route path="/login" element={<LoginScreen />} />
-        <Route path="/register" element={<RegisterScreen />} />
-        <Route path="/pending-approval" element={<PendingApprovalScreen />} />
-        <Route path="/access-denied" element={<AccessDeniedScreen />} />
-        <Route
-          path="/internal"
-          element={
-            <RequireRole roles={privateRoles}>
-              <InternalToolsScreen />
-            </RequireRole>
-          }
-        />
-        <Route path="/paint" element={<PaintModule />} />
-        <Route
-          path="/cup/*"
-          element={
-            <RequireAuth>
-              <CupModule />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/catalog"
-          element={
-            <CatalogRoute
-              view="catalog"
-              favoriteProductIds={favoriteIds.catalogProducts}
-              favoriteStoreIds={favoriteIds.stores}
-              onToggleFavorite={handleToggleFavorite}
-              onToggleStoreFavorite={handleToggleStoreFavorite}
-            />
-          }
-        />
-        <Route
-          path="/stores"
-          element={
-            <CatalogRoute
-              view="stores"
-              favoriteProductIds={favoriteIds.catalogProducts}
-              favoriteStoreIds={favoriteIds.stores}
-              onToggleFavorite={handleToggleFavorite}
-              onToggleStoreFavorite={handleToggleStoreFavorite}
-            />
-          }
-        />
-        <Route
-          path="/favorites"
-          element={
-            <RequireAuth>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/" element={<HubRoute view="home" />} />
+          <Route path="/work" element={<HubRoute view="work" />} />
+          <Route path="/calculator" element={<HubRoute view="calculator" />} />
+          <Route path="/profile" element={<ProfileScreen />} />
+          <Route path="/login" element={<LoginScreen />} />
+          <Route path="/register" element={<RegisterScreen />} />
+          <Route path="/pending-approval" element={<PendingApprovalScreen />} />
+          <Route path="/access-denied" element={<AccessDeniedScreen />} />
+          <Route
+            path="/internal"
+            element={
+              <RequireRole roles={privateRoles}>
+                <InternalToolsScreen />
+              </RequireRole>
+            }
+          />
+          <Route path="/paint" element={<PaintModule />} />
+          <Route
+            path="/cup/*"
+            element={
+              <RequireAuth>
+                <CupModule />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/catalog"
+            element={
               <CatalogRoute
-                view="favorites"
+                view="catalog"
                 favoriteProductIds={favoriteIds.catalogProducts}
                 favoriteStoreIds={favoriteIds.stores}
                 onToggleFavorite={handleToggleFavorite}
                 onToggleStoreFavorite={handleToggleStoreFavorite}
               />
-            </RequireAuth>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+            }
+          />
+          <Route
+            path="/stores"
+            element={
+              <CatalogRoute
+                view="stores"
+                favoriteProductIds={favoriteIds.catalogProducts}
+                favoriteStoreIds={favoriteIds.stores}
+                onToggleFavorite={handleToggleFavorite}
+                onToggleStoreFavorite={handleToggleStoreFavorite}
+              />
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <RequireAuth>
+                <CatalogRoute
+                  view="favorites"
+                  favoriteProductIds={favoriteIds.catalogProducts}
+                  favoriteStoreIds={favoriteIds.stores}
+                  onToggleFavorite={handleToggleFavorite}
+                  onToggleStoreFavorite={handleToggleStoreFavorite}
+                />
+              </RequireAuth>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
 
       {hideGlobalNav ? null : (
         <nav className="hub-bottom-nav tonner-global-nav" aria-label="Navegación principal">

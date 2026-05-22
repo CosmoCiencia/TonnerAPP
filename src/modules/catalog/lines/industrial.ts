@@ -47,7 +47,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
       { name: 'Gris', code: 'EP-277', hex: '#a1a8ae' },
     ],
 
-    image: '/products/esmalte-epoxico.png',
+    image: '/products/esmalte-epoxico.webp',
   },
   {
     id: 'secado-flash',
@@ -96,7 +96,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
       { name: 'Negro mate', code: 'SF-580', hex: '#252525' },
     ],
 
-    image: '/products/secado-flash.png',
+    image: '/products/secado-flash.webp',
   },
   {
     id: 'esmalton-3en1',
@@ -139,7 +139,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
       { name: 'Negro mate', code: 'ES-180', hex: '#252525' },
     ],
 
-    image: '/products/esmalton-3-en-1.png',
+    image: '/products/esmalton-3-en-1.webp',
   },
   {
     id: 'trafico-pesado',
@@ -175,7 +175,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
       { name: 'Negro', code: 'PT-830', hex: '#000000' },
     ],
 
-    image: '/products/trafico-pesado.png',
+    image: '/products/trafico-pesado.webp',
   },
   {
     id: 'primer-epoxico',
@@ -209,7 +209,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Gris', code: 'EP-227', hex: '#bfbfbf' }],
 
-    image: '/products/primer-epoxico.png',
+    image: '/products/primer-epoxico.webp',
   },
   {
     id: 'wash-primer',
@@ -242,7 +242,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Verde', code: 'WP-401', hex: '#4f7c3a' }],
 
-    image: '/products/wash-primer.png',
+    image: '/products/wash-primer.webp',
   },
   {
     id: 'primer-cromato-zinc',
@@ -275,7 +275,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Verde zinc', code: 'CZ-450', hex: '#6f8f55' }],
 
-    image: '/products/primer-cromato-de-zinc.png',
+    image: '/products/primer-cromato-de-zinc.webp',
   },
   {
     id: 'primer-fosfato-zinc',
@@ -308,7 +308,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Gris', code: 'FZ-460', hex: '#9c9c9c' }],
 
-    image: '/products/primer-fosfato-de-zinc.png',
+    image: '/products/primer-fosfato-de-zinc.webp',
   },
   {
     id: 'primer-plasticos',
@@ -340,6 +340,6 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Transparente', code: 'PP-470' }],
 
-    image: '/products/primer-para-plasticos.png',
+    image: '/products/primer-para-plasticos.webp',
   },
 ];

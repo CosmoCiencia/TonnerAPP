@@ -50,6 +50,13 @@ const getMapsHref = (distributor: (typeof distributors)[number]) => {
   )}`;
 };
 
+const normalizeStoreSearch = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
 export default function CatalogModule({
   initialView = 'catalog',
   initialStoresMode = 'map',
@@ -65,6 +72,8 @@ export default function CatalogModule({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeLine, setActiveLine] = useState<TonnerLineKey>('arquitectonica');
   const [productLimit, setProductLimit] = useState(INITIAL_PRODUCT_LIMIT);
+  const [storeSearch, setStoreSearch] = useState('');
+  const [selectedStoreCity, setSelectedStoreCity] = useState('');
   const appContent = useAppContent();
 
   useEffect(() => {
@@ -87,6 +96,44 @@ export default function CatalogModule({
     () => distributors.filter((distributor) => favoriteStoreIds.has(String(distributor.id))),
     [favoriteStoreIds],
   );
+  const storeCities = useMemo(() => {
+    const cityMap = new Map<string, { label: string; count: number }>();
+
+    distributors.forEach((distributor) => {
+      const city = distributor.city.trim();
+      if (!city) return;
+
+      const key = normalizeStoreSearch(city);
+      const currentCity = cityMap.get(key);
+
+      cityMap.set(key, {
+        label: currentCity?.label ?? city,
+        count: (currentCity?.count ?? 0) + 1,
+      });
+    });
+
+    return Array.from(cityMap.entries())
+      .map(([key, city]) => ({ key, ...city }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+  }, []);
+  const citySuggestions = useMemo(() => {
+    const search = normalizeStoreSearch(storeSearch);
+    if (!search || selectedStoreCity) return [];
+
+    return storeCities.filter((city) => city.key.includes(search)).slice(0, 5);
+  }, [selectedStoreCity, storeCities, storeSearch]);
+  const filteredDistributors = useMemo(() => {
+    const search = normalizeStoreSearch(selectedStoreCity || storeSearch);
+    if (!search) return distributors;
+
+    return distributors.filter((distributor) => {
+      const searchableText = normalizeStoreSearch(
+        [distributor.city, distributor.address, distributor.name].filter(Boolean).join(' '),
+      );
+
+      return searchableText.includes(search);
+    });
+  }, [selectedStoreCity, storeSearch]);
   const currentProducts = view === 'favorites' ? favoriteProducts : visibleProducts;
   const displayedProducts = currentProducts.slice(0, productLimit);
   const hasMoreProducts = productLimit < currentProducts.length;
@@ -177,8 +224,67 @@ export default function CatalogModule({
     };
 
     if (view === 'stores') {
+      const activeLocation = selectedStoreCity || storeSearch;
+
       return (
         <main className="catalog-stores">
+          <section className="catalog-store-search" aria-label="Buscar puntos de venta por ubicación">
+            <label htmlFor="catalog-store-location">Ubicación</label>
+            <div className="catalog-store-search__field">
+              <MapPin />
+              <input
+                id="catalog-store-location"
+                type="search"
+                value={storeSearch}
+                placeholder="Escribe tu ciudad o zona"
+                autoComplete="off"
+                onChange={(event) => {
+                  setStoreSearch(event.target.value);
+                  setSelectedStoreCity('');
+                }}
+              />
+              {storeSearch ? (
+                <button
+                  type="button"
+                  className="catalog-store-search__clear"
+                  aria-label="Limpiar ubicación"
+                  onClick={() => {
+                    setStoreSearch('');
+                    setSelectedStoreCity('');
+                  }}
+                >
+                  ×
+                </button>
+              ) : null}
+            </div>
+            {citySuggestions.length > 0 ? (
+              <div className="catalog-store-search__suggestions" aria-label="Ciudades disponibles">
+                {citySuggestions.map((city) => (
+                  <button
+                    key={city.key}
+                    type="button"
+                    onClick={() => {
+                      setStoreSearch(city.label);
+                      setSelectedStoreCity(city.label);
+                    }}
+                  >
+                    <span>{city.label}</span>
+                    <small>
+                      {city.count} punto{city.count === 1 ? '' : 's'}
+                    </small>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <p>
+              {activeLocation.trim()
+                ? filteredDistributors.length > 0
+                  ? `${filteredDistributors.length} punto${filteredDistributors.length === 1 ? '' : 's'} de venta encontrado${filteredDistributors.length === 1 ? '' : 's'}.`
+                  : 'No encontramos puntos de venta para esa ubicación.'
+                : 'Busca por ciudad, barrio, dirección o nombre del punto de venta.'}
+            </p>
+          </section>
+
           <nav className="catalog-stores__tabs" aria-label="Vista de puntos de venta">
             <button
               type="button"
@@ -198,11 +304,24 @@ export default function CatalogModule({
 
           {storesMode === 'map' ? (
             <section className="catalog-map-view" aria-label="Mapa de puntos de venta">
-              <StoresMap distributors={distributors} />
+              <StoresMap distributors={filteredDistributors} />
+              {filteredDistributors.length === 0 ? (
+                <div className="catalog-map-empty">
+                  <strong>Sin resultados</strong>
+                  <span>Prueba con otra ciudad o revisa la escritura.</span>
+                </div>
+              ) : null}
             </section>
           ) : (
             <section className="catalog-store-list" aria-label="Lista de puntos de venta">
-              {distributors.map(renderStoreCard)}
+              {filteredDistributors.length > 0 ? (
+                filteredDistributors.map(renderStoreCard)
+              ) : (
+                <section className="catalog-store-empty">
+                  <h2>Sin resultados</h2>
+                  <p>Prueba con otra ciudad, barrio o dirección.</p>
+                </section>
+              )}
             </section>
           )}
         </main>
@@ -338,7 +457,7 @@ export default function CatalogModule({
         <button type="button" className="catalog-top__back" aria-label="Regresar" onClick={handleBack}>
           <img src="/icons/boton regreso.png" alt="" />
         </button>
-        <img src={getOptimizedImageSrc('/logo.png')} alt="Pinturas Tonner" decoding="async" />
+        <img src={getOptimizedImageSrc('/logo.webp')} alt="Pinturas Tonner" decoding="async" />
         <button type="button" className="catalog-top__bell" aria-label="Notificaciones">
           <img src="/campana icon.png" alt="" />
         </button>

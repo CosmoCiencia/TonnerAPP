@@ -1100,6 +1100,11 @@
   }
 }
 
+.tonner-route-fallback {
+  min-height: 100svh;
+  background: var(--app-bg);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .loading-screen,
   .loading-screen__image,

@@ -44,7 +44,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Amarillo oro', code: 'LN-189', hex: '#efb810' },
     ],
 
-    image: '/products/automativa.png',
+    image: '/products/automativa.webp',
   },
 
   {
@@ -101,7 +101,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Rojo Ferrari', code: 'LN-498', hex: '#cc0000' },
     ],
 
-    image: '/products/automotiva-industrial.png',
+    image: '/products/automotiva-industrial.webp',
   },
   {
     id: 'fondo-nitro',
@@ -141,7 +141,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Verde', code: 'FL-517', hex: '#485727' },
     ],
 
-    image: '/products/fondo-nitro.png',
+    image: '/products/fondo-nitro.webp',
   },
   {
     id: 'fondo-nitro-industrial',
@@ -187,7 +187,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Negro', code: 'FL-580', hex: '#000000' },
     ],
 
-    image: '/products/fondo-nitro-industrial.png',
+    image: '/products/fondo-nitro-industrial.webp',
   },
   {
     id: 'masilla-nitro',
@@ -227,7 +227,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Roja', code: 'LN-523', hex: '#ba2025' },
     ],
 
-    image: '/products/masilla-nitro.png',
+    image: '/products/masilla-nitro.webp',
   },
   {
     id: 'masilla-industrial-nitro',
@@ -268,7 +268,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Negra', code: 'LN-930', hex: '#000000' },
     ],
 
-    image: '/products/masilla-industrial-nitro.png',
+    image: '/products/masilla-industrial-nitro.webp',
   },
   {
     id: 'pasta-para-pulir',
@@ -303,7 +303,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Rojo', code: 'PR-768', hex: '#ba2025' },
     ],
 
-    image: '/products/pasta-para-pulir.png',
+    image: '/products/pasta-para-pulir.webp',
   },
   {
     id: 'removedor',
@@ -335,7 +335,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Removedor', code: 'TO-800' }],
 
-    image: '/products/removedor.png',
+    image: '/products/removedor.webp',
   },
   {
     id: 'laca-acrilica',
@@ -385,7 +385,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Amarillo dorado', code: 'LA-639', hex: '#f9ce1d' },
     ],
 
-    image: '/products/laca-acrilica.png',
+    image: '/products/laca-acrilica.webp',
   },
   {
     id: 'fondo-acrilico',
@@ -420,7 +420,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Gris claro', code: 'FA-677', hex: '#d8dbe4' }],
 
-    image: '/products/fondo-acrilico.png',
+    image: '/products/fondo-acrilico.webp',
   },
   {
     id: 'masilla-acrilica',
@@ -456,7 +456,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Rojo', code: 'MA-626', hex: '#ba2025' }],
 
-    image: '/products/masilla-acrilica.png',
+    image: '/products/masilla-acrilica.webp',
   },
   {
     id: 'poliuretano',
@@ -509,7 +509,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Rojo Ferrari', code: 'PU-798', hex: '#cc0000' },
     ],
 
-    image: '/products/poliuretano.png',
+    image: '/products/poliuretano.webp',
   },
   {
     id: 'fondo-poliuretano-2k',
@@ -549,7 +549,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Negro', code: 'FP-530', hex: '#000000' },
     ],
 
-    image: '/products/fondo-poliuretano-2k.png',
+    image: '/products/fondo-poliuretano-2k.webp',
   },
   {
     id: 'primer-monocomponente',
@@ -590,7 +590,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Negro', code: 'MC-530', hex: '#000000' },
     ],
 
-    image: '/products/primer-monocomponente.png',
+    image: '/products/primer-monocomponente.webp',
   },
   {
     id: 'monocomponente-acrilico',
@@ -627,7 +627,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Negro', code: 'FM-830', hex: '#000000' },
     ],
 
-    image: '/products/mono-componente-acrilico.png',
+    image: '/products/mono-componente-acrilico.webp',
   },
   {
     id: 'masilla-rapida',
@@ -664,7 +664,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Roja', code: 'MP-726', hex: '#9c1c1f' },
     ],
 
-    image: '/products/masilla-rapida.png',
+    image: '/products/masilla-rapida.webp',
   },
   {
     id: 'endurecedor-poliuretano',
@@ -697,7 +697,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Endurecedor Fondo 2K', code: 'PU-810' },
     ],
 
-    image: '/products/endurecedor-poliuretano.png',
+    image: '/products/endurecedor-poliuretano.webp',
   },
   {
     id: 'poliester',
@@ -752,6 +752,6 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
       { name: 'Aluminio lenticular medio', code: 'PE-897', hex: '#b2b2b2' },
     ],
 
-    image: '/products/polieston.png',
+    image: '/products/polieston.webp',
   },
 ];

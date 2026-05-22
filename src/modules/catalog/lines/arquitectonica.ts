@@ -59,7 +59,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Naranja', code: 'VI-766', hex: '#fa581a' },
     ],
 
-    image: '/products/tonertex.png',
+    image: '/products/tonertex.webp',
   },
   {
     id: 'vinilton',
@@ -106,7 +106,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Lila', code: 'VI-223', hex: '#f4daf2' },
     ],
 
-    image: '/products/vinilton.png',
+    image: '/products/vinilton.webp',
   },
   {
     id: 'tonerama',
@@ -138,7 +138,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Blanco tipo 3', code: 'VI-301', hex: '#ffffff' }],
 
-    image: '/products/tonerama.png',
+    image: '/products/tonerama.webp',
   },
   {
     id: 'ultrarmor',
@@ -174,7 +174,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Negro', code: 'AC-130', hex: '#000000' },
     ],
 
-    image: '/products/ultra-armor.png',
+    image: '/products/ultra-armor.webp',
   },
   {
     id: 'permakrill',
@@ -201,7 +201,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Gris', code: 'IP-810', hex: '#a9acb5' },
     ],
 
-    image: '/products/permakill.png',
+    image: '/products/permakill.webp',
   },
   {
     id: 'pintura-para-canchas',
@@ -246,7 +246,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Verde', code: 'PC-919', hex: '#148e59' },
     ],
 
-    image: '/products/pintura-para-canchas.png',
+    image: '/products/pintura-para-canchas.webp',
   },
   {
     id: 'banos-y-cocinas',
@@ -275,7 +275,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Blanco', code: 'BC-101', hex: '#ffffff' }],
 
-    image: '/products/banos-y-cocinas.png',
+    image: '/products/banos-y-cocinas.webp',
   },
   {
     id: 'esmalte-acrilico',
@@ -314,7 +314,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Blanco', code: 'AE-651', hex: '#ffffff' }],
 
-    image: '/products/esmalte-acrilico.png',
+    image: '/products/esmalte-acrilico.webp',
   },
   {
     id: 'esmalton',
@@ -359,7 +359,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Azul real', code: 'ES-314', hex: '#00063a' },
     ],
 
-    image: '/products/esmalton.png',
+    image: '/products/esmalton.webp',
   },
   {
     id: 'special-xxi',
@@ -400,7 +400,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Mandarina', code: 'ES-406', hex: '#f28500' },
     ],
 
-    image: '/products/especial-xxi.png',
+    image: '/products/especial-xxi.webp',
   },
   {
     id: 'secado-flash-arquitectonica',
@@ -452,7 +452,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Verde John D', code: 'SF-556', hex: '#1b8000' },
     ],
 
-    image: '/products/secado-flash.png',
+    image: '/products/secado-flash.webp',
   },
   {
     id: 'esmalton-3-en-1',
@@ -495,7 +495,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Aluminio', code: 'ES-131', hex: '#9fa2b0' },
     ],
 
-    image: '/products/esmalton-3-en-1.png',
+    image: '/products/esmalton-3-en-1.webp',
   },
   {
     id: 'pantonner',
@@ -539,7 +539,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Negro', code: 'ES-830', hex: '#000000' },
     ],
 
-    image: '/products/pantonner.png',
+    image: '/products/pantonner.webp',
   },
   {
     id: 'anticorrosivo-base-mate',
@@ -585,7 +585,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Negro industrial', code: 'EA-280', hex: '#000000' },
     ],
 
-    image: '/products/anticorrosivo-base-mate.png',
+    image: '/products/anticorrosivo-base-mate.webp',
   },
   {
     id: 'anticorrosivo-2-en-1-satinado',
@@ -629,6 +629,6 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
       { name: 'Ocre', code: 'EA-299', hex: '#cc9800' },
     ],
 
-    image: '/products/2-en-1-anticorrosivo-satinado.png',
+    image: '/products/2-en-1-anticorrosivo-satinado.webp',
   },
 ];

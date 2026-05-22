@@ -38,7 +38,7 @@ export const MADERAS_PRODUCTS: Product[] = [
       { name: 'Endurecedor', code: 'PU-850' },
     ],
 
-    image: '/products/uretablex.png',
+    image: '/products/uretablex.webp',
   },
   {
     id: 'LM-700',
@@ -70,7 +70,7 @@ export const MADERAS_PRODUCTS: Product[] = [
       { name: 'Transparente Brillante Industrial', code: 'LM-750' },
     ],
 
-    image: '/products/laca-transparante-brillante.png',
+    image: '/products/laca-transparante-brillante.webp',
   },
   {
     id: 'LM-770',
@@ -99,7 +99,7 @@ export const MADERAS_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Transparente Mate', code: 'LM-770' }],
 
-    image: '/products/laca-transparente-mate.png',
+    image: '/products/laca-transparente-mate.webp',
   },
   {
     id: 'LM-730',
@@ -137,7 +137,7 @@ export const MADERAS_PRODUCTS: Product[] = [
       { name: 'Sell. 45% Sólidos', code: 'LM-745' },
     ],
 
-    image: '/products/sellador-nitro.png',
+    image: '/products/sellador-nitro.webp',
   },
   {
     id: 'LC-750',
@@ -178,7 +178,7 @@ export const MADERAS_PRODUCTS: Product[] = [
       { name: 'Laca Semi Mate', code: 'LC-785' },
     ],
 
-    image: '/products/laca-catalizada.png',
+    image: '/products/laca-catalizada.webp',
   },
   {
     id: 'LC-759',
@@ -218,7 +218,7 @@ export const MADERAS_PRODUCTS: Product[] = [
       { name: 'Laca Semi Mate', code: 'LC-885' },
     ],
 
-    image: '/products/laca-latalizada-industrial.png',
+    image: '/products/laca-latalizada-industrial.webp',
   },
   {
     id: 'LC-735',
@@ -265,7 +265,7 @@ export const MADERAS_PRODUCTS: Product[] = [
       { name: 'Sellador Caoba', code: 'LC-777', hex: '#582405' },
     ],
 
-    image: '/products/sellador-catalizado.png',
+    image: '/products/sellador-catalizado.webp',
   },
   {
     id: 'LC-700',
@@ -294,7 +294,7 @@ export const MADERAS_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Catalizador', code: 'LC-700' }],
 
-    image: '/products/catalizador.png',
+    image: '/products/catalizador.webp',
   },
   {
     id: 'TM-703',
@@ -341,7 +341,7 @@ export const MADERAS_PRODUCTS: Product[] = [
       { name: 'Chocolate', code: 'TM-780', hex: '#683921' },
     ],
 
-    image: '/products/tintes-para-madera.png',
+    image: '/products/tintes-para-madera.webp',
   },
   {
     id: 'MA-028',
@@ -385,7 +385,7 @@ export const MADERAS_PRODUCTS: Product[] = [
       { name: 'Industrial Blanco 30%', code: 'MA-030' },
     ],
 
-    image: '/products/maderbond.png',
+    image: '/products/maderbond.webp',
   },
   {
     id: 'MA-050',
@@ -427,6 +427,6 @@ export const MADERAS_PRODUCTS: Product[] = [
 
     colors: [{ name: 'Pegante ligeramente rosado 50%', code: 'MA-050', hex: '#f3c7c7' }],
 
-    image: '/products/maderbond-experto.png',
+    image: '/products/maderbond-experto.webp',
   },
 ];

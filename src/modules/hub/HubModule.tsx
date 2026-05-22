@@ -88,28 +88,28 @@ const hubCards: HubCard[] = [
     key: 'portfolio',
     title: 'PORTAFOLIO',
     href: appLinks.catalog,
-    image: '/PORTAFOLIO.png',
+    image: '/PORTAFOLIO.webp',
     variant: 'portfolio',
   },
   {
     key: 'paint',
     title: 'TONNER PAINT',
     href: appLinks.paint,
-    image: '/TONNER PAINT.png',
+    image: '/TONNER PAINT.webp',
     variant: 'paint',
   },
   {
     key: 'stores',
     title: 'PUNTOS DE VENTA',
     href: withCatalogSection('stores', { mode: 'map' }),
-    image: '/PUNTOS DE VENTA.png',
+    image: '/PUNTOS DE VENTA.webp',
     variant: 'stores',
   },
   {
     key: 'cup',
     title: 'POLLAMUNDIALISTA',
     href: appLinks.cup,
-    image: '/FONDO POLLATONNER GRUPOS.png',
+    image: '/FONDO POLLATONNER GRUPOS.webp',
     variant: 'cup',
   },
 ]
@@ -281,6 +281,13 @@ export function HubModule({
   const handleOpenProductResult = () => {
     setProductSearch('')
     onOpenCatalog?.()
+  }
+
+  const openProfileOptions = () => {
+    setProductSearch('')
+    setProfilePanel(null)
+    setProfileFeedback('')
+    selectView('profile')
   }
 
   const selectView = (view: HubView) => {
@@ -569,7 +576,7 @@ export function HubModule({
           <img src="/icons/boton regreso.png" alt="" />
         </button>
         <img
-          src={getOptimizedImageSrc('/logo.png')}
+          src={getOptimizedImageSrc('/logo.webp')}
           alt="Pinturas Tonner"
           className="hub-header__logo"
           decoding="async"
@@ -608,7 +615,12 @@ export function HubModule({
                 onChange={(event) => setProductSearch(event.target.value)}
               />
             </label>
-            <button type="button" className="hub-search-profile" onClick={() => selectView('profile')}>
+            <button
+              type="button"
+              className="hub-search-profile"
+              aria-label="Abrir opciones de perfil"
+              onClick={openProfileOptions}
+            >
               <span className="hub-search-avatar" aria-hidden="true">
                 <img src={hubProfile.avatar || '/icons/PERFIL.png'} alt="" />
               </span>
@@ -628,7 +640,7 @@ export function HubModule({
                   onClick={handleOpenProductResult}
                 >
                   <img
-                    src={getOptimizedImageSrc(product.image_url ?? product.image ?? '/PORTAFOLIO.png')}
+                    src={getOptimizedImageSrc(product.image_url ?? product.image ?? '/PORTAFOLIO.webp')}
                     alt=""
                     decoding="async"
                   />
