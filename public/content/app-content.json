@@ -5,25 +5,25 @@
         "eyebrow": "LINEA",
         "title": "ARQUITECTONICA",
         "description": "Vinilos, esmaltes y recubrimientos para obra, hogar y exteriores.",
-        "image": "/line-banners/arquitectonico.png"
+        "image": "/line-banners/arquitectonico.webp"
       },
       "industrial": {
         "eyebrow": "LINEA",
         "title": "INDUSTRIAL",
         "description": "Proteccion y alto desempeno para estructuras, pisos y metalmecanica.",
-        "image": "/line-banners/industrial.png"
+        "image": "/line-banners/industrial.webp"
       },
       "automotriz": {
         "eyebrow": "LINEA",
         "title": "AUTOMOTRIZ",
         "description": "Acabados, fondos y complementos para repinte automotriz profesional.",
-        "image": "/line-banners/automotriz.png"
+        "image": "/line-banners/automotriz.webp"
       },
       "maderas": {
         "eyebrow": "LINEA",
         "title": "MADERAS",
         "description": "Lacas, selladores, tintes y pegantes para acabado de madera.",
-        "image": "/line-banners/maderas.png"
+        "image": "/line-banners/maderas.webp"
       }
     }
   },

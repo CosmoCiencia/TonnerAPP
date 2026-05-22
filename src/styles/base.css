@@ -235,8 +235,9 @@
 }
 
 .hub-header__bell-icon {
-  width: 2.45rem;
-  height: 2.45rem;
+  width: 2.55rem;
+  height: 2.55rem;
+  object-fit: contain;
   filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.75));
 }
 
@@ -279,8 +280,18 @@
 
 .hub-search-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.7rem;
+}
+
+.hub-search-profile {
+  display: grid;
+  flex: 0 0 3.4rem;
+  justify-items: center;
+  gap: 0.18rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
 }
 
 .hub-search {
@@ -328,10 +339,10 @@
 
 .hub-search-avatar {
   display: grid;
-  flex: 0 0 2.75rem;
   width: 2.75rem;
   height: 2.75rem;
   place-items: center;
+  overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.65);
   border-radius: 999px;
   padding: 0;
@@ -342,9 +353,98 @@
 }
 
 .hub-search-avatar img {
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hub-search-profile__name {
+  display: block;
+  max-width: 3.6rem;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hub-search-results {
+  display: grid;
+  gap: 0.58rem;
+  margin-top: 0.8rem;
+  border-radius: 0.7rem;
+  padding: 0.7rem;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 10px 24px rgba(2, 8, 23, 0.2);
+}
+
+.hub-search-result {
+  display: grid;
+  min-height: 4.35rem;
+  grid-template-columns: 3.6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.72rem;
+  border: 0;
+  border-radius: 0.55rem;
+  padding: 0.5rem 0.65rem;
+  background: #f7faff;
+  text-align: left;
+}
+
+.hub-search-result img {
+  width: 3.4rem;
+  height: 3.4rem;
   object-fit: contain;
+}
+
+.hub-search-result span {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.hub-search-result strong {
+  overflow: hidden;
+  color: #2d59c7;
+  font-size: 0.92rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hub-search-result small {
+  overflow: hidden;
+  color: #7893ce;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hub-search-empty {
+  display: grid;
+  gap: 0.2rem;
+  border-radius: 0.55rem;
+  padding: 0.85rem;
+  background: #f7faff;
+  text-align: center;
+}
+
+.hub-search-empty strong {
+  color: #2d59c7;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.hub-search-empty span {
+  color: #7893ce;
+  font-size: 0.76rem;
+  font-weight: 800;
 }
 
 .hub-cards {
@@ -605,8 +705,27 @@
   width: 6.9rem;
   height: 6.9rem;
   flex: 0 0 auto;
+  overflow: hidden;
   border-radius: 999px;
-  background: #fff;
+  background:
+    radial-gradient(circle at 50% 38%, #ffffff 0 18%, transparent 19%),
+    radial-gradient(circle at 50% 86%, #ffffff 0 33%, transparent 34%),
+    #fff;
+}
+
+.hub-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hub-profile-avatar--small {
+  width: 5rem;
+  height: 5rem;
+  background:
+    radial-gradient(circle at 50% 38%, #ffffff 0 18%, transparent 19%),
+    radial-gradient(circle at 50% 86%, #ffffff 0 33%, transparent 34%),
+    linear-gradient(135deg, #2f5cc7 0%, #020b1d 100%);
 }
 
 .hub-profile-hero strong {
@@ -719,6 +838,38 @@
   color: #fff;
   font-size: 0.95rem;
   font-weight: 900;
+}
+
+.hub-profile-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hub-profile-photo-button {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.55rem;
+  padding: 0 1rem;
+  background: #2d59c7;
+  color: #ffffff !important;
+  cursor: pointer;
+}
+
+.hub-profile-photo-button span {
+  color: #ffffff !important;
+}
+
+.hub-profile-photo-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .hub-preference-toggle {

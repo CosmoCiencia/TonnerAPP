@@ -1,10 +1,21 @@
-import { useState, type FormEvent } from 'react'
-import { Bell } from 'lucide-react'
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
 
+import LegalTermsContent from '../../components/LegalTermsContent'
+import { getProducts } from '../catalog/services'
+import type { Product } from '../catalog/types'
+import { useAuth } from '../../auth/useAuth'
 import { getOptimizedImageSrc } from '../../services/imageAssets'
 
 export type HubView = 'home' | 'work' | 'favorites' | 'calculator' | 'profile'
 type ProfilePanel = 'distributor' | 'data' | 'preferences' | 'terms' | 'support'
+
+type HubProfileDraft = {
+  fullName: string
+  email: string
+  phone: string
+  city: string
+  avatar: string
+}
 
 type HubCard = {
   key: string
@@ -124,11 +135,42 @@ const workActions = [
 ]
 
 const profileOptions: Array<{ label: string; panel: ProfilePanel }> = [
-  { label: 'Mis Datos', panel: 'data' },
-  { label: 'Preferencias', panel: 'preferences' },
+  { label: 'Actualizar datos y foto', panel: 'data' },
   { label: 'Términos y Condiciones', panel: 'terms' },
+  { label: 'Preferencias', panel: 'preferences' },
   { label: 'Atención al Cliente', panel: 'support' },
 ]
+
+const HUB_PROFILE_STORAGE_KEY = 'tonnerapp-hub-profile'
+
+const getUserProfileStorageKey = (userId: string) => `tonnerapp-profile-${userId}`
+
+const loadHubProfile = (userId?: string, fullName?: string, email?: string): HubProfileDraft => {
+  const fallbackProfile = {
+    fullName: fullName ?? 'Usuario Tonner',
+    email: email ?? '',
+    phone: '',
+    city: 'Soacha',
+    avatar: '',
+  }
+
+  try {
+    const rawProfile = userId
+      ? window.localStorage.getItem(getUserProfileStorageKey(userId)) ?? window.localStorage.getItem(HUB_PROFILE_STORAGE_KEY)
+      : window.localStorage.getItem(HUB_PROFILE_STORAGE_KEY)
+    const parsedProfile = rawProfile ? (JSON.parse(rawProfile) as Partial<HubProfileDraft>) : null
+
+    return {
+      fullName: parsedProfile?.fullName ?? fallbackProfile.fullName,
+      email: parsedProfile?.email ?? fallbackProfile.email,
+      phone: parsedProfile?.phone ?? fallbackProfile.phone,
+      city: parsedProfile?.city ?? fallbackProfile.city,
+      avatar: parsedProfile?.avatar ?? '',
+    }
+  } catch {
+    return fallbackProfile
+  }
+}
 
 function HubCardsInternal({
   cards,
@@ -191,11 +233,55 @@ export function HubModule({
   onViewChange,
   showBottomNav = true,
 }: HubModuleProps) {
+  const auth = useAuth()
   const [internalActiveView, setInternalActiveView] = useState<HubView>(() => getInitialView())
   const activeView = controlledActiveView ?? internalActiveView
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profilePanel, setProfilePanel] = useState<ProfilePanel | null>(null)
   const [profileFeedback, setProfileFeedback] = useState('')
+  const [hubProfile, setHubProfile] = useState<HubProfileDraft>(() =>
+    loadHubProfile(auth.user?.id, auth.user?.fullName, auth.user?.email),
+  )
+  const [products, setProducts] = useState<Product[]>([])
+  const [productSearch, setProductSearch] = useState('')
+  const profileFirstName = hubProfile.fullName.trim().split(/\s+/)[0] || 'Perfil'
+
+  useEffect(() => {
+    getProducts().then(setProducts)
+  }, [])
+
+  const searchResults = useMemo(() => {
+    const normalizedSearch = productSearch.trim().toLowerCase()
+
+    if (normalizedSearch.length < 2) return []
+
+    return products
+      .filter((product) => {
+        const searchableText = [
+          product.name,
+          product.line,
+          product.category,
+          product.subline,
+          product.segment,
+          product.description,
+          product.short_description,
+          ...(product.uses ?? []),
+          ...(product.characteristics ?? []),
+          ...(product.presentations ?? []),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+
+        return searchableText.includes(normalizedSearch)
+      })
+      .slice(0, 6)
+  }, [productSearch, products])
+
+  const handleOpenProductResult = () => {
+    setProductSearch('')
+    onOpenCatalog?.()
+  }
 
   const selectView = (view: HubView) => {
     setNotificationsOpen(false)
@@ -232,7 +318,22 @@ export function HubModule({
 
   const handleProfileSubmit = (message: string) => (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    window.localStorage.setItem(HUB_PROFILE_STORAGE_KEY, JSON.stringify(hubProfile))
     setProfileFeedback(message)
+  }
+
+  const handleHubAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.addEventListener('load', () => {
+      setHubProfile((current) => ({
+        ...current,
+        avatar: typeof reader.result === 'string' ? reader.result : '',
+      }))
+    })
+    reader.readAsDataURL(file)
   }
 
   const renderProfilePanel = () => {
@@ -242,14 +343,14 @@ export function HubModule({
       return (
         <section className="hub-profile-detail" aria-label="Vincular distribuidora">
           <h1>Vincular Distribuidora</h1>
-          <form onSubmit={handleProfileSubmit('Distribuidora vinculada para demo.')}>
+          <form onSubmit={handleProfileSubmit('Distribuidora vinculada.')}>
             <label>
               <span>NIT o código</span>
-              <input defaultValue="TONNER-DEMO-001" />
+              <input placeholder="Ingresa el NIT o código" />
             </label>
             <label>
               <span>Nombre distribuidora</span>
-              <input defaultValue="Distribuidora Demo Tonner" />
+              <input placeholder="Nombre de la distribuidora" />
             </label>
             <button type="submit">Guardar vinculación</button>
           </form>
@@ -260,19 +361,46 @@ export function HubModule({
     if (profilePanel === 'data') {
       return (
         <section className="hub-profile-detail" aria-label="Mis datos">
-          <h1>Mis Datos</h1>
-          <form onSubmit={handleProfileSubmit('Datos actualizados para demo.')}>
+          <h1>Actualizar datos</h1>
+          <form onSubmit={handleProfileSubmit('Datos actualizados.')}>
+            <div className="hub-profile-photo-row">
+              <div className="hub-profile-avatar hub-profile-avatar--small">
+                {hubProfile.avatar ? <img src={hubProfile.avatar} alt="" /> : null}
+              </div>
+              <label className="hub-profile-photo-button">
+                <span>Cambiar foto</span>
+                <input type="file" accept="image/*" onChange={handleHubAvatarChange} />
+              </label>
+            </div>
             <label>
               <span>Nombre</span>
-              <input defaultValue="Usuario demo" />
+              <input
+                value={hubProfile.fullName}
+                onChange={(event) => setHubProfile((current) => ({ ...current, fullName: event.target.value }))}
+              />
             </label>
             <label>
               <span>Correo</span>
-              <input defaultValue="demo@pinturastonner.com" type="email" />
+              <input
+                value={hubProfile.email}
+                type="email"
+                onChange={(event) => setHubProfile((current) => ({ ...current, email: event.target.value }))}
+              />
             </label>
             <label>
               <span>Teléfono</span>
-              <input defaultValue="300 000 0000" inputMode="tel" />
+              <input
+                value={hubProfile.phone}
+                inputMode="tel"
+                onChange={(event) => setHubProfile((current) => ({ ...current, phone: event.target.value }))}
+              />
+            </label>
+            <label>
+              <span>Ciudad</span>
+              <input
+                value={hubProfile.city}
+                onChange={(event) => setHubProfile((current) => ({ ...current, city: event.target.value }))}
+              />
             </label>
             <button type="submit">Guardar cambios</button>
           </form>
@@ -313,14 +441,7 @@ export function HubModule({
       <section className="hub-profile-detail" aria-label="Términos y condiciones">
         <h1>Términos y Condiciones</h1>
         <div className="hub-terms-box">
-          <p>
-            El uso de TonnerHub permite consultar productos, campañas, favoritos, servicios y enlaces del
-            ecosistema digital de Pinturas Tonner.
-          </p>
-          <p>
-            La información de cuenta se usa para personalizar la experiencia, notificaciones y vinculación con
-            distribuidoras autorizadas.
-          </p>
+          <LegalTermsContent />
         </div>
       </section>
     )
@@ -412,8 +533,10 @@ export function HubModule({
     return (
       <main className="hub-profile-screen" aria-label="Perfil">
         <section className="hub-profile-hero">
-          <div className="hub-profile-avatar" />
-          <strong>Usuario Demo</strong>
+          <div className="hub-profile-avatar">
+            {hubProfile.avatar ? <img src={hubProfile.avatar} alt="" /> : null}
+          </div>
+          <strong>{hubProfile.fullName}</strong>
         </section>
 
         <button className="hub-profile-link" type="button" onClick={() => setProfilePanel('distributor')}>
@@ -458,7 +581,7 @@ export function HubModule({
           aria-expanded={notificationsOpen}
           onClick={() => setNotificationsOpen((open) => !open)}
         >
-          <Bell className="hub-header__bell-icon" />
+          <img src="/campana icon.png" alt="" className="hub-header__bell-icon" />
         </button>
         {notificationsOpen ? (
           <aside className="hub-notifications" aria-label="Notificaciones">
@@ -478,12 +601,50 @@ export function HubModule({
           <div className="hub-search-row">
             <label className="hub-search">
               <img src="/icons/LUPA.png" alt="" className="hub-search__icon" />
-              <input type="search" placeholder="Qué vas a pintar hoy?" />
+              <input
+                type="search"
+                placeholder="Qué vas a pintar hoy?"
+                value={productSearch}
+                onChange={(event) => setProductSearch(event.target.value)}
+              />
             </label>
-            <div className="hub-search-avatar" aria-hidden="true">
-              <img src="/icons/PERFIL.png" alt="" />
-            </div>
+            <button type="button" className="hub-search-profile" onClick={() => selectView('profile')}>
+              <span className="hub-search-avatar" aria-hidden="true">
+                <img src={hubProfile.avatar || '/icons/PERFIL.png'} alt="" />
+              </span>
+              <span className="hub-search-profile__name">{profileFirstName}</span>
+            </button>
           </div>
+        ) : null}
+
+        {activeView === 'home' && productSearch.trim().length >= 2 ? (
+          <section className="hub-search-results" aria-label="Resultados de productos">
+            {searchResults.length > 0 ? (
+              searchResults.map((product) => (
+                <button
+                  key={product.id}
+                  type="button"
+                  className="hub-search-result"
+                  onClick={handleOpenProductResult}
+                >
+                  <img
+                    src={getOptimizedImageSrc(product.image_url ?? product.image ?? '/PORTAFOLIO.png')}
+                    alt=""
+                    decoding="async"
+                  />
+                  <span>
+                    <strong>{product.name}</strong>
+                    <small>{[product.line, product.category].filter(Boolean).join(' · ')}</small>
+                  </span>
+                </button>
+              ))
+            ) : (
+              <div className="hub-search-empty">
+                <strong>Sin resultados</strong>
+                <span>Prueba con el nombre del producto, línea o uso.</span>
+              </div>
+            )}
+          </section>
         ) : null}
 
         {renderContent()}

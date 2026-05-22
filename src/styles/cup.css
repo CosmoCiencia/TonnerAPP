@@ -56,6 +56,12 @@
   color: #285fb8;
 }
 
+.cup-header-icon__image {
+  width: 2.55rem;
+  height: 2.55rem;
+  object-fit: contain;
+}
+
 .cup-launch-logo {
   justify-self: center;
   width: min(10.5rem, 55vw);

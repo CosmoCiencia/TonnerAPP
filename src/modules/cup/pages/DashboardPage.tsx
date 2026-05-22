@@ -1,4 +1,4 @@
-import { Bell, Megaphone } from 'lucide-react';
+import { Megaphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useAppContent } from '../../../services/appContent';
@@ -48,7 +48,7 @@ function DashboardPage() {
           decoding="async"
         />
         <button className="cup-header-icon" type="button" aria-label="Notificaciones">
-          <Bell size={27} strokeWidth={3} />
+          <img src="/campana icon.png" alt="" className="cup-header-icon__image" />
         </button>
       </header>
 

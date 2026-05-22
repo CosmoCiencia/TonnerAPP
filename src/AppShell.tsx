@@ -6,6 +6,7 @@ import CupModule from './modules/cup/CupModule'
 import { HubModule, type HubView } from './modules/hub'
 import PaintModule from './modules/paint/PaintModule'
 import type { Product } from './modules/catalog/types'
+import type { Distributor } from './modules/distributors/types'
 import { RequireAuth, RequireRole } from './auth/auth.guards'
 import { privateRoles } from './auth/roleAccess'
 import {
@@ -28,16 +29,51 @@ const globalNavItems: Array<{ key: GlobalNavKey; label: string; icon: string; to
   { key: 'profile', label: 'Perfil', icon: '/icons/PERFIL.png', to: '/profile' },
 ]
 
-const FAVORITES_STORAGE_KEY = 'tonnerapp-favorite-products'
+const FAVORITES_STORAGE_KEY = 'tonnerapp-favorites-v1'
+const LEGACY_PRODUCT_FAVORITES_KEY = 'tonnerapp-favorite-products'
 
-const loadFavoriteProductIds = () => {
+type StoredFavorites = {
+  catalogProducts: string[]
+  stores: string[]
+}
+
+const createEmptyFavorites = () => ({
+  catalogProducts: new Set<string>(),
+  stores: new Set<string>(),
+})
+
+const loadFavoriteIds = () => {
   try {
     const rawFavorites = window.localStorage.getItem(FAVORITES_STORAGE_KEY)
-    const parsedFavorites = rawFavorites ? JSON.parse(rawFavorites) : []
-    return new Set(typeof parsedFavorites === 'object' && Array.isArray(parsedFavorites) ? parsedFavorites : [])
+    const parsedFavorites = rawFavorites ? (JSON.parse(rawFavorites) as Partial<StoredFavorites>) : null
+
+    if (parsedFavorites && typeof parsedFavorites === 'object') {
+      return {
+        catalogProducts: new Set(Array.isArray(parsedFavorites.catalogProducts) ? parsedFavorites.catalogProducts : []),
+        stores: new Set(Array.isArray(parsedFavorites.stores) ? parsedFavorites.stores.map(String) : []),
+      }
+    }
+
+    const legacyRawFavorites = window.localStorage.getItem(LEGACY_PRODUCT_FAVORITES_KEY)
+    const legacyFavorites = legacyRawFavorites ? JSON.parse(legacyRawFavorites) : []
+
+    return {
+      catalogProducts: new Set(Array.isArray(legacyFavorites) ? legacyFavorites : []),
+      stores: new Set<string>(),
+    }
   } catch {
-    return new Set<string>()
+    return createEmptyFavorites()
   }
+}
+
+const persistFavoriteIds = (catalogProducts: Set<string>, stores: Set<string>) => {
+  window.localStorage.setItem(
+    FAVORITES_STORAGE_KEY,
+    JSON.stringify({
+      catalogProducts: Array.from(catalogProducts),
+      stores: Array.from(stores),
+    } satisfies StoredFavorites),
+  )
 }
 
 const routeToHubView = (view: HubView) => {
@@ -110,11 +146,15 @@ function HubRoute({ view }: { view: HubView }) {
 function CatalogRoute({
   view,
   favoriteProductIds,
+  favoriteStoreIds,
   onToggleFavorite,
+  onToggleStoreFavorite,
 }: {
   view: CatalogView
   favoriteProductIds: Set<string>
+  favoriteStoreIds: Set<string>
   onToggleFavorite: (product: Product) => void
+  onToggleStoreFavorite: (distributor: Distributor) => void
 }) {
   const navigate = useNavigate()
 
@@ -124,7 +164,9 @@ function CatalogRoute({
       initialView={view}
       initialStoresMode="map"
       favoriteProductIds={favoriteProductIds}
+      favoriteStoreIds={favoriteStoreIds}
       onToggleFavorite={onToggleFavorite}
+      onToggleStoreFavorite={onToggleStoreFavorite}
       onHome={() => navigate('/')}
     />
   )
@@ -134,7 +176,7 @@ export default function AppShell() {
   const location = useLocation()
   const navigate = useNavigate()
   const [showSplash, setShowSplash] = useState(true)
-  const [favoriteProductIds, setFavoriteProductIds] = useState<Set<string>>(() => loadFavoriteProductIds())
+  const [favoriteIds, setFavoriteIds] = useState(() => loadFavoriteIds())
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -145,18 +187,41 @@ export default function AppShell() {
   }, [])
 
   const handleToggleFavorite = (product: Product) => {
-    setFavoriteProductIds((currentFavorites) => {
-      const nextFavorites = new Set(currentFavorites)
+    setFavoriteIds((currentFavorites) => {
+      const nextProductFavorites = new Set(currentFavorites.catalogProducts)
 
-      if (nextFavorites.has(product.id)) {
-        nextFavorites.delete(product.id)
+      if (nextProductFavorites.has(product.id)) {
+        nextProductFavorites.delete(product.id)
       } else {
-        nextFavorites.add(product.id)
+        nextProductFavorites.add(product.id)
       }
 
-      window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(Array.from(nextFavorites)))
+      persistFavoriteIds(nextProductFavorites, currentFavorites.stores)
 
-      return nextFavorites
+      return {
+        catalogProducts: nextProductFavorites,
+        stores: currentFavorites.stores,
+      }
+    })
+  }
+
+  const handleToggleStoreFavorite = (distributor: Distributor) => {
+    setFavoriteIds((currentFavorites) => {
+      const storeId = String(distributor.id)
+      const nextStoreFavorites = new Set(currentFavorites.stores)
+
+      if (nextStoreFavorites.has(storeId)) {
+        nextStoreFavorites.delete(storeId)
+      } else {
+        nextStoreFavorites.add(storeId)
+      }
+
+      persistFavoriteIds(currentFavorites.catalogProducts, nextStoreFavorites)
+
+      return {
+        catalogProducts: currentFavorites.catalogProducts,
+        stores: nextStoreFavorites,
+      }
     })
   }
 
@@ -206,8 +271,10 @@ export default function AppShell() {
           element={
             <CatalogRoute
               view="catalog"
-              favoriteProductIds={favoriteProductIds}
+              favoriteProductIds={favoriteIds.catalogProducts}
+              favoriteStoreIds={favoriteIds.stores}
               onToggleFavorite={handleToggleFavorite}
+              onToggleStoreFavorite={handleToggleStoreFavorite}
             />
           }
         />
@@ -216,8 +283,10 @@ export default function AppShell() {
           element={
             <CatalogRoute
               view="stores"
-              favoriteProductIds={favoriteProductIds}
+              favoriteProductIds={favoriteIds.catalogProducts}
+              favoriteStoreIds={favoriteIds.stores}
               onToggleFavorite={handleToggleFavorite}
+              onToggleStoreFavorite={handleToggleStoreFavorite}
             />
           }
         />
@@ -227,8 +296,10 @@ export default function AppShell() {
             <RequireAuth>
               <CatalogRoute
                 view="favorites"
-                favoriteProductIds={favoriteProductIds}
+                favoriteProductIds={favoriteIds.catalogProducts}
+                favoriteStoreIds={favoriteIds.stores}
                 onToggleFavorite={handleToggleFavorite}
+                onToggleStoreFavorite={handleToggleStoreFavorite}
               />
             </RequireAuth>
           }

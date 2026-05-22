@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bell, Mail, MapPin, Navigation, Phone } from 'lucide-react';
+import { Heart, Mail, MapPin, Navigation, Phone } from 'lucide-react';
 
 import { getProducts } from './services';
 import type { Product } from './types';
@@ -8,6 +8,7 @@ import ProductCard from './components/ProductCard';
 import ProductModal from './components/ProductModal';
 import { distributors } from '../distributors/distributors.data';
 import StoresMap from '../distributors/StoresMap';
+import type { Distributor } from '../distributors/types';
 import { useAppContent } from '../../services/appContent';
 import { getOptimizedImageSrc } from '../../services/imageAssets';
 
@@ -18,7 +19,9 @@ interface CatalogModuleProps {
   initialView?: CatalogView;
   initialStoresMode?: StoresMode;
   favoriteProductIds: Set<string>;
+  favoriteStoreIds: Set<string>;
   onToggleFavorite: (product: Product) => void;
+  onToggleStoreFavorite: (distributor: Distributor) => void;
   onHome: () => void;
 }
 
@@ -51,7 +54,9 @@ export default function CatalogModule({
   initialView = 'catalog',
   initialStoresMode = 'map',
   favoriteProductIds,
+  favoriteStoreIds,
   onToggleFavorite,
+  onToggleStoreFavorite,
   onHome,
 }: CatalogModuleProps) {
   const [view, setView] = useState<CatalogView>(initialView);
@@ -77,6 +82,10 @@ export default function CatalogModule({
   const favoriteProducts = useMemo(
     () => products.filter((product) => favoriteProductIds.has(product.id)),
     [favoriteProductIds, products],
+  );
+  const favoriteStores = useMemo(
+    () => distributors.filter((distributor) => favoriteStoreIds.has(String(distributor.id))),
+    [favoriteStoreIds],
   );
   const currentProducts = view === 'favorites' ? favoriteProducts : visibleProducts;
   const displayedProducts = currentProducts.slice(0, productLimit);
@@ -104,6 +113,69 @@ export default function CatalogModule({
       );
     }
 
+    const renderStoreCard = (distributor: Distributor) => {
+      const storeId = String(distributor.id);
+      const isFavorite = favoriteStoreIds.has(storeId);
+
+      return (
+        <article key={distributor.id} className="catalog-store-card">
+          <div className="catalog-store-card__media" aria-hidden="true">
+            <MapPin />
+            <span>{distributor.city.slice(0, 3)}</span>
+          </div>
+          <div className="catalog-store-card__content">
+            <div className="catalog-store-card__text">
+              <div className="catalog-store-card__heading">
+                <h2>{distributor.name}</h2>
+                <button
+                  type="button"
+                  className={`catalog-store-card__favorite ${isFavorite ? 'is-active' : ''}`}
+                  aria-label={isFavorite ? 'Quitar punto de venta de favoritos' : 'Agregar punto de venta a favoritos'}
+                  aria-pressed={isFavorite}
+                  onClick={() => onToggleStoreFavorite(distributor)}
+                >
+                  <Heart />
+                </button>
+              </div>
+              <p>
+                <MapPin />
+                <span>
+                  {distributor.address} · {distributor.city}
+                </span>
+              </p>
+              {distributor.email ? (
+                <p>
+                  <Mail />
+                  <span>{distributor.email}</span>
+                </p>
+              ) : null}
+              <p>
+                <Phone />
+                <span>{distributor.phone}</span>
+              </p>
+            </div>
+
+            <div className="catalog-store-card__actions" aria-label={`Contactar a ${distributor.name}`}>
+              <a href={getPhoneHref(distributor.phone)}>
+                <Phone />
+                <span>Llamar</span>
+              </a>
+              {distributor.email ? (
+                <a href={`mailto:${distributor.email}`}>
+                  <Mail />
+                  <span>Correo</span>
+                </a>
+              ) : null}
+              <a href={getMapsHref(distributor)} target="_blank" rel="noreferrer">
+                <Navigation />
+                <span>Ruta</span>
+              </a>
+            </div>
+          </div>
+        </article>
+      );
+    };
+
     if (view === 'stores') {
       return (
         <main className="catalog-stores">
@@ -130,53 +202,58 @@ export default function CatalogModule({
             </section>
           ) : (
             <section className="catalog-store-list" aria-label="Lista de puntos de venta">
-              {distributors.map((distributor) => (
-                <article key={distributor.id} className="catalog-store-card">
-                  <div className="catalog-store-card__media" aria-hidden="true">
-                    <MapPin />
-                    <span>{distributor.city.slice(0, 3)}</span>
-                  </div>
-                  <div className="catalog-store-card__content">
-                    <div className="catalog-store-card__text">
-                      <h2>{distributor.name}</h2>
-                      <p>
-                        <MapPin />
-                        <span>
-                          {distributor.address} · {distributor.city}
-                        </span>
-                      </p>
-                      {distributor.email ? (
-                        <p>
-                          <Mail />
-                          <span>{distributor.email}</span>
-                        </p>
-                      ) : null}
-                      <p>
-                        <Phone />
-                        <span>{distributor.phone}</span>
-                      </p>
-                    </div>
-
-                    <div className="catalog-store-card__actions" aria-label={`Contactar a ${distributor.name}`}>
-                      <a href={getPhoneHref(distributor.phone)}>
-                        <Phone />
-                        <span>Llamar</span>
-                      </a>
-                      {distributor.email ? (
-                        <a href={`mailto:${distributor.email}`}>
-                          <Mail />
-                          <span>Correo</span>
-                        </a>
-                      ) : null}
-                      <a href={getMapsHref(distributor)} target="_blank" rel="noreferrer">
-                        <Navigation />
-                        <span>Ruta</span>
-                      </a>
-                    </div>
-                  </div>
-                </article>
-              ))}
+              {distributors.map(renderStoreCard)}
             </section>
+          )}
+        </main>
+      );
+    }
+
+    if (view === 'favorites') {
+      const hasFavorites = favoriteProducts.length > 0 || favoriteStores.length > 0;
+
+      return (
+        <main className="catalog-home catalog-home--favorites">
+          <h1 className="catalog-section-title">Favoritos</h1>
+
+          {!hasFavorites ? (
+            <section className="catalog-empty-favorites">
+              <h2>Sin favoritos</h2>
+              <p>Marca productos o puntos de venta con el corazón para consultarlos más rápido desde esta sección.</p>
+            </section>
+          ) : (
+            <>
+              <section className="catalog-favorites-section" aria-label="Productos favoritos">
+                <h2>Productos</h2>
+                {favoriteProducts.length > 0 ? (
+                  <section className="catalog-grid">
+                    {favoriteProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        isFavorite={favoriteProductIds.has(product.id)}
+                        onToggleFavorite={onToggleFavorite}
+                        onViewDetails={(nextProduct) => {
+                          setSelectedProduct(nextProduct);
+                          setView('catalog');
+                        }}
+                      />
+                    ))}
+                  </section>
+                ) : (
+                  <p className="catalog-favorites-section__empty">No tienes productos favoritos.</p>
+                )}
+              </section>
+
+              <section className="catalog-favorites-section" aria-label="Puntos de venta favoritos">
+                <h2>Puntos de venta</h2>
+                {favoriteStores.length > 0 ? (
+                  <section className="catalog-store-list">{favoriteStores.map(renderStoreCard)}</section>
+                ) : (
+                  <p className="catalog-favorites-section__empty">No tienes puntos de venta favoritos.</p>
+                )}
+              </section>
+            </>
           )}
         </main>
       );
@@ -184,7 +261,6 @@ export default function CatalogModule({
 
     return (
       <main className="catalog-home">
-        {view === 'favorites' ? <h1 className="catalog-section-title">Favoritos</h1> : null}
         {view === 'catalog' ? (
           <>
             <section
@@ -229,38 +305,29 @@ export default function CatalogModule({
           </>
         ) : null}
 
-        {view === 'favorites' && favoriteProducts.length === 0 ? (
-          <section className="catalog-empty-favorites">
-            <h2>Sin favoritos</h2>
-            <p>Marca productos con el corazón para consultarlos más rápido desde esta sección.</p>
-          </section>
-        ) : (
-          <>
-            <section className="catalog-grid">
-              {displayedProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isFavorite={favoriteProductIds.has(product.id)}
-                  onToggleFavorite={onToggleFavorite}
-                  onViewDetails={(nextProduct) => {
-                    setSelectedProduct(nextProduct);
-                    setView('catalog');
-                  }}
-                />
-              ))}
-            </section>
-            {hasMoreProducts ? (
-              <button
-                type="button"
-                className="catalog-load-more"
-                onClick={() => setProductLimit((currentLimit) => currentLimit + PRODUCT_LIMIT_STEP)}
-              >
-                Ver más productos
-              </button>
-            ) : null}
-          </>
-        )}
+        <section className="catalog-grid">
+          {displayedProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              isFavorite={favoriteProductIds.has(product.id)}
+              onToggleFavorite={onToggleFavorite}
+              onViewDetails={(nextProduct) => {
+                setSelectedProduct(nextProduct);
+                setView('catalog');
+              }}
+            />
+          ))}
+        </section>
+        {hasMoreProducts ? (
+          <button
+            type="button"
+            className="catalog-load-more"
+            onClick={() => setProductLimit((currentLimit) => currentLimit + PRODUCT_LIMIT_STEP)}
+          >
+            Ver más productos
+          </button>
+        ) : null}
       </main>
     );
   };
@@ -273,7 +340,7 @@ export default function CatalogModule({
         </button>
         <img src={getOptimizedImageSrc('/logo.png')} alt="Pinturas Tonner" decoding="async" />
         <button type="button" className="catalog-top__bell" aria-label="Notificaciones">
-          <Bell />
+          <img src="/campana icon.png" alt="" />
         </button>
       </header>
 

@@ -64,8 +64,8 @@
 }
 
 .paint-hero {
-  height: 174px;
-  padding-top: 14px;
+  height: 146px;
+  padding-top: 10px;
   background: linear-gradient(90deg, #2f5cc7 0%, #020b1d 100%);
   color: #fff;
   text-align: center;
@@ -74,7 +74,7 @@
 .paint-hero h1 {
   margin: 0;
   color: #fff;
-  font-size: 31px;
+  font-size: 29px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
@@ -83,7 +83,7 @@
 .paint-hero p {
   margin: 0;
   color: #fff;
-  font-size: 19px;
+  font-size: 17px;
   line-height: 1;
 }
 
@@ -92,7 +92,7 @@
   grid-template-columns: 22px repeat(5, 1fr) 22px;
   gap: 5px;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 9px;
   padding: 0 18px;
 }
 
@@ -113,8 +113,8 @@
 
 .paint-material span {
   display: grid;
-  width: 57px;
-  height: 57px;
+  width: 48px;
+  height: 48px;
   place-items: center;
   border-radius: 999px;
   background: #fff;
@@ -124,8 +124,8 @@
 }
 
 .paint-material span img {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
 }
 
@@ -141,9 +141,9 @@
 
 .paint-preview {
   display: grid;
-  min-height: 280px;
-  max-height: min(62dvh, 520px);
-  margin: 18px 24px 0;
+  min-height: min(66dvh, 560px);
+  max-height: min(72dvh, 620px);
+  margin: 10px 12px 0;
   place-items: center;
   overflow: hidden;
   border-radius: 13px;
@@ -186,21 +186,21 @@
   width: auto;
   max-width: 100%;
   height: auto;
-  max-height: min(62dvh, 520px);
+  max-height: min(72dvh, 620px);
   object-fit: contain;
   object-position: center;
 }
 
 .paint-colors {
-  margin-top: 15px;
-  padding: 0 49px 0;
+  margin-top: 10px;
+  padding: 0 42px 0;
   border-top: 1px solid #d7d7d7;
   background: #fff;
   text-align: center;
 }
 
 .paint-colors h2 {
-  margin: 16px 0 13px;
+  margin: 10px 0 9px;
   color: #a5b6e8;
   font-size: 17px;
   font-weight: 400;
@@ -218,8 +218,8 @@
 .color-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  margin-top: 16px;
-  gap: 12px 11px;
+  margin-top: 12px;
+  gap: 9px 11px;
 }
 
 .color-card {
@@ -233,8 +233,8 @@
 
 .swatch {
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   border-radius: 999px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
@@ -298,7 +298,7 @@
 
 .paint-preview {
   position: relative;
-  width: calc(100% - 48px);
+  width: calc(100% - 24px);
   aspect-ratio: auto;
   border: 0;
   padding: 0;
@@ -321,7 +321,7 @@
     transform: translateY(0);
   }
   100% {
-    transform: translateY(62dvh);
+    transform: translateY(72dvh);
   }
 }
 

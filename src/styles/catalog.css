@@ -70,11 +70,10 @@
   right: 18px;
 }
 
-.catalog-top__bell svg {
-  width: 25px;
-  height: 25px;
-  fill: currentColor;
-  stroke-width: 1.8;
+.catalog-top__bell img {
+  width: 27px;
+  height: 27px;
+  object-fit: contain;
 }
 
 .catalog-home {
@@ -344,9 +343,10 @@
   margin: 5px 7px 8px;
   border: 0;
   border-radius: 3px;
-  background: #86a4df;
-  color: #c9d6f0;
+  background: #1f4fb8;
+  color: #fff;
   font-size: 8px;
+  font-weight: 800;
 }
 
 .catalog-section-title {
@@ -380,6 +380,35 @@
   max-width: 260px;
   margin: 0;
   color: #8aa7ed;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.catalog-home--favorites {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.catalog-favorites-section {
+  display: grid;
+  gap: 10px;
+}
+
+.catalog-favorites-section h2 {
+  margin: 0;
+  color: var(--catalog-blue);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.catalog-favorites-section__empty {
+  margin: 0;
+  border: 1px solid #dce6f7;
+  background: #e7eef9;
+  color: #8aa7ed;
+  padding: 14px 16px;
   font-size: 12px;
   line-height: 1.25;
 }
@@ -904,6 +933,13 @@
   gap: 4px;
 }
 
+.catalog-store-card__heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30px;
+  align-items: start;
+  gap: 8px;
+}
+
 .catalog-store-card h2 {
   margin: 0;
   color: #2d59c7;
@@ -911,6 +947,34 @@
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: 0;
+}
+
+.catalog-store-card__favorite {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(45, 89, 199, 0.14);
+  border-radius: 999px;
+  background: #fff;
+  color: #8aa7ed;
+}
+
+.catalog-store-card__favorite svg {
+  width: 15px;
+  height: 15px;
+  fill: transparent;
+  stroke-width: 2.7;
+}
+
+.catalog-store-card__favorite.is-active {
+  border-color: rgba(31, 79, 184, 0.28);
+  background: #1f4fb8;
+  color: #fff;
+}
+
+.catalog-store-card__favorite.is-active svg {
+  fill: currentColor;
 }
 
 .catalog-store-card p {
