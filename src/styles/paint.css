@@ -141,7 +141,8 @@
 
 .paint-preview {
   display: grid;
-  height: 365px;
+  min-height: 280px;
+  max-height: min(62dvh, 520px);
   margin: 18px 24px 0;
   place-items: center;
   overflow: hidden;
@@ -181,9 +182,13 @@
 }
 
 .active-preview {
-  width: 100%;
-  height: 100%;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: min(62dvh, 520px);
   object-fit: contain;
+  object-position: center;
 }
 
 .paint-colors {
@@ -294,6 +299,7 @@
 .paint-preview {
   position: relative;
   width: calc(100% - 48px);
+  aspect-ratio: auto;
   border: 0;
   padding: 0;
   cursor: pointer;
@@ -315,7 +321,7 @@
     transform: translateY(0);
   }
   100% {
-    transform: translateY(365px);
+    transform: translateY(62dvh);
   }
 }
 

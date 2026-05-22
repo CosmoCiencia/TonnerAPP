@@ -5,7 +5,7 @@ import { TONNER_COLORS } from './colors'
 import { useAppContent } from '../../services/appContent'
 import { getOptimizedImageSrc } from '../../services/imageAssets'
 
-const DEFAULT_PAINT_API_URL = 'http://127.0.0.1:8000'
+const DEFAULT_PAINT_API_URL = 'https://barmvu9avgeu38-8000.proxy.runpod.net'
 const PAINT_API_URL = (
   import.meta.env.VITE_TONNER_PAINT_API_URL?.trim() || DEFAULT_PAINT_API_URL
 ).replace(/\/+$/, '')
@@ -149,7 +149,7 @@ export default function PaintModule() {
               onChange={handleImageChange}
             />
             {previewUrl ? (
-              <img src={previewUrl} className="active-preview" alt="Vista previa para pintar" />
+              <img src={previewUrl} className="active-preview" alt="Vista previa para pintar" decoding="async" />
             ) : (
               <span className="paint-camera" aria-hidden="true" />
             )}
