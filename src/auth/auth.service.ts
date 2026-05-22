@@ -1,6 +1,6 @@
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
-import { supabase } from '../lib/supabase'
+import { isSupabaseConfigured, requireSupabase } from '../lib/supabase'
 import type { AuthUser, LoginInput, RegisterInput } from './auth.types'
 
 type AuthStateChangeCallback = (event: AuthChangeEvent, user: AuthUser | null) => void
@@ -23,6 +23,7 @@ function toCustomerUser(session: Session | null): AuthUser | null {
 }
 
 async function createCustomerProfile(user: AuthUser) {
+  const supabase = requireSupabase()
   const { error } = await supabase.from('profiles').upsert(
     {
       id: user.id,
@@ -40,6 +41,11 @@ async function createCustomerProfile(user: AuthUser) {
 }
 
 export async function getSession() {
+  if (!isSupabaseConfigured) {
+    return null
+  }
+
+  const supabase = requireSupabase()
   const { data, error } = await supabase.auth.getSession()
 
   if (error) {
@@ -50,6 +56,11 @@ export async function getSession() {
 }
 
 export function onAuthStateChange(callback: AuthStateChangeCallback) {
+  if (!isSupabaseConfigured) {
+    return () => {}
+  }
+
+  const supabase = requireSupabase()
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
     callback(event, toCustomerUser(session))
   })
@@ -58,6 +69,7 @@ export function onAuthStateChange(callback: AuthStateChangeCallback) {
 }
 
 export async function signIn({ email, password }: LoginInput) {
+  const supabase = requireSupabase()
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.trim().toLowerCase(),
     password,
@@ -77,6 +89,7 @@ export async function signIn({ email, password }: LoginInput) {
 }
 
 export async function signUp({ email, fullName, password }: RegisterInput) {
+  const supabase = requireSupabase()
   const { data, error } = await supabase.auth.signUp({
     email: email.trim().toLowerCase(),
     password,
@@ -113,6 +126,7 @@ export async function signUp({ email, fullName, password }: RegisterInput) {
 }
 
 export async function signOut() {
+  const supabase = requireSupabase()
   const { error } = await supabase.auth.signOut()
 
   if (error) {
