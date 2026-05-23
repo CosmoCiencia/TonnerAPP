@@ -2,7 +2,7 @@ import type { RankingRow } from '../services/types';
 
 type Props = {
   ranking: RankingRow[];
-  currentUserId: string;
+  currentUserId: string | null;
 };
 
 function RankingTable({ ranking, currentUserId }: Props) {
@@ -28,7 +28,9 @@ function RankingTable({ ranking, currentUserId }: Props) {
                   #{row.position}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-base font-bold text-tonner-slate sm:text-lg">{row.user_id}</p>
+                  <p className="truncate text-base font-bold text-tonner-slate sm:text-lg">
+                    {row.display_name ?? row.user_id}
+                  </p>
                   <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
                     {row.position === 1 ? 'Lider con glow' : 'Competidor mundialista'}
                   </p>

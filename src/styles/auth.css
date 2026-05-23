@@ -93,8 +93,7 @@
 
 .auth-card button,
 .auth-card a,
-.auth-footer a,
-.auth-demo button {
+.auth-footer a {
   display: inline-flex;
   min-height: 2.6rem;
   align-items: center;
@@ -121,29 +120,6 @@
   color: #be123c;
   font-size: 0.78rem;
   font-weight: 800;
-}
-
-.auth-demo {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.55rem;
-  margin-top: 0.85rem;
-}
-
-.auth-demo span {
-  grid-column: 1 / -1;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.auth-demo button {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  text-transform: capitalize;
 }
 
 .auth-footer {

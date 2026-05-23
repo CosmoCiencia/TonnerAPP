@@ -152,9 +152,6 @@ export default function CatalogModule({
       return (
         <ProductModal
           product={selectedProduct}
-          userType="contratista"
-          primaryActionLabel="Agregar"
-          onAddToOrder={() => undefined}
           onClose={() => setSelectedProduct(null)}
         />
       );

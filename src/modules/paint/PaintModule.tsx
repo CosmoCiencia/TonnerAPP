@@ -1,15 +1,13 @@
-import { useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { TONNER_COLORS } from './colors'
+import { DEFAULT_PAINT_COLOR, getPaintPaletteForMaterial } from './colors'
 import { useAppContent } from '../../services/appContent'
 import { getOptimizedImageSrc } from '../../services/imageAssets'
 
-const DEFAULT_PAINT_API_URL = 'https://barmvu9avgeu38-8000.proxy.runpod.net'
-const PAINT_API_URL = (
-  import.meta.env.VITE_TONNER_PAINT_API_URL?.trim() || DEFAULT_PAINT_API_URL
-).replace(/\/+$/, '')
+const PAINT_API_URL = (import.meta.env.VITE_TONNER_PAINT_API_URL?.trim() ?? '').replace(/\/+$/, '')
 const PAINT_TIMEOUT_MS = 120_000
+const materialOrder = ['pared', 'vehiculo', 'metal', 'plastico', 'madera']
 
 export default function PaintModule() {
   const navigate = useNavigate()
@@ -17,12 +15,32 @@ export default function PaintModule() {
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [selectedColor, setSelectedColor] = useState(TONNER_COLORS[2])
+  const [activeMaterialKey, setActiveMaterialKey] = useState('pared')
+  const palette = useMemo(() => getPaintPaletteForMaterial(activeMaterialKey), [activeMaterialKey])
+  const [selectedColor, setSelectedColor] = useState(DEFAULT_PAINT_COLOR)
   const [isPainting, setIsPainting] = useState(false)
   const [flashActive, setFlashActive] = useState(false)
   const [paintError, setPaintError] = useState<string | null>(null)
 
-  const palette = useMemo(() => TONNER_COLORS, [])
+  useEffect(() => {
+    const colorStillExists = palette.some((color) => color.code === selectedColor.code && color.hex === selectedColor.hex)
+
+    if (!colorStillExists && palette[0]) {
+      setSelectedColor(palette[0])
+    }
+  }, [palette, selectedColor.code, selectedColor.hex])
+
+  const handleMaterialChange = (materialKey: string) => {
+    setActiveMaterialKey(materialKey)
+    setPaintError(null)
+  }
+
+  const cycleMaterial = (direction: -1 | 1) => {
+    const currentIndex = materialOrder.indexOf(activeMaterialKey)
+    const safeIndex = currentIndex >= 0 ? currentIndex : 0
+    const nextIndex = (safeIndex + direction + materialOrder.length) % materialOrder.length
+    handleMaterialChange(materialOrder[nextIndex])
+  }
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -53,6 +71,11 @@ export default function PaintModule() {
 
   const handleApplyColor = async () => {
     if (!selectedFile || isPainting) return
+
+    if (!PAINT_API_URL) {
+      setPaintError('TonnerPaint no está configurado.')
+      return
+    }
 
     setIsPainting(true)
     setPaintError(null)
@@ -95,7 +118,6 @@ export default function PaintModule() {
           ? 'La pintura tardó demasiado. Intenta con una imagen más liviana.'
           : 'No se pudo procesar la imagen.'
       setPaintError(message)
-      console.error(error)
     } finally {
       window.clearTimeout(timeoutId)
       setIsPainting(false)
@@ -116,18 +138,24 @@ export default function PaintModule() {
           <h1>TonnerPaints</h1>
           <p>Que material vas a pintar hoy?</p>
           <div className="paint-materials">
-            <button type="button" aria-label="Anterior">
+            <button type="button" aria-label="Anterior" onClick={() => cycleMaterial(-1)}>
               ‹
             </button>
-            {appContent.paint.materials.map((material, index) => (
-              <div key={material.key} className={`paint-material ${index === 0 ? 'is-active' : ''}`}>
+            {appContent.paint.materials.map((material) => (
+              <button
+                key={material.key}
+                type="button"
+                className={`paint-material ${material.key === activeMaterialKey ? 'is-active' : ''}`}
+                aria-pressed={material.key === activeMaterialKey}
+                onClick={() => handleMaterialChange(material.key)}
+              >
                 <span>
                   <img src={material.icon} alt="" />
                 </span>
                 <small>{material.label}</small>
-              </div>
+              </button>
             ))}
-            <button type="button" aria-label="Siguiente">
+            <button type="button" aria-label="Siguiente" onClick={() => cycleMaterial(1)}>
               ›
             </button>
           </div>
@@ -157,7 +185,7 @@ export default function PaintModule() {
           </button>
 
           <section className="paint-colors">
-            <h2>COLORES</h2>
+            <h2>COLORES {palette.length ? `(${palette.length})` : ''}</h2>
             {paintError ? <p className="paint-error">{paintError}</p> : null}
             <button
               id="applyBtn"
@@ -168,17 +196,31 @@ export default function PaintModule() {
             >
               {isPainting ? 'PROCESANDO...' : 'PROCESAR IMAGEN'}
             </button>
+            <article className="paint-selected-color">
+              <span className="paint-selected-color__swatch" style={{ background: selectedColor.hex }} />
+              <span>
+                <strong>{selectedColor.code}</strong>
+                <small>{selectedColor.name}</small>
+              </span>
+            </article>
             <div className="color-grid" id="colorsGrid">
               {palette.map((color, index) => (
                 <button
                   key={`${color.code}-${index}`}
                   type="button"
-                  className={`color-card ${color.hex === selectedColor.hex ? 'active' : ''}`}
-                  aria-label={color.name}
+                  className={`color-card ${
+                    color.code === selectedColor.code && color.hex === selectedColor.hex ? 'active' : ''
+                  }`}
+                  aria-label={`${color.code} ${color.name}`}
+                  title={`${color.code} · ${color.name}`}
                   onClick={() => setSelectedColor(color)}
                 >
                   <span className="swatch" style={{ background: color.hex }}>
-                    <strong>VI-101</strong>
+                    <span />
+                  </span>
+                  <span className="color-card__meta">
+                    <strong>{color.code}</strong>
+                    <small>{color.name}</small>
                   </span>
                 </button>
               ))}

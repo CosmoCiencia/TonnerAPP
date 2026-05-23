@@ -1,16 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchMatches } from '../services/matchesApi';
 import {
-  buildDerivedTables,
+  fetchPoints,
   fetchPredictions,
+  fetchRanking,
   getUserMatches,
   upsertPrediction,
 } from '../services/predictionsStore';
-import type { Match, MatchWithPrediction, Prediction, RankingRow } from '../services/types';
+import type { Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from '../services/types';
 
-export function useCupData(userId: string) {
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidUserId(userId: string | null): userId is string {
+  return Boolean(userId && UUID_PATTERN.test(userId));
+}
+
+export function useCupData(userId: string | null) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [points, setPoints] = useState<PointEntry[]>([]);
+  const [ranking, setRanking] = useState<RankingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -20,15 +29,57 @@ export function useCupData(userId: string) {
 
     async function load() {
       setLoading(true);
-      const [matchesResponse, predictionsResponse] = await Promise.all([
-        fetchMatches(),
-        fetchPredictions(),
-      ]);
+      const hasValidUserId = isValidUserId(userId);
+
+      try {
+        const matchesResponse = await fetchMatches();
+        if (!mounted) return;
+
+        setMatches(matchesResponse);
+      } catch (error) {
+        if (!mounted) return;
+        const message = error instanceof Error ? error.message : 'No se pudo cargar TonnerCup.';
+        setToast(message);
+      }
 
       if (!mounted) return;
-      setMatches(matchesResponse);
-      setPredictions(predictionsResponse);
-      setLoading(false);
+
+      if (hasValidUserId) {
+        const [predictionsResult, pointsResult] = await Promise.allSettled([
+          fetchPredictions(userId),
+          fetchPoints(userId),
+        ]);
+
+        if (!mounted) return;
+
+        if (predictionsResult.status === 'fulfilled') {
+          setPredictions(predictionsResult.value);
+        } else {
+          setPredictions([]);
+        }
+
+        if (pointsResult.status === 'fulfilled') {
+          setPoints(pointsResult.value);
+        } else {
+          setPoints([]);
+        }
+      } else {
+        setPredictions([]);
+        setPoints([]);
+      }
+
+      try {
+        const rankingResponse = await fetchRanking();
+        if (!mounted) return;
+        setRanking(rankingResponse);
+      } catch {
+        if (!mounted) return;
+        setRanking([]);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
     }
 
     void load();
@@ -36,7 +87,7 @@ export function useCupData(userId: string) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (!toast) return;
@@ -44,34 +95,43 @@ export function useCupData(userId: string) {
     return () => window.clearTimeout(timeout);
   }, [toast]);
 
-  const derived = useMemo(() => buildDerivedTables(matches, predictions), [matches, predictions]);
-
   const userMatches: MatchWithPrediction[] = useMemo(
-    () => getUserMatches(matches, predictions, derived.points, userId),
-    [derived.points, matches, predictions, userId],
+    () => getUserMatches(matches, predictions, points, userId ?? ''),
+    [matches, points, predictions, userId],
   );
 
   async function savePrediction(matchId: string, predictedHome: number, predictedAway: number) {
+    if (!isValidUserId(userId)) {
+      setToast('Inicia sesión para guardar tu pronóstico.');
+      return;
+    }
+
     setSavingMatchId(matchId);
-    const nextPrediction = await upsertPrediction(userId, matchId, predictedHome, predictedAway);
-    setPredictions((current) => {
-      const exists = current.find((prediction) => prediction.id === nextPrediction.id);
-      return exists
-        ? current.map((prediction) =>
-            prediction.id === nextPrediction.id ? nextPrediction : prediction,
-          )
-        : [...current, nextPrediction];
-    });
-    setSavingMatchId(null);
-    setToast('Pronóstico guardado');
+    try {
+      const nextPrediction = await upsertPrediction(userId, matchId, predictedHome, predictedAway);
+      setPredictions((current) => {
+        const exists = current.find((prediction) => prediction.id === nextPrediction.id);
+        return exists
+          ? current.map((prediction) =>
+              prediction.id === nextPrediction.id ? nextPrediction : prediction,
+            )
+          : [...current, nextPrediction];
+      });
+      setToast('Pronóstico guardado');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo guardar el pronóstico.';
+      setToast(message);
+    } finally {
+      setSavingMatchId(null);
+    }
   }
 
   return {
     loading,
     matches,
     userMatches,
-    ranking: derived.ranking as RankingRow[],
-    points: derived.points,
+    ranking,
+    points,
     savingMatchId,
     savePrediction,
     toast,

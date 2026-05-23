@@ -1,9 +1,7 @@
-export function useUserId() {
-  const tonnerWindow = window as Window & {
-    __TONNER_CONTEXT__?: {
-      user_id?: string
-    }
-  }
+import { useAuth } from '../../../auth/useAuth';
 
-  return tonnerWindow.__TONNER_CONTEXT__?.user_id ?? 'tonner.demo.user'
+export function useUserId() {
+  const auth = useAuth();
+
+  return auth.user?.id ?? null;
 }

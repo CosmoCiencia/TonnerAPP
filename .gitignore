@@ -6,6 +6,7 @@ dist/
 
 # Python/API local artifacts
 .venv/
+**/.venv/
 venv/
 __pycache__/
 *.py[cod]
@@ -24,6 +25,10 @@ Thumbs.db
 *.tar
 *.tar.gz
 *.zip
+proxy-result.jpg
+
+# Supabase local CLI state
+supabase/.temp/
 
 # Android generated build outputs
 android/.gradle/

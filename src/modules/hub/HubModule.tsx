@@ -20,7 +20,6 @@ type HubProfileDraft = {
 type HubCard = {
   key: string
   title: string
-  href: string
   image: string
   variant: 'portfolio' | 'paint' | 'stores' | 'cup'
 }
@@ -33,44 +32,6 @@ type HubModuleProps = {
   activeView?: HubView
   onViewChange?: (view: HubView) => void
   showBottomNav?: boolean
-}
-
-const isLocalHost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname)
-
-const productionAppLinks = {
-  catalog: 'https://tonner-catalog.vercel.app/',
-  paint: 'https://tonner-paint.vercel.app/',
-  cup: 'https://tonner-cup.vercel.app/',
-}
-
-const resolveAppLink = (configuredUrl: string | undefined, productionUrl: string) => {
-  if (!configuredUrl) return productionUrl
-
-  const pointsToLocalPort =
-    configuredUrl.includes('localhost') ||
-    configuredUrl.includes('127.0.0.1') ||
-    configuredUrl.includes('0.0.0.0')
-
-  if (!isLocalHost && pointsToLocalPort) return productionUrl
-
-  return configuredUrl
-}
-
-const appLinks = {
-  catalog: resolveAppLink(import.meta.env.VITE_TONNER_CATALOG_URL, productionAppLinks.catalog),
-  paint: resolveAppLink(import.meta.env.VITE_TONNER_PAINT_URL, productionAppLinks.paint),
-  cup: resolveAppLink(import.meta.env.VITE_TONNER_CUP_URL, productionAppLinks.cup),
-}
-
-const withCatalogSection = (view: string, params: Record<string, string> = {}) => {
-  const url = new URL(appLinks.catalog)
-  url.searchParams.set('view', view)
-
-  Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.set(key, value)
-  })
-
-  return url.toString()
 }
 
 const getInitialView = (): HubView => {
@@ -87,28 +48,24 @@ const hubCards: HubCard[] = [
   {
     key: 'portfolio',
     title: 'PORTAFOLIO',
-    href: appLinks.catalog,
     image: '/PORTAFOLIO.webp',
     variant: 'portfolio',
   },
   {
     key: 'paint',
     title: 'TONNER PAINT',
-    href: appLinks.paint,
     image: '/TONNER PAINT.webp',
     variant: 'paint',
   },
   {
     key: 'stores',
     title: 'PUNTOS DE VENTA',
-    href: withCatalogSection('stores', { mode: 'map' }),
     image: '/PUNTOS DE VENTA.webp',
     variant: 'stores',
   },
   {
     key: 'cup',
     title: 'POLLAMUNDIALISTA',
-    href: appLinks.cup,
     image: '/FONDO POLLATONNER GRUPOS.webp',
     variant: 'cup',
   },
@@ -199,25 +156,17 @@ function HubCardsInternal({
                   ? onOpenCup
                   : null
 
-        if (openInternalModule) {
-          return (
-            <button
-              key={card.key}
-              type="button"
-              className={`hub-card hub-card--${card.variant}`}
-              onClick={openInternalModule}
-            >
-              <img src={getOptimizedImageSrc(card.image)} alt="" className="hub-card__image" decoding="async" />
-              <span className="hub-card__title">{card.title}</span>
-            </button>
-          )
-        }
-
         return (
-          <a key={card.key} href={card.href} className={`hub-card hub-card--${card.variant}`}>
+          <button
+            key={card.key}
+            type="button"
+            className={`hub-card hub-card--${card.variant}`}
+            onClick={openInternalModule ?? undefined}
+            disabled={!openInternalModule}
+          >
             <img src={getOptimizedImageSrc(card.image)} alt="" className="hub-card__image" decoding="async" />
             <span className="hub-card__title">{card.title}</span>
-          </a>
+          </button>
         )
       })}
     </div>

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { MatchWithPrediction } from '../services/types';
-import { getTeamFlag } from '../services/teamMeta';
+import { formatRoundLabel } from '../services/stages';
 import MatchStatusPill from './MatchStatusPill';
+import TeamBadge from './TeamBadge';
 
 type Props = {
   item: MatchWithPrediction;
@@ -18,39 +19,39 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
   const isLocked = match.status === 'finished';
 
   return (
-    <article className="cup-card p-4">
+    <article className="cup-card p-4 text-tonner-slate">
       <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">
-            {match.stage} · Grupo {match.group}
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            {formatRoundLabel(match.round)}
           </p>
-          <p className="mt-2 text-sm text-slate-500">{match.city}</p>
+          <p className="mt-2 truncate text-sm text-slate-500">{match.city}</p>
         </div>
         <MatchStatusPill status={match.status} />
       </div>
 
-      <div className="rounded-[1.7rem] border border-slate-200 bg-slate-50 p-4">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+      <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">
           <div className="min-w-0 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center text-2xl">
-              {getTeamFlag(match.team_home)}
+            <div className="flex justify-center">
+              <TeamBadge name={match.team_home} logo={match.home_logo} size="lg" />
             </div>
-            <p className="mt-2 text-sm font-medium leading-tight text-tonner-slate">
+            <p className="mx-auto mt-2 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
               {match.team_home}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex shrink-0 items-center justify-center gap-2 pt-1">
             <input
               type="number"
               min={0}
               value={homeValue}
               disabled={isLocked}
               onChange={(e) => setHomeValue(Number(e.target.value))}
-              className="h-12 w-12 rounded-xl border border-slate-300 bg-white text-center text-lg font-bold text-tonner-slate outline-none transition focus:border-tonner-orange focus:ring-2 focus:ring-tonner-orange/20"
+              className="h-11 w-11 rounded-xl border border-slate-300 bg-white text-center text-lg font-bold text-tonner-slate outline-none transition focus:border-tonner-orange focus:ring-2 focus:ring-tonner-orange/20"
             />
 
-            <span className="text-lg font-black text-tonner-orange">-</span>
+            <span className="text-base font-black text-tonner-orange">-</span>
 
             <input
               type="number"
@@ -58,15 +59,15 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
               value={awayValue}
               disabled={isLocked}
               onChange={(e) => setAwayValue(Number(e.target.value))}
-              className="h-12 w-12 rounded-xl border border-slate-300 bg-white text-center text-lg font-bold text-tonner-slate outline-none transition focus:border-tonner-orange focus:ring-2 focus:ring-tonner-orange/20"
+              className="h-11 w-11 rounded-xl border border-slate-300 bg-white text-center text-lg font-bold text-tonner-slate outline-none transition focus:border-tonner-orange focus:ring-2 focus:ring-tonner-orange/20"
             />
           </div>
 
           <div className="min-w-0 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center text-2xl">
-              {getTeamFlag(match.team_away)}
+            <div className="flex justify-center">
+              <TeamBadge name={match.team_away} logo={match.away_logo} size="lg" />
             </div>
-            <p className="mt-2 text-sm font-medium leading-tight text-tonner-slate">
+            <p className="mx-auto mt-2 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
               {match.team_away}
             </p>
           </div>

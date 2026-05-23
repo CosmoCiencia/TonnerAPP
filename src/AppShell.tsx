@@ -241,13 +241,10 @@ export default function AppShell() {
   }
 
   const activeGlobalKey = pathToActiveGlobalKey(location.pathname)
-  const isCupLaunchRoute = location.pathname === '/cup' || location.pathname === '/cup/'
   const isAuthRoute = ['/login', '/register', '/pending-approval', '/access-denied', '/internal'].some((path) =>
     location.pathname.startsWith(path),
   )
-  const hideGlobalNav = location.pathname.startsWith('/paint') || (
-    location.pathname.startsWith('/cup') && !isCupLaunchRoute
-  ) || isAuthRoute
+  const hideGlobalNav = location.pathname.startsWith('/paint') || isAuthRoute
 
   if (showSplash) {
     return <Splash />

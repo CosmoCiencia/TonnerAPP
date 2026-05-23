@@ -1,33 +1,28 @@
-import { Megaphone } from 'lucide-react';
+import { Heart, Target, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useAppContent } from '../../../services/appContent';
 import { getOptimizedImageSrc } from '../../../services/imageAssets';
+import CupTopBar from '../components/CupTopBar';
 
 const items = [
   {
-    title: 'Fase de grupos',
-    to: '/cup/home',
+    title: 'Partidos',
+    description: 'Calendario y jornadas',
+    to: '/cup/stage/fase-de-grupos',
+    icon: Trophy,
   },
   {
-    title: 'Dieciseisavos',
+    title: 'Predicciones',
+    description: 'Marca tus resultados',
     to: '/cup/predictions',
+    icon: Target,
   },
   {
-    title: 'Octavos',
-    to: '/cup/results',
-  },
-  {
-    title: 'Cuartos',
+    title: 'Puntajes',
+    description: 'Ranking de jugadores',
     to: '/cup/ranking',
-  },
-  {
-    title: 'Semifinal',
-    to: '/cup/ranking',
-  },
-  {
-    title: 'Final',
-    to: '/cup/ranking',
+    icon: Heart,
   },
 ];
 
@@ -37,20 +32,7 @@ function DashboardPage() {
 
   return (
     <section className="cup-launch" aria-label="Polla Mundialista Tonner">
-      <header className="cup-launch-header">
-        <button className="cup-header-icon" type="button" aria-label="Anuncios">
-          <Megaphone size={27} strokeWidth={3} />
-        </button>
-        <img
-          src={getOptimizedImageSrc('/logo.webp')}
-          alt="Pinturas Tonner"
-          className="cup-launch-logo"
-          decoding="async"
-        />
-        <button className="cup-header-icon" type="button" aria-label="Notificaciones">
-          <img src="/campana icon.png" alt="" className="cup-header-icon__image" />
-        </button>
-      </header>
+      <CupTopBar />
 
       <div className="cup-launch-hero">
         <img src={getOptimizedImageSrc(launch.backgroundImage)} alt="" className="cup-launch-bg" decoding="async" />
@@ -70,14 +52,16 @@ function DashboardPage() {
         </div>
       </div>
 
-      <nav className="cup-stage-grid" aria-label="Fases del mundial">
-        {items.map(({ title, to }) => (
+      <nav className="cup-menu-grid" aria-label="Opciones de TonnerCup">
+        {items.map(({ title, description, to, icon: Icon }) => (
           <Link
             key={title}
             to={to}
-            className="cup-stage-button"
+            className="cup-menu-button"
           >
-            {title}
+            <Icon size={25} strokeWidth={3} />
+            <span>{title}</span>
+            <small>{description}</small>
           </Link>
         ))}
       </nav>

@@ -1,29 +1,90 @@
-import { seededPredictions } from './mockData';
-import { buildPointEntries, buildRanking } from './points';
+import { requireSupabase } from '../../../lib/supabase';
 import type { Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from './types';
 
-const STORAGE_KEY = 'tonner-cup-predictions';
+type PredictionRow = {
+  id: string;
+  user_id: string;
+  match_id: string;
+  predicted_home: number;
+  predicted_away: number;
+};
 
-function readStoredPredictions(): Prediction[] {
-  if (typeof window === 'undefined') return seededPredictions;
-  const saved = window.localStorage.getItem(STORAGE_KEY);
-  if (!saved) return seededPredictions;
+type PointRow = {
+  id: string;
+  user_id: string;
+  match_id: string;
+  points_awarded: number;
+};
 
-  try {
-    return JSON.parse(saved) as Prediction[];
-  } catch {
-    return seededPredictions;
+type RankingRowResponse = RankingRow & {
+  display_name?: string | null;
+};
+
+function toPrediction(row: PredictionRow): Prediction {
+  return {
+    id: row.id,
+    user_id: row.user_id,
+    match_id: row.match_id,
+    predicted_home: row.predicted_home,
+    predicted_away: row.predicted_away,
+  };
+}
+
+function toPoint(row: PointRow): PointEntry {
+  return {
+    id: row.id,
+    user_id: row.user_id,
+    match_id: row.match_id,
+    points_awarded: row.points_awarded,
+  };
+}
+
+export async function fetchPredictions(userId: string): Promise<Prediction[]> {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from('cup_predictions')
+    .select('id,user_id,match_id,predicted_home,predicted_away')
+    .eq('user_id', userId);
+
+  if (error) {
+    throw new Error(`No se pudieron cargar tus pronósticos: ${error.message}`);
   }
+
+  return ((data ?? []) as PredictionRow[]).map(toPrediction);
 }
 
-function persistPredictions(predictions: Prediction[]) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(predictions));
+export async function fetchPoints(userId: string): Promise<PointEntry[]> {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from('cup_points')
+    .select('id,user_id,match_id,points_awarded')
+    .eq('user_id', userId);
+
+  if (error) {
+    throw new Error(`No se pudieron cargar tus puntos: ${error.message}`);
+  }
+
+  return ((data ?? []) as PointRow[]).map(toPoint);
 }
 
-export async function fetchPredictions(): Promise<Prediction[]> {
-  await new Promise((resolve) => setTimeout(resolve, 250));
-  return readStoredPredictions();
+export async function fetchRanking(): Promise<RankingRow[]> {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from('cup_ranking_view')
+    .select('position,user_id,display_name,total_points,exact_hits')
+    .order('position', { ascending: true });
+
+  if (error) {
+    throw new Error(`No se pudo cargar el ranking: ${error.message}`);
+  }
+
+  return ((data ?? []) as RankingRowResponse[]).map((row) => ({
+    position: row.position,
+    user_id: row.user_id,
+    display_name: row.display_name ?? row.user_id,
+    total_points: row.total_points,
+    exact_hits: row.exact_hits,
+  }));
 }
 
 export async function upsertPrediction(
@@ -32,32 +93,28 @@ export async function upsertPrediction(
   predicted_home: number,
   predicted_away: number,
 ): Promise<Prediction> {
-  const predictions = readStoredPredictions();
-  const existing = predictions.find(
-    (prediction) => prediction.user_id === user_id && prediction.match_id === match_id,
-  );
-
-  const nextPrediction: Prediction = existing
-    ? {
-        ...existing,
-        predicted_home,
-        predicted_away,
-      }
-    : {
-        id: `prediction-${user_id}-${match_id}`,
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from('cup_predictions')
+    .upsert(
+      {
         user_id,
         match_id,
         predicted_home,
         predicted_away,
-      };
+      },
+      { onConflict: 'user_id,match_id' },
+    )
+    .select('id,user_id,match_id,predicted_home,predicted_away')
+    .single();
 
-  const nextPredictions = existing
-    ? predictions.map((prediction) => (prediction.id === existing.id ? nextPrediction : prediction))
-    : [...predictions, nextPrediction];
+  if (error) {
+    throw new Error(
+      'No se pudo guardar el pronóstico. Verifica que el partido ya esté sincronizado y que aún no haya empezado.',
+    );
+  }
 
-  persistPredictions(nextPredictions);
-  await new Promise((resolve) => setTimeout(resolve, 180));
-  return nextPrediction;
+  return toPrediction(data as PredictionRow);
 }
 
 export function getUserMatches(
@@ -80,15 +137,4 @@ export function getUserMatches(
     prediction: predictionsByMatch.get(match.id),
     points: pointsByMatch.get(match.id),
   }));
-}
-
-export function buildDerivedTables(matches: Match[], predictions: Prediction[]): {
-  points: PointEntry[];
-  ranking: RankingRow[];
-} {
-  const points = buildPointEntries(matches, predictions);
-  return {
-    points,
-    ranking: buildRanking(points),
-  };
 }

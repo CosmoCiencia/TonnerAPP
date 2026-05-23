@@ -1,14 +1,64 @@
-export const TONNER_COLORS = [
-  { name: 'Blanco Nieve', code: 'TN-001', hex: '#ffffff' },
-  { name: 'Arena Suave', code: 'TN-002', hex: '#e6d8c3' },
-  { name: 'Azul Tonner', code: 'TN-010', hex: '#3b82f6' },
-  { name: 'Azul Cielo', code: 'TN-011', hex: '#5a8dee' },
-  { name: 'Gris Cemento', code: 'TN-020', hex: '#6b6f76' },
-  { name: 'Gris Perla', code: 'TN-021', hex: '#d1d3d6' },
-  { name: 'Verde Bosque', code: 'TN-030', hex: '#2f6f64' },
-  { name: 'Verde Claro', code: 'TN-031', hex: '#9be5c3' },
-  { name: 'Amarillo', code: 'TN-040', hex: '#f2c94c' },
-  { name: 'Rojo Oxido', code: 'TN-050', hex: '#c0392b' },
-  { name: 'Vinotinto', code: 'TN-051', hex: '#7a2d21' },
-  { name: 'Negro Carbon', code: 'TN-060', hex: '#0f172a' },
-]
+import { PRODUCTS } from '../catalog/products'
+import type { ProductTone } from '../catalog/types'
+
+export type PaintMaterialKey = 'pared' | 'vehiculo' | 'metal' | 'plastico' | 'madera'
+
+export type PaintColor = Required<Pick<ProductTone, 'name' | 'hex'>> & {
+  code: string
+}
+
+const materialLines: Record<PaintMaterialKey, string[]> = {
+  pared: ['arquitectonica'],
+  vehiculo: ['automotriz'],
+  metal: ['industrial'],
+  plastico: ['automotriz', 'industrial'],
+  madera: ['maderas'],
+}
+
+function normalizeColor(tone: ProductTone): PaintColor | null {
+  if (!tone.hex || !/^#[0-9a-f]{6}$/i.test(tone.hex)) return null
+
+  return {
+    name: tone.name || tone.code || 'Color Tonner',
+    code: tone.code || tone.name || tone.hex,
+    hex: tone.hex,
+  }
+}
+
+function getColorsForLines(lines: string[]) {
+  const colors = new Map<string, PaintColor>()
+
+  PRODUCTS.filter((product) => lines.includes(product.line)).forEach((product) => {
+    const productColors = product.colors?.length ? product.colors : (product.tones ?? [])
+
+    productColors.forEach((tone) => {
+      const color = normalizeColor(tone)
+      if (!color) return
+
+      const key = `${color.code}-${color.hex}`.toLowerCase()
+      if (!colors.has(key)) {
+        colors.set(key, color)
+      }
+    })
+  })
+
+  return Array.from(colors.values())
+}
+
+export const PAINT_PALETTES: Record<PaintMaterialKey, PaintColor[]> = {
+  pared: getColorsForLines(materialLines.pared),
+  vehiculo: getColorsForLines(materialLines.vehiculo),
+  metal: getColorsForLines(materialLines.metal),
+  plastico: getColorsForLines(materialLines.plastico),
+  madera: getColorsForLines(materialLines.madera),
+}
+
+export const DEFAULT_PAINT_COLOR = PAINT_PALETTES.pared[0] ?? {
+  name: 'Blanco',
+  code: 'VI-101',
+  hex: '#ffffff',
+}
+
+export function getPaintPaletteForMaterial(materialKey: string) {
+  return PAINT_PALETTES[materialKey as PaintMaterialKey] ?? PAINT_PALETTES.pared
+}

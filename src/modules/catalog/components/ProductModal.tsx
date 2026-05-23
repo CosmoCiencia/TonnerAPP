@@ -24,15 +24,11 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useRef } from 'react';
-import type { UserType } from '../../onboarding/userTypes';
 import type { Product, ProductTone } from '../types';
 import { getOptimizedImageSrc } from '../../../services/imageAssets';
 
 interface Props {
   product: Product | null;
-  userType: UserType;
-  primaryActionLabel: string;
-  onAddToOrder: (product: Product) => void;
   onClose: () => void;
 }
 

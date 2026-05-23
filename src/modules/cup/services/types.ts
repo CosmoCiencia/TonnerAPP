@@ -4,6 +4,8 @@ export type Match = {
   id: string;
   team_home: string;
   team_away: string;
+  home_logo: string | null;
+  away_logo: string | null;
   group: string;
   date: string;
   score_home: number | null;
@@ -11,6 +13,7 @@ export type Match = {
   status: MatchStatus;
   stadium: string;
   stage: string;
+  round: string;
   city: string;
 };
 
@@ -45,6 +48,7 @@ export type PointEntry = {
 export type RankingRow = {
   position: number;
   user_id: string;
+  display_name?: string;
   total_points: number;
   exact_hits: number;
 };
