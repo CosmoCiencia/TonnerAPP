@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { formatRoundLabel } from '../services/stages';
+import { getOutcomeLabel, getPredictionOutcome } from '../services/predictionOutcome';
 import type { MatchWithPrediction } from '../services/types';
 import TeamBadge from './TeamBadge';
 
@@ -73,9 +74,7 @@ function MatchCard({
                 : 'bg-orange-50 text-tonner-orange'
             }`}
           >
-            {prediction
-              ? `Tu pick: ${prediction.predicted_home} - ${prediction.predicted_away}`
-              : 'Sin predicción'}
+            {prediction ? `Tu pick: ${getOutcomeLabel(match, getPredictionOutcome(prediction))}` : 'Sin predicción'}
           </div>
         ) : null}
 

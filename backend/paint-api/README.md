@@ -23,6 +23,7 @@ TONNER_PAINT_POINTS_PER_SIDE=16
 TONNER_PAINT_PRED_IOU_THRESH=0.9
 TONNER_PAINT_STABILITY_SCORE_THRESH=0.9
 TONNER_PAINT_MIN_MASK_REGION_AREA=5000
+TONNER_PAINT_CORS_ORIGINS=http://localhost:5192,https://tonner-app.vercel.app
 ```
 
 El backend tambien busca el checkpoint en estas rutas si no se define
@@ -68,7 +69,7 @@ npm run dev:full
 El frontend usa `VITE_TONNER_PAINT_API_URL`. Para el pod directo actual:
 
 ```bash
-VITE_TONNER_PAINT_API_URL=https://barmvu9avgeu38-8000.proxy.runpod.net
+VITE_TONNER_PAINT_API_URL=https://5sm3sf7u7asnps-8000.proxy.runpod.net
 ```
 
 ## Startup en RunPod pod directo

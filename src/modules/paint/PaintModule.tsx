@@ -135,7 +135,6 @@ export default function PaintModule() {
         </header>
 
         <section className="paint-hero">
-          <h1>TonnerPaints</h1>
           <p>Que material vas a pintar hoy?</p>
           <div className="paint-materials">
             <button type="button" aria-label="Anterior" onClick={() => cycleMaterial(-1)}>

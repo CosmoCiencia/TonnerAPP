@@ -24,6 +24,13 @@ CHECKPOINT_FALLBACKS = (
     "/runpod-volume/sam/sam_vit_b_01ec64.pth",
     str(BASE_DIR / "core" / "sam" / "sam_vit_b_01ec64.pth"),
 )
+DEFAULT_CORS_ORIGINS = (
+    "http://localhost:5173",
+    "http://localhost:5192",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5192",
+    "https://tonner-app.vercel.app",
+)
 
 if load_dotenv:
     load_dotenv(APP_DIR / ".env")
@@ -69,9 +76,16 @@ MASK_GENERATOR, SAM_MODEL_TYPE, SAM_CHECKPOINT, DEVICE = load_mask_generator()
 
 app = FastAPI(title="Tonner Paint API")
 
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv("TONNER_PAINT_CORS_ORIGINS", ",".join(DEFAULT_CORS_ORIGINS)).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

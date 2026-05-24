@@ -7,6 +7,29 @@ import SectionIntro from '../components/SectionIntro';
 import { formatRoundLabel } from '../services/stages';
 import type { ReturnTypeCupData } from './types';
 
+function getDateKey(date: string) {
+  return new Date(date).toISOString().slice(0, 10);
+}
+
+function formatDateRange(dateKeys: string[]) {
+  if (!dateKeys.length) return '';
+
+  const formatDate = (dateKey: string) =>
+    new Intl.DateTimeFormat('es-CO', {
+      day: 'numeric',
+      month: 'short',
+    }).format(new Date(`${dateKey}T12:00:00`));
+
+  const firstDate = dateKeys[0];
+  const lastDate = dateKeys[dateKeys.length - 1];
+
+  return firstDate === lastDate ? formatDate(firstDate) : `${formatDate(firstDate)} - ${formatDate(lastDate)}`;
+}
+
+function formatMatchDateRange(matches: ReturnTypeCupData['userMatches']) {
+  return formatDateRange([...new Set(matches.map((item) => getDateKey(item.match.date)))]);
+}
+
 function PredictionsPage() {
   const cupData = useOutletContext<ReturnTypeCupData>();
 
@@ -22,16 +45,17 @@ function PredictionsPage() {
   const filteredMatches = upcomingMatches.filter(
     (item) => item.match.round === selectedRound
   );
+  const nextDateRange = formatMatchDateRange(filteredMatches.slice(0, 5));
 
   return (
     <section>
       <SectionIntro
         eyebrow="Predicciones"
-        title="Marca tus resultados"
-        description="Selecciona una ronda real y haz tus picks sin scroll infinito."
+        title="Elige tus pronósticos"
+        description="Selecciona quién gana o si el partido empata."
       />
 
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+      <div className="mb-4 flex justify-center gap-2 overflow-x-auto pb-1">
         {rounds.map((round) => (
           <button
             key={round}
@@ -57,14 +81,27 @@ function PredictionsPage() {
             description="Selecciona otra ronda para ver más encuentros."
           />
         ) : (
-          filteredMatches.map((item) => (
-            <PredictionEditorCard
-              key={`${item.match.id}-${item.prediction?.predicted_home ?? 0}-${item.prediction?.predicted_away ?? 0}`}
-              item={item}
-              saving={cupData.savingMatchId === item.match.id}
-              onSave={cupData.savePrediction}
-            />
-          ))
+          <>
+            <div className="rounded-xl border border-white/15 bg-tonner-blue px-4 py-3 text-center text-white shadow-[0_12px_24px_rgba(8,43,104,0.2)]">
+              <p className="font-display text-lg font-black">Próximos partidos</p>
+              {nextDateRange ? (
+                <div className="mt-2 flex justify-center">
+                  <span className="rounded-full bg-white px-4 py-1.5 text-sm font-black capitalize text-tonner-blue shadow-[0_8px_18px_rgba(2,8,23,0.14)]">
+                    {nextDateRange}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+
+            {filteredMatches.map((item) => (
+              <PredictionEditorCard
+                key={`${item.match.id}-${item.prediction?.predicted_home ?? 0}-${item.prediction?.predicted_away ?? 0}`}
+                item={item}
+                saving={cupData.savingMatchId === item.match.id}
+                onSave={cupData.savePrediction}
+              />
+            ))}
+          </>
         )}
       </div>
     </section>

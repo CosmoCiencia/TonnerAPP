@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import type { MatchWithPrediction } from '../services/types';
 import { formatRoundLabel } from '../services/stages';
+import {
+  getOutcomeLabel,
+  getOutcomeScore,
+  getPredictionOutcome,
+  type PredictionOutcome,
+} from '../services/predictionOutcome';
 import MatchStatusPill from './MatchStatusPill';
 import TeamBadge from './TeamBadge';
 
@@ -13,10 +19,36 @@ type Props = {
 function PredictionEditorCard({ item, saving, onSave }: Props) {
   const { match, prediction } = item;
 
-  const [homeValue, setHomeValue] = useState(prediction?.predicted_home ?? 0);
-  const [awayValue, setAwayValue] = useState(prediction?.predicted_away ?? 0);
+  const [selectedOutcome, setSelectedOutcome] = useState<PredictionOutcome | null>(
+    getPredictionOutcome(prediction),
+  );
 
   const isLocked = match.status === 'finished';
+  const savePrediction = () => {
+    if (!selectedOutcome) return;
+
+    const score = getOutcomeScore(selectedOutcome);
+    onSave(match.id, score.home, score.away);
+  };
+  const renderOutcomeButton = (outcome: PredictionOutcome, className = '') => {
+    const selected = selectedOutcome === outcome;
+
+    return (
+      <button
+        type="button"
+        disabled={isLocked || saving}
+        aria-pressed={selected}
+        onClick={() => setSelectedOutcome(outcome)}
+        className={`rounded-xl border px-2.5 py-2 text-[11px] font-black leading-none transition ${
+          selected
+            ? 'border-tonner-blue bg-tonner-blue text-white shadow-[0_10px_22px_rgba(45,89,199,0.22)]'
+            : 'border-slate-200 bg-white text-tonner-blue'
+        } ${className}`}
+      >
+        {getOutcomeLabel(match, outcome)}
+      </button>
+    );
+  };
 
   return (
     <article className="cup-card p-4 text-tonner-slate">
@@ -30,8 +62,8 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
         <MatchStatusPill status={match.status} />
       </div>
 
-      <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-3">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">
+      <div>
+        <div className="grid grid-cols-[minmax(0,1fr)_2.8rem_minmax(0,1fr)] items-start gap-2">
           <div className="min-w-0 text-center">
             <div className="flex justify-center">
               <TeamBadge name={match.team_home} logo={match.home_logo} size="lg" />
@@ -39,28 +71,13 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
             <p className="mx-auto mt-2 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
               {match.team_home}
             </p>
+            {renderOutcomeButton('home', 'mt-3 min-h-[2.45rem] w-full whitespace-nowrap')}
           </div>
 
-          <div className="flex shrink-0 items-center justify-center gap-2 pt-1">
-            <input
-              type="number"
-              min={0}
-              value={homeValue}
-              disabled={isLocked}
-              onChange={(e) => setHomeValue(Number(e.target.value))}
-              className="h-11 w-11 rounded-xl border border-slate-300 bg-white text-center text-lg font-bold text-tonner-slate outline-none transition focus:border-tonner-orange focus:ring-2 focus:ring-tonner-orange/20"
-            />
-
-            <span className="text-base font-black text-tonner-orange">-</span>
-
-            <input
-              type="number"
-              min={0}
-              value={awayValue}
-              disabled={isLocked}
-              onChange={(e) => setAwayValue(Number(e.target.value))}
-              className="h-11 w-11 rounded-xl border border-slate-300 bg-white text-center text-lg font-bold text-tonner-slate outline-none transition focus:border-tonner-orange focus:ring-2 focus:ring-tonner-orange/20"
-            />
+          <div className="flex shrink-0 items-center justify-center pt-5">
+            <span className="rounded-full bg-tonner-blue px-2.5 py-1 text-xs font-black text-white">
+              VS
+            </span>
           </div>
 
           <div className="min-w-0 text-center">
@@ -70,23 +87,28 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
             <p className="mx-auto mt-2 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
               {match.team_away}
             </p>
+            {renderOutcomeButton('away', 'mt-3 min-h-[2.45rem] w-full whitespace-nowrap')}
           </div>
         </div>
       </div>
 
+      <div className="mt-3 flex justify-center">
+        {renderOutcomeButton('draw', 'min-h-[2.45rem] min-w-[9rem] whitespace-nowrap px-5')}
+      </div>
+
       <button
         type="button"
-        disabled={isLocked || saving}
-        onClick={() => onSave(match.id, homeValue, awayValue)}
+        disabled={isLocked || saving || !selectedOutcome}
+        onClick={savePrediction}
         className="mt-4 flex w-full items-center justify-center rounded-xl bg-tonner-blue px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0f5fd7] disabled:opacity-50"
       >
-        {saving ? 'Aplicando...' : 'Aplicar resultado'}
+        {saving ? 'Guardando...' : 'Guardar predicción'}
       </button>
 
       <p className="mt-3 text-center text-xs text-slate-500">
         {isLocked
           ? 'Este partido ya no admite cambios.'
-          : 'Puedes editar tu marcador antes del inicio del partido.'}
+          : 'Puedes cambiar tu elección antes del inicio del partido.'}
       </p>
     </article>
   );

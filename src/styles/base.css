@@ -235,8 +235,8 @@
 }
 
 .hub-header__bell-icon {
-  width: 2.55rem;
-  height: 2.55rem;
+  width: 2.1rem;
+  height: 2.1rem;
   object-fit: contain;
   filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.75));
 }

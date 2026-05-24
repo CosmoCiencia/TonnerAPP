@@ -26,6 +26,7 @@ Thumbs.db
 *.tar.gz
 *.zip
 proxy-result.jpg
+resultado.jpg
 
 # Supabase local CLI state
 supabase/.temp/
