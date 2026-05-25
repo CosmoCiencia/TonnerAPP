@@ -162,9 +162,11 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
   useEffect(() => {
     if (!mapElementRef.current || mapRef.current) return;
 
+    const isTouchViewport = window.matchMedia('(hover: none), (pointer: coarse)').matches;
     const map = L.map(mapElementRef.current, {
       attributionControl: true,
-      scrollWheelZoom: true,
+      dragging: !isTouchViewport,
+      scrollWheelZoom: !isTouchViewport,
       touchZoom: true,
       zoomControl: true,
     }).setView(bogotaCenter, 12);
