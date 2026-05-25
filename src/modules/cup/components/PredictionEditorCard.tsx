@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { MatchWithPrediction } from '../services/types';
 import { formatRoundLabel } from '../services/stages';
 import {
   getOutcomeLabel,
-  getOutcomeScore,
   getPredictionOutcome,
   type PredictionOutcome,
 } from '../services/predictionOutcome';
@@ -13,22 +12,40 @@ import TeamBadge from './TeamBadge';
 type Props = {
   item: MatchWithPrediction;
   saving?: boolean;
-  onSave: (id: string, home: number, away: number) => void;
+  onSave: (id: string, result: PredictionOutcome) => void;
 };
+
+function formatEditDeadline(date: string) {
+  return new Intl.DateTimeFormat('es-CO', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(date));
+}
 
 function PredictionEditorCard({ item, saving, onSave }: Props) {
   const { match, prediction } = item;
+  const savedOutcome = getPredictionOutcome(prediction);
 
   const [selectedOutcome, setSelectedOutcome] = useState<PredictionOutcome | null>(
-    getPredictionOutcome(prediction),
+    savedOutcome,
   );
+  const [now, setNow] = useState(() => Date.now());
 
-  const isLocked = match.status === 'finished';
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const editDeadline = formatEditDeadline(match.date);
+  const hasStarted = Date.parse(match.date) <= now;
+  const isLocked = match.status === 'finished' || hasStarted;
+  const selectedIsSaved = Boolean(savedOutcome && selectedOutcome === savedOutcome);
   const savePrediction = () => {
     if (!selectedOutcome) return;
 
-    const score = getOutcomeScore(selectedOutcome);
-    onSave(match.id, score.home, score.away);
+    onSave(match.id, selectedOutcome);
   };
   const renderOutcomeButton = (outcome: PredictionOutcome, className = '') => {
     const selected = selectedOutcome === outcome;
@@ -100,15 +117,27 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
         type="button"
         disabled={isLocked || saving || !selectedOutcome}
         onClick={savePrediction}
-        className="mt-4 flex w-full items-center justify-center rounded-xl bg-tonner-blue px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0f5fd7] disabled:opacity-50"
+        className={`mt-4 flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white transition disabled:opacity-50 ${
+          selectedIsSaved ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-tonner-blue hover:bg-[#0f5fd7]'
+        }`}
       >
-        {saving ? 'Guardando...' : 'Guardar predicción'}
+        {saving
+          ? 'Guardando...'
+          : isLocked
+            ? 'Predicción cerrada'
+            : selectedIsSaved
+              ? 'Predicción guardada'
+              : prediction
+                ? 'Actualizar predicción'
+                : 'Guardar predicción'}
       </button>
 
       <p className="mt-3 text-center text-xs text-slate-500">
         {isLocked
-          ? 'Este partido ya no admite cambios.'
-          : 'Puedes cambiar tu elección antes del inicio del partido.'}
+          ? 'Predicción cerrada. El partido ya inició.'
+          : selectedIsSaved
+            ? `Guardada. Puedes editarla hasta el ${editDeadline}.`
+            : `Puedes editar tu predicción hasta el ${editDeadline}.`}
       </p>
     </article>
   );

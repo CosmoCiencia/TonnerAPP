@@ -15,7 +15,7 @@ function RankingPage() {
       <SectionIntro
         eyebrow="Ranking"
         title="Tabla general de la polla"
-        description="La clasificación se ordena por puntos totales y desempata por aciertos exactos."
+        description="La clasificación se ordena por puntos totales y desempata por aciertos de ganador o empate."
       />
 
       {cupData.loading ? (

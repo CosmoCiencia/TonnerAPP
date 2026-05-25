@@ -42,7 +42,7 @@ function RankingTable({ ranking, currentUserId }: Props) {
                   <p className="mt-1 text-2xl font-black text-tonner-slate">{row.total_points}</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center sm:px-4">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Exactos</p>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Aciertos</p>
                   <p className="mt-1 text-2xl font-black text-tonner-slate">{row.exact_hits}</p>
                 </div>
               </div>

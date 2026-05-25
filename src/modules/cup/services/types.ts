@@ -34,6 +34,7 @@ export type Prediction = {
   id: string;
   user_id: string;
   match_id: string;
+  prediction_result: 'home' | 'draw' | 'away';
   predicted_home: number;
   predicted_away: number;
 };

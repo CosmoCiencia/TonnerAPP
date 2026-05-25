@@ -7,6 +7,7 @@ import {
   getUserMatches,
   upsertPrediction,
 } from '../services/predictionsStore';
+import type { PredictionOutcome } from '../services/predictionOutcome';
 import type { Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from '../services/types';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -100,7 +101,7 @@ export function useCupData(userId: string | null) {
     [matches, points, predictions, userId],
   );
 
-  async function savePrediction(matchId: string, predictedHome: number, predictedAway: number) {
+  async function savePrediction(matchId: string, predictionResult: PredictionOutcome) {
     if (!isValidUserId(userId)) {
       setToast('Inicia sesión para guardar tu pronóstico.');
       return;
@@ -108,7 +109,7 @@ export function useCupData(userId: string | null) {
 
     setSavingMatchId(matchId);
     try {
-      const nextPrediction = await upsertPrediction(userId, matchId, predictedHome, predictedAway);
+      const nextPrediction = await upsertPrediction(userId, matchId, predictionResult);
       setPredictions((current) => {
         const exists = current.find((prediction) => prediction.id === nextPrediction.id);
         return exists

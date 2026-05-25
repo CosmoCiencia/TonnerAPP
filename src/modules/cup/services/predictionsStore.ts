@@ -1,10 +1,12 @@
 import { requireSupabase } from '../../../lib/supabase';
+import { getOutcomeScore, type PredictionOutcome } from './predictionOutcome';
 import type { Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from './types';
 
 type PredictionRow = {
   id: string;
   user_id: string;
   match_id: string;
+  prediction_result?: PredictionOutcome | null;
   predicted_home: number;
   predicted_away: number;
 };
@@ -25,6 +27,10 @@ function toPrediction(row: PredictionRow): Prediction {
     id: row.id,
     user_id: row.user_id,
     match_id: row.match_id,
+    prediction_result:
+      row.prediction_result ?? (
+        row.predicted_home > row.predicted_away ? 'home' : row.predicted_home < row.predicted_away ? 'away' : 'draw'
+      ),
     predicted_home: row.predicted_home,
     predicted_away: row.predicted_away,
   };
@@ -39,18 +45,36 @@ function toPoint(row: PointRow): PointEntry {
   };
 }
 
+function isMissingPredictionResultColumn(error: { message?: string; details?: string; hint?: string } | null) {
+  const text = `${error?.message ?? ''} ${error?.details ?? ''} ${error?.hint ?? ''}`.toLowerCase();
+  return text.includes('prediction_result');
+}
+
 export async function fetchPredictions(userId: string): Promise<Prediction[]> {
   const supabase = requireSupabase();
-  const { data, error } = await supabase
+  const response = await supabase
     .from('cup_predictions')
-    .select('id,user_id,match_id,predicted_home,predicted_away')
+    .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away')
     .eq('user_id', userId);
 
-  if (error) {
-    throw new Error(`No se pudieron cargar tus pronósticos: ${error.message}`);
+  if (response.error) {
+    if (isMissingPredictionResultColumn(response.error)) {
+      const legacyResponse = await supabase
+        .from('cup_predictions')
+        .select('id,user_id,match_id,predicted_home,predicted_away')
+        .eq('user_id', userId);
+
+      if (legacyResponse.error) {
+        throw new Error(`No se pudieron cargar tus pronósticos: ${legacyResponse.error.message}`);
+      }
+
+      return ((legacyResponse.data ?? []) as PredictionRow[]).map(toPrediction);
+    }
+
+    throw new Error(`No se pudieron cargar tus pronósticos: ${response.error.message}`);
   }
 
-  return ((data ?? []) as PredictionRow[]).map(toPrediction);
+  return ((response.data ?? []) as PredictionRow[]).map(toPrediction);
 }
 
 export async function fetchPoints(userId: string): Promise<PointEntry[]> {
@@ -90,31 +114,59 @@ export async function fetchRanking(): Promise<RankingRow[]> {
 export async function upsertPrediction(
   user_id: string,
   match_id: string,
-  predicted_home: number,
-  predicted_away: number,
+  prediction_result: PredictionOutcome,
 ): Promise<Prediction> {
   const supabase = requireSupabase();
-  const { data, error } = await supabase
+  const score = getOutcomeScore(prediction_result);
+  const response = await supabase
     .from('cup_predictions')
     .upsert(
       {
         user_id,
         match_id,
-        predicted_home,
-        predicted_away,
+        prediction_result,
+        predicted_home: score.home,
+        predicted_away: score.away,
       },
       { onConflict: 'user_id,match_id' },
     )
-    .select('id,user_id,match_id,predicted_home,predicted_away')
+    .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away')
     .single();
 
-  if (error) {
+  if (response.error) {
+    if (isMissingPredictionResultColumn(response.error)) {
+      const legacyResponse = await supabase
+        .from('cup_predictions')
+        .upsert(
+          {
+            user_id,
+            match_id,
+            predicted_home: score.home,
+            predicted_away: score.away,
+          },
+          { onConflict: 'user_id,match_id' },
+        )
+        .select('id,user_id,match_id,predicted_home,predicted_away')
+        .single();
+
+      if (legacyResponse.error) {
+        throw new Error(
+          `No se pudo guardar el pronóstico. Detalle: ${legacyResponse.error.message}`,
+        );
+      }
+
+      return toPrediction({
+        ...(legacyResponse.data as PredictionRow),
+        prediction_result,
+      });
+    }
+
     throw new Error(
-      'No se pudo guardar el pronóstico. Verifica que el partido ya esté sincronizado y que aún no haya empezado.',
+      `No se pudo guardar el pronóstico. Detalle: ${response.error.message}`,
     );
   }
 
-  return toPrediction(data as PredictionRow);
+  return toPrediction(response.data as PredictionRow);
 }
 
 export function getUserMatches(
