@@ -1,4 +1,4 @@
-import { FlaskConical, Heart, Target, Trophy } from 'lucide-react';
+import { Heart, Target, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useAppContent } from '../../../services/appContent';
@@ -23,12 +23,6 @@ const items = [
     description: 'Ranking de jugadores',
     to: '/cup/ranking',
     icon: Heart,
-  },
-  {
-    title: 'Demo',
-    description: 'Flujo sin datos reales',
-    to: '/cup/demo',
-    icon: FlaskConical,
   },
 ];
 

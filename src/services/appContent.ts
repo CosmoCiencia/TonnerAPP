@@ -65,8 +65,8 @@ export const DEFAULT_APP_CONTENT: TonnerAppContent = {
   },
   cup: {
     launch: {
-      backgroundImage: '/tonnercup-fondo.png',
-      trophyImage: '/tonnercup-copa.webp',
+      backgroundImage: '/cup/tonnercup-fondo.png',
+      trophyImage: '/cup/tonnercup-copa.webp',
       topLine: 'Vive la fiebre del',
       title: 'Mundial',
       bottomLine: 'Pollamundialista',

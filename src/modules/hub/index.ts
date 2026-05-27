@@ -1,1 +1,2 @@
-export { HubModule, type HubView } from './HubModule'
+export { HubModule } from './HubModule'
+export type { HubView } from './types'

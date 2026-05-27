@@ -26,7 +26,7 @@ function CupTopBar() {
       </button>
 
       <img
-        src={getOptimizedImageSrc('/logo.webp')}
+        src={getOptimizedImageSrc('/brand/logo.webp')}
         alt="Pinturas Tonner"
         className="cup-topbar__logo"
         decoding="async"
@@ -39,7 +39,7 @@ function CupTopBar() {
         aria-expanded={notificationsOpen}
         onClick={() => setNotificationsOpen((open) => !open)}
       >
-        <img src="/campana icon.png" alt="" className="cup-topbar__bell-icon" />
+        <img src="/shared/campana-icon.png" alt="" className="cup-topbar__bell-icon" />
       </button>
 
       {notificationsOpen ? (

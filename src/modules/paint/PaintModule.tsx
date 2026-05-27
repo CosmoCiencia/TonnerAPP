@@ -8,6 +8,7 @@ import { getOptimizedImageSrc } from '../../services/imageAssets'
 const PAINT_API_URL = (import.meta.env.VITE_TONNER_PAINT_API_URL?.trim() ?? '').replace(/\/+$/, '')
 const PAINT_TIMEOUT_MS = 120_000
 const materialOrder = ['pared', 'vehiculo', 'metal', 'plastico', 'madera']
+const PAINT_COMING_SOON = true
 
 export default function PaintModule() {
   const navigate = useNavigate()
@@ -124,11 +125,56 @@ export default function PaintModule() {
     }
   }
 
+  if (PAINT_COMING_SOON) {
+    return (
+      <main className="paint-page">
+        <div className="paint-app">
+          <header className="paint-top">
+            <img src={getOptimizedImageSrc('/brand/logo.webp')} alt="Pinturas Tonner" decoding="async" />
+            <button type="button" aria-label="Volver al inicio" onClick={() => navigate('/')}>
+              <img src="/icons/boton regreso.png" alt="" />
+            </button>
+          </header>
+
+          <section className="paint-coming-soon" aria-label="TonnerPaint muy pronto disponible">
+            <div className="paint-coming-soon__card">
+              <img src={getOptimizedImageSrc('/hub/tonner-paint.webp')} alt="" decoding="async" />
+              <span>TonnerPaint</span>
+              <h1>Muy pronto disponible</h1>
+              <p>
+                Estamos preparando la experiencia de pintura con IA para que funcione estable en celulares. Pronto
+                podrás tomar una foto, elegir color y visualizar el resultado desde la app.
+              </p>
+            </div>
+          </section>
+
+          <nav className="paint-bottom-nav" aria-label="Navegacion principal">
+            <button type="button" aria-label="Inicio" onClick={() => navigate('/')}>
+              <img src="/icons/INICIO.png" alt="" />
+            </button>
+            <button type="button" aria-label="Trabajo" onClick={() => navigate('/work')}>
+              <img src="/icons/TRABAJO.png" alt="" />
+            </button>
+            <button type="button" aria-label="Favoritos" onClick={() => navigate('/favorites')}>
+              <img src="/icons/FAVORITOS.png" alt="" />
+            </button>
+            <button type="button" className="is-active" aria-label="Pintar">
+              <img src="/icons/CALCULADORA.png" alt="" />
+            </button>
+            <button type="button" aria-label="Perfil" onClick={() => navigate('/profile')}>
+              <img src="/icons/PERFIL.png" alt="" />
+            </button>
+          </nav>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="paint-page">
       <div className="paint-app">
         <header className="paint-top">
-          <img src={getOptimizedImageSrc('/logo.webp')} alt="Pinturas Tonner" decoding="async" />
+          <img src={getOptimizedImageSrc('/brand/logo.webp')} alt="Pinturas Tonner" decoding="async" />
           <button type="button" aria-label="Volver al inicio" onClick={() => navigate('/')}>
             <img src="/icons/boton regreso.png" alt="" />
           </button>

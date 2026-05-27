@@ -127,7 +127,7 @@ function Splash() {
       aria-label="Cargando TonnerHub"
     >
       <img
-        src={getOptimizedImageSrc('/PORTADA CARGA.webp')}
+        src={getOptimizedImageSrc('/hub/portada-carga.webp')}
         alt="Pinturas Tonner"
         className="loading-screen__image"
         decoding="async"

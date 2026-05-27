@@ -9,6 +9,7 @@ import ProductModal from './components/ProductModal';
 import { distributors } from '../distributors/distributors.data';
 import StoresMap from '../distributors/StoresMap';
 import type { Distributor } from '../distributors/types';
+import { getDistributorMapsHref, getDistributorPhoneHref } from '../distributors/contactLinks';
 import { useAppContent } from '../../services/appContent';
 import { getOptimizedImageSrc } from '../../services/imageAssets';
 
@@ -34,21 +35,6 @@ const lineTabs: Array<{ label: string; value: TonnerLineKey }> = [
 
 const INITIAL_PRODUCT_LIMIT = 8;
 const PRODUCT_LIMIT_STEP = 8;
-
-const getPhoneHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`;
-
-const getMapsHref = (distributor: (typeof distributors)[number]) => {
-  const lat = Number(distributor.lat ?? distributor.coordinates?.[0]);
-  const lng = Number(distributor.lng ?? distributor.coordinates?.[1]);
-
-  if (Number.isFinite(lat) && Number.isFinite(lng)) {
-    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-  }
-
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${distributor.name} ${distributor.address} ${distributor.city}`,
-  )}`;
-};
 
 const normalizeStoreSearch = (value: string) =>
   value
@@ -160,6 +146,7 @@ export default function CatalogModule({
     const renderStoreCard = (distributor: Distributor) => {
       const storeId = String(distributor.id);
       const isFavorite = favoriteStoreIds.has(storeId);
+      const phoneHref = getDistributorPhoneHref(distributor.phone);
 
       return (
         <article key={distributor.id} className="catalog-store-card">
@@ -193,24 +180,28 @@ export default function CatalogModule({
                   <span>{distributor.email}</span>
                 </p>
               ) : null}
-              <p>
-                <Phone />
-                <span>{distributor.phone}</span>
-              </p>
+              {phoneHref ? (
+                <p>
+                  <Phone />
+                  <span>{distributor.phone}</span>
+                </p>
+              ) : null}
             </div>
 
             <div className="catalog-store-card__actions" aria-label={`Contactar a ${distributor.name}`}>
-              <a href={getPhoneHref(distributor.phone)}>
-                <Phone />
-                <span>Llamar</span>
-              </a>
+              {phoneHref ? (
+                <a href={phoneHref}>
+                  <Phone />
+                  <span>Llamar</span>
+                </a>
+              ) : null}
               {distributor.email ? (
                 <a href={`mailto:${distributor.email}`}>
                   <Mail />
                   <span>Correo</span>
                 </a>
               ) : null}
-              <a href={getMapsHref(distributor)} target="_blank" rel="noreferrer">
+              <a href={getDistributorMapsHref(distributor)} target="_blank" rel="noreferrer">
                 <Navigation />
                 <span>Ruta</span>
               </a>
@@ -454,9 +445,9 @@ export default function CatalogModule({
         <button type="button" className="catalog-top__back" aria-label="Regresar" onClick={handleBack}>
           <img src="/icons/boton regreso.png" alt="" />
         </button>
-        <img src={getOptimizedImageSrc('/logo.webp')} alt="Pinturas Tonner" decoding="async" />
+        <img src={getOptimizedImageSrc('/brand/logo.webp')} alt="Pinturas Tonner" decoding="async" />
         <button type="button" className="catalog-top__bell" aria-label="Notificaciones">
-          <img src="/campana icon.png" alt="" />
+          <img src="/shared/campana-icon.png" alt="" />
         </button>
       </header>
 

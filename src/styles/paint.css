@@ -150,6 +150,59 @@
   background: #fff;
 }
 
+.paint-coming-soon {
+  display: grid;
+  min-height: calc(100dvh - 5.2rem);
+  place-items: center;
+  padding: 2rem 1.5rem calc(7rem + env(safe-area-inset-bottom));
+  background:
+    linear-gradient(180deg, rgba(45, 89, 199, 0.08), rgba(45, 89, 199, 0)),
+    #dce6ef;
+}
+
+.paint-coming-soon__card {
+  display: grid;
+  width: 100%;
+  gap: 0.9rem;
+  border-radius: 8px;
+  padding: 1.35rem 1.2rem 1.5rem;
+  background: #fff;
+  box-shadow: 0 18px 38px rgba(15, 36, 95, 0.14);
+  text-align: center;
+}
+
+.paint-coming-soon__card img {
+  width: 100%;
+  max-height: 13rem;
+  border-radius: 8px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.paint-coming-soon__card span {
+  color: #ff7d00;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.paint-coming-soon__card h1 {
+  margin: 0;
+  color: var(--blue);
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.paint-coming-soon__card p {
+  margin: 0;
+  color: rgba(15, 36, 95, 0.68);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
 .paint-preview {
   display: grid;
   min-height: min(66dvh, 560px);

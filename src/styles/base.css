@@ -1,118 +1,3 @@
-.role-screen {
-  position: relative;
-  display: flex;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  padding: 0;
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.22), transparent 10%, transparent 90%, rgba(0, 0, 0, 0.22)),
-    linear-gradient(180deg, #0c3da1 0%, #073389 45%, #041c50 100%);
-}
-
-.role-screen__device {
-  position: relative;
-  width: min(100%, 430px);
-  min-height: 100dvh;
-  overflow: hidden;
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.24), transparent 9%, transparent 91%, rgba(0, 0, 0, 0.24)),
-    linear-gradient(180deg, #0c3da1 0%, #073389 45%, #041c50 100%);
-  box-shadow: 0 0 60px rgba(2, 8, 23, 0.38);
-}
-
-.role-screen__panel {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  padding: 4.6rem 2rem 2rem;
-}
-
-
-.role-screen__logo-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.65rem;
-}
-
-.role-screen__logo {
-  width: auto;
-  height: 4.5rem;
-  object-fit: contain;
-  filter: drop-shadow(0 7px 14px rgba(2, 8, 23, 0.18));
-}
-
-.role-screen__header {
-  margin-bottom: 1.55rem;
-  text-align: center;
-}
-
-.role-screen__header h1 {
-  margin: 0;
-  color: #fff;
-  font-family: 'Sora', 'Manrope', sans-serif;
-  font-size: 2.1rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0;
-}
-
-.role-screen__header p {
-  max-width: 19rem;
-  margin: 0.55rem auto 0;
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.22;
-  opacity: 0.82;
-}
-
-.role-stage {
-  width: 100%;
-  flex: 1;
-}
-
-.role-screen__footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: auto;
-  padding-top: 1.5rem;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.58rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.role-screen__dot {
-  width: 0.24rem;
-  height: 0.24rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.46);
-}
-
-.role-screen::before,
-.role-screen__device::before {
-  position: absolute;
-  inset: auto -18% -18% -18%;
-  height: 43%;
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.1));
-  content: '';
-  pointer-events: none;
-}
-
-@media (min-height: 860px) {
-  .role-screen__panel {
-    padding-top: 5.6rem;
-  }
-}
-
 .loading-screen {
   position: relative;
   display: grid;
@@ -327,7 +212,7 @@
   padding: 0 1rem 0 3rem;
   background: transparent;
   color: #1e293b;
-  font-size: 1.08rem;
+  font-size: 0.86rem;
   font-weight: 500;
   outline: none;
 }
@@ -522,6 +407,68 @@
   top: 48%;
 }
 
+.hub-social-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+  width: min(100%, 12.8rem);
+  margin: -0.88rem auto 0;
+}
+
+.hub-social-link {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  justify-self: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  filter: drop-shadow(0 3px 6px rgba(2, 8, 23, 0.35));
+  transform: translateZ(0);
+  transition: transform 0.18s ease;
+}
+
+.hub-social-link:active {
+  transform: scale(0.97);
+}
+
+.hub-social-link:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 3px;
+}
+
+.hub-social-link svg {
+  position: relative;
+  width: 1.95rem;
+  height: 1.95rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
+}
+
+.hub-social-link--facebook svg,
+.hub-social-link--tiktok svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+.hub-social-link span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .hub-section {
   margin-top: 2.05rem;
 }
@@ -535,12 +482,6 @@
   letter-spacing: 0;
 }
 
-.hub-action-list {
-  display: grid;
-  gap: 0.8rem;
-}
-
-.hub-action-list a,
 .hub-unavailable,
 .hub-favorites-note {
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -549,18 +490,6 @@
   box-shadow: 0 10px 24px rgba(2, 8, 23, 0.18);
 }
 
-.hub-action-list a {
-  display: flex;
-  min-height: 4.7rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
-  color: #183c79;
-  text-decoration: none;
-}
-
-.hub-action-list span,
 .hub-unavailable span,
 .hub-favorites-note span {
   color: #64748b;
@@ -570,10 +499,13 @@
   text-transform: uppercase;
 }
 
-.hub-action-list strong {
-  color: #143777;
-  font-size: 0.93rem;
-  text-align: right;
+.hub-unavailable p {
+  max-width: 18rem;
+  margin: 0.15rem auto 0;
+  color: rgba(15, 36, 95, 0.68);
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.36;
 }
 
 .hub-work-banner {
@@ -584,7 +516,7 @@
   padding: 1rem;
   background:
     linear-gradient(90deg, rgba(47, 95, 191, 0.92), rgba(2, 11, 29, 0.96)),
-    url('/TONNER PAINT.webp') center / cover;
+    url('/hub/tonner-paint.webp') center / cover;
   box-shadow: 0 1px 2px rgba(2, 8, 23, 0.32);
 }
 
@@ -595,63 +527,6 @@
   font-size: 1.28rem;
   font-weight: 900;
   line-height: 1.05;
-}
-
-.hub-filter-row {
-  display: flex;
-  gap: 0.45rem;
-  margin: 0.8rem 0 1rem;
-  overflow-x: auto;
-  padding-bottom: 0.15rem;
-}
-
-.hub-filter-row button {
-  flex: 0 0 auto;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
-  padding: 0.55rem 0.78rem;
-  background: rgba(255, 255, 255, 0.94);
-  color: #2f5fbf;
-  font-size: 0.72rem;
-  font-weight: 900;
-}
-
-.hub-service-list {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.hub-service-card {
-  display: grid;
-  grid-template-columns: 5.7rem 1fr;
-  min-height: 5.7rem;
-  overflow: hidden;
-  background: #e8eef9;
-}
-
-.hub-service-card__media {
-  background: #2d59c7;
-}
-
-.hub-service-card div:last-child {
-  display: grid;
-  align-content: center;
-  gap: 0.2rem;
-  min-width: 0;
-  padding: 0.75rem 0.9rem;
-}
-
-.hub-service-card strong {
-  color: #2f5fbf;
-  font-size: 0.95rem;
-  line-height: 1.05;
-}
-
-.hub-service-card span,
-.hub-service-card small {
-  color: #8aa7ed;
-  font-size: 0.72rem;
-  line-height: 1.1;
 }
 
 .hub-favorites-note,
@@ -667,6 +542,10 @@
   justify-items: start;
   margin-bottom: 1rem;
   text-align: left;
+}
+
+.hub-unavailable--work {
+  margin-top: 0.85rem;
 }
 
 .hub-favorites-note strong,

@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import AppShell from './components/AppShell'
 import DashboardPage from './pages/DashboardPage'
-import DemoPage from './pages/DemoPage'
 import PredictionsPage from './pages/PredictionsPage'
 import RankingPage from './pages/RankingPage'
 import StageMatchesPage from './pages/StageMatchesPage'
@@ -15,7 +14,6 @@ export default function CupModule() {
         <Route path="stage/:stageSlug" element={<StageMatchesPage />} />
         <Route path="predictions" element={<PredictionsPage />} />
         <Route path="ranking" element={<RankingPage />} />
-        <Route path="demo" element={<DemoPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/cup" replace />} />
     </Routes>

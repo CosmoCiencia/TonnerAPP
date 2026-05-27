@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import type { Distributor } from './types';
+import { getDistributorMapsHref, getDistributorPhoneHref } from './contactLinks';
 
 interface StoresMapProps {
   distributors: Distributor[];
@@ -42,6 +43,7 @@ declare global {
             zoomControl?: boolean;
           },
         ) => {
+          addListener: (eventName: string, callback: () => void) => void;
           fitBounds: (bounds: unknown, padding?: number) => void;
           panTo: (point: { lat: number; lng: number }) => void;
           setZoom: (zoom: number) => void;
@@ -74,20 +76,6 @@ declare global {
   }
 }
 
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, (char) => {
-    const entities: Record<string, string> = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
-    };
-
-    return entities[char] ?? char;
-  });
-}
-
 function getCoordinates(distributor: Distributor) {
   const lat = Number(distributor.lat ?? distributor.coordinates?.[0]);
   const lng = Number(distributor.lng ?? distributor.coordinates?.[1]);
@@ -114,13 +102,43 @@ function getDistributorPoints(distributors: Distributor[]) {
     .filter((point): point is DistributorPoint => Boolean(point));
 }
 
-function getPopupContent(distributor: Distributor) {
-  return `<div class="catalog-map-popup">
-    <h2>${escapeHtml(distributor.name)}</h2>
-    <p>${escapeHtml(distributor.address)} · ${escapeHtml(distributor.city)}</p>
-    <span>${escapeHtml(distributor.email || '')}</span>
-    <strong>${escapeHtml(distributor.phone)}</strong>
-  </div>`;
+function StoreMapSelection({
+  distributor,
+  onFocus,
+  onClose,
+}: {
+  distributor: Distributor;
+  onFocus: () => void;
+  onClose: () => void;
+}) {
+  const phoneHref = getDistributorPhoneHref(distributor.phone);
+  const mapsHref = getDistributorMapsHref(distributor);
+
+  return (
+    <div className="catalog-map-selected" aria-label={`Acciones para ${distributor.name}`}>
+      <button className="catalog-map-selected__close" type="button" aria-label="Cerrar punto seleccionado" onClick={onClose}>
+        ×
+      </button>
+      <button className="catalog-map-selected__place" type="button" onClick={onFocus}>
+        <strong>{distributor.name}</strong>
+      </button>
+      <div className="catalog-map-selected__actions">
+        {phoneHref ? (
+          <a href={phoneHref} className="catalog-map-selected__action catalog-map-selected__action--call">
+            Llamar
+          </a>
+        ) : null}
+        <a
+          href={mapsHref}
+          target="_blank"
+          rel="noreferrer"
+          className="catalog-map-selected__action catalog-map-selected__action--route"
+        >
+          Ruta
+        </a>
+      </div>
+    </div>
+  );
 }
 
 function loadGoogleMaps(apiKey: string) {
@@ -181,9 +199,12 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
     markersRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 
-    setTimeout(() => map.invalidateSize(), 0);
+      setTimeout(() => map.invalidateSize(), 0);
+
+    map.on('click', () => setSelectedDistributor(null));
 
     return () => {
+      map.off('click');
       map.remove();
       mapRef.current = null;
       markersRef.current = null;
@@ -207,7 +228,6 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
 
     points.forEach(({ distributor, lat, lng }) => {
       const marker = L.marker([lat, lng], { icon }).addTo(markers);
-      marker.bindPopup(getPopupContent(distributor));
       marker.on('click', () => setSelectedDistributor(distributor));
     });
 
@@ -235,12 +255,11 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
     <>
       <div ref={mapElementRef} className="catalog-real-map" aria-label="Mapa real de puntos de venta" />
       {selectedDistributor ? (
-        <button className="catalog-map-selected" type="button" onClick={focusSelectedDistributor}>
-          <strong>{selectedDistributor.name}</strong>
-          <span>
-            {selectedDistributor.address} · {selectedDistributor.city}
-          </span>
-        </button>
+        <StoreMapSelection
+          distributor={selectedDistributor}
+          onFocus={focusSelectedDistributor}
+          onClose={() => setSelectedDistributor(null)}
+        />
       ) : null}
     </>
   );
@@ -279,6 +298,8 @@ function GoogleStoresMap({ distributors, onUnavailable }: StoresMapProps & { onU
         zoom: 12,
         zoomControl: true,
       });
+
+      mapRef.current.addListener('click', () => setSelectedDistributor(null));
     }
 
     initializeMap();
@@ -315,13 +336,8 @@ function GoogleStoresMap({ distributors, onUnavailable }: StoresMapProps & { onU
         title: distributor.name,
       });
 
-      const infoWindow = new googleMaps.InfoWindow({
-        content: getPopupContent(distributor),
-      });
-
       marker.addListener('click', () => {
         setSelectedDistributor(distributor);
-        infoWindow.open({ anchor: marker, map });
       });
 
       markersRef.current.push(marker);
@@ -349,12 +365,11 @@ function GoogleStoresMap({ distributors, onUnavailable }: StoresMapProps & { onU
         aria-label="Mapa Google de puntos de venta"
       />
       {selectedDistributor ? (
-        <button className="catalog-map-selected" type="button" onClick={focusSelectedDistributor}>
-          <strong>{selectedDistributor.name}</strong>
-          <span>
-            {selectedDistributor.address} · {selectedDistributor.city}
-          </span>
-        </button>
+        <StoreMapSelection
+          distributor={selectedDistributor}
+          onFocus={focusSelectedDistributor}
+          onClose={() => setSelectedDistributor(null)}
+        />
       ) : null}
     </>
   );
