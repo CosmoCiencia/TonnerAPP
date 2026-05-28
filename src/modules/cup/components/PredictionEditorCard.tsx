@@ -24,7 +24,11 @@ function formatEditDeadline(date: string) {
   }).format(new Date(date));
 }
 
-function PredictionEditorCard({ item, saving, onSave }: Props) {
+function PredictionEditorCard({
+  item,
+  saving,
+  onSave,
+}: Props) {
   const { match, prediction } = item;
   const savedOutcome = getPredictionOutcome(prediction);
 

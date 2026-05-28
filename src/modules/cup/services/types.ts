@@ -52,6 +52,7 @@ export type RankingRow = {
   display_name?: string;
   total_points: number;
   exact_hits: number;
+  prediction_count: number;
 };
 
 export type MatchWithPrediction = {

@@ -22,7 +22,6 @@ type CupPointUpsert = {
 };
 
 const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
-const GROUP_STAGE = 'Fase de grupos';
 const POINTS_FOR_HIT = 5;
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -95,7 +94,6 @@ Deno.serve(async (request) => {
     const { data: matchesData, error: matchesError } = await supabase
       .from('cup_matches')
       .select('id,score_home,score_away')
-      .eq('stage', GROUP_STAGE)
       .in('status_short', FINISHED_STATUSES)
       .not('score_home', 'is', null)
       .not('score_away', 'is', null);
@@ -110,7 +108,6 @@ Deno.serve(async (request) => {
     if (matchIds.length === 0) {
       return jsonResponse({
         ok: true,
-        stage: GROUP_STAGE,
         finished_matches: 0,
         predictions_scored: 0,
         points_upserted: 0,
@@ -161,9 +158,8 @@ Deno.serve(async (request) => {
     const { error: logError } = await supabase.from('cup_sync_logs').insert({
       source: 'tonnercup-points',
       status: 'success',
-      message: `Calculated ${rows.length} predictions for ${matches.length} finished group-stage matches.`,
+      message: `Calculated ${rows.length} predictions for ${matches.length} finished matches.`,
       metadata: {
-        stage: GROUP_STAGE,
         finished_matches: matches.length,
         predictions_scored: predictions.length,
         points_upserted: rows.length,
@@ -176,7 +172,6 @@ Deno.serve(async (request) => {
 
     return jsonResponse({
       ok: true,
-      stage: GROUP_STAGE,
       finished_matches: matches.length,
       predictions_scored: predictions.length,
       points_upserted: rows.length,

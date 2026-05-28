@@ -3,6 +3,18 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.87.1';
 const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
 const WORLD_CUP_LEAGUE_ID = 1;
 const WORLD_CUP_SEASON = 2026;
+const ALLOWED_LEAGUE_IDS = new Set([WORLD_CUP_LEAGUE_ID, 13, 11]);
+
+type SyncTarget = {
+  league: number;
+  season: number;
+  next?: number;
+  status?: string;
+};
+
+type SyncRequestBody = {
+  targets?: SyncTarget[];
+};
 
 type ApiFootballFixture = {
   fixture?: {
@@ -93,7 +105,6 @@ function getErrorMessage(error: unknown): string {
 
 function requireEnv(name: string): string {
   const value = Deno.env.get(name)?.trim();
-  console.log(`[sync-cup-fixtures] env ${name} exists: ${Boolean(value)}`);
 
   if (!value) {
     throw new Error(`Missing required env var: ${name}`);
@@ -102,15 +113,45 @@ function requireEnv(name: string): string {
   return value;
 }
 
+async function parseSyncTargets(request: Request): Promise<SyncTarget[]> {
+  let body: SyncRequestBody | null = null;
+
+  try {
+    body = await request.json();
+  } catch {
+    body = null;
+  }
+
+  const targets = body?.targets?.length
+    ? body.targets
+    : [{ league: WORLD_CUP_LEAGUE_ID, season: WORLD_CUP_SEASON }];
+
+  return targets.map((target) => {
+    const league = Number(target.league);
+    const season = Number(target.season);
+    const next = target.next === undefined ? undefined : Number(target.next);
+    const status = target.status?.trim();
+
+    if (!Number.isInteger(league) || !ALLOWED_LEAGUE_IDS.has(league)) {
+      throw new Error(`Unsupported league id for sync: ${target.league}`);
+    }
+
+    if (!Number.isInteger(season) || season < 2000 || season > 2100) {
+      throw new Error(`Invalid season for sync: ${target.season}`);
+    }
+
+    if (next !== undefined && (!Number.isInteger(next) || next < 1 || next > 99)) {
+      throw new Error(`Invalid next value for sync: ${target.next}`);
+    }
+
+    return { league, season, next, status };
+  });
+}
+
 function authorizeInternalRequest(request: Request): Response | null {
   const expectedSecret = requireEnv('SYNC_CUP_SECRET');
   const receivedSecret = request.headers.get('x-tonner-sync-secret')?.trim();
   const authorized = Boolean(receivedSecret && receivedSecret === expectedSecret);
-
-  console.log('[sync-cup-fixtures] x-tonner-sync-secret validation:', {
-    received: Boolean(receivedSecret),
-    authorized,
-  });
 
   if (!authorized) {
     return jsonResponse({ ok: false, error: 'Unauthorized sync request.' }, 401);
@@ -178,13 +219,9 @@ function mapFixture(fixture: ApiFootballFixture): CupMatchUpsert | null {
 
 Deno.serve(async (request) => {
   let supabase: ReturnType<typeof createClient> | null = null;
+  let targets: SyncTarget[] | null = null;
 
   try {
-    console.log('[sync-cup-fixtures] request received:', {
-      method: request.method,
-      url: request.url,
-    });
-
     if (request.method !== 'POST') {
       return jsonResponse({ ok: false, error: 'Method not allowed. Use POST.' }, 405);
     }
@@ -194,6 +231,7 @@ Deno.serve(async (request) => {
       return unauthorizedResponse;
     }
 
+    targets = await parseSyncTargets(request);
     const supabaseUrl = requireEnv('SUPABASE_URL');
     const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
     const apiFootballKey = requireEnv('API_FOOTBALL_KEY');
@@ -202,44 +240,53 @@ Deno.serve(async (request) => {
       auth: { persistSession: false },
     });
 
-    const url = new URL('/fixtures', API_FOOTBALL_BASE_URL);
-    url.searchParams.set('league', String(WORLD_CUP_LEAGUE_ID));
-    url.searchParams.set('season', String(WORLD_CUP_SEASON));
+    const receivedByTarget: Array<SyncTarget & { received: number; upserted: number }> = [];
+    const rows: CupMatchUpsert[] = [];
 
-    console.log('[sync-cup-fixtures] requesting API-Football fixtures:', {
-      league: WORLD_CUP_LEAGUE_ID,
-      season: WORLD_CUP_SEASON,
-    });
+    for (const target of targets) {
+      const url = new URL('/fixtures', API_FOOTBALL_BASE_URL);
+      url.searchParams.set('league', String(target.league));
+      url.searchParams.set('season', String(target.season));
 
-    const response = await fetch(url, {
-      headers: {
-        'x-apisports-key': apiFootballKey,
-      },
-    });
+      if (target.next !== undefined) {
+        url.searchParams.set('next', String(target.next));
+      }
 
-    console.log('[sync-cup-fixtures] API-Football response status:', response.status);
+      if (target.status) {
+        url.searchParams.set('status', target.status);
+      }
 
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`API-Football HTTP ${response.status}: ${body}`);
+      const response = await fetch(url, {
+        headers: {
+          'x-apisports-key': apiFootballKey,
+        },
+      });
+
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`API-Football HTTP ${response.status}: ${body}`);
+      }
+
+      const payload = (await response.json()) as ApiFootballResponse;
+      const apiErrors = payload.errors;
+
+      if (
+        apiErrors &&
+        ((Array.isArray(apiErrors) && apiErrors.length > 0) ||
+          (!Array.isArray(apiErrors) && Object.keys(apiErrors as Record<string, unknown>).length > 0))
+      ) {
+        throw new Error(`API-Football returned errors: ${JSON.stringify(apiErrors)}`);
+      }
+
+      const fixtures = payload.response ?? [];
+      const targetRows = fixtures.map(mapFixture).filter((row): row is CupMatchUpsert => Boolean(row));
+      rows.push(...targetRows);
+      receivedByTarget.push({
+        ...target,
+        received: fixtures.length,
+        upserted: targetRows.length,
+      });
     }
-
-    const payload = (await response.json()) as ApiFootballResponse;
-    const apiErrors = payload.errors;
-
-    if (
-      apiErrors &&
-      ((Array.isArray(apiErrors) && apiErrors.length > 0) ||
-        (!Array.isArray(apiErrors) && Object.keys(apiErrors as Record<string, unknown>).length > 0))
-    ) {
-      throw new Error(`API-Football returned errors: ${JSON.stringify(apiErrors)}`);
-    }
-
-    const fixtures = payload.response ?? [];
-    console.log('[sync-cup-fixtures] fixtures received:', fixtures.length);
-
-    const rows = fixtures.map(mapFixture).filter((row): row is CupMatchUpsert => Boolean(row));
-    console.log('[sync-cup-fixtures] fixtures mapped for upsert:', rows.length);
 
     if (rows.length > 0) {
       const { error } = await supabase
@@ -255,11 +302,9 @@ Deno.serve(async (request) => {
     const { error: logError } = await supabase.from('cup_sync_logs').insert({
       source: 'api-football',
       status: 'success',
-      message: `Synced ${rows.length} World Cup fixtures.`,
+      message: `Synced ${rows.length} fixtures.`,
       metadata: {
-        league: WORLD_CUP_LEAGUE_ID,
-        season: WORLD_CUP_SEASON,
-        received: fixtures.length,
+        targets: receivedByTarget,
         upserted: rows.length,
       },
     });
@@ -271,9 +316,7 @@ Deno.serve(async (request) => {
 
     return jsonResponse({
       ok: true,
-      league: WORLD_CUP_LEAGUE_ID,
-      season: WORLD_CUP_SEASON,
-      received: fixtures.length,
+      targets: receivedByTarget,
       upserted: rows.length,
     });
   } catch (error) {
@@ -286,8 +329,7 @@ Deno.serve(async (request) => {
         status: 'error',
         message,
         metadata: {
-          league: WORLD_CUP_LEAGUE_ID,
-          season: WORLD_CUP_SEASON,
+          targets,
         },
       });
 

@@ -9,7 +9,7 @@ const items = [
   {
     title: 'Partidos',
     description: 'Calendario y jornadas',
-    to: '/cup/stage/fase-de-grupos',
+    to: '/cup/stage/todos',
     icon: Trophy,
   },
   {

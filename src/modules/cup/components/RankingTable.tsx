@@ -29,14 +29,14 @@ function RankingTable({ ranking, currentUserId }: Props) {
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-base font-bold text-tonner-slate sm:text-lg">
-                    {row.display_name ?? row.user_id}
+                    {row.display_name ?? 'Participante'}
                   </p>
                   <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
                     {row.position === 1 ? 'Lider con glow' : 'Competidor mundialista'}
                   </p>
                 </div>
               </div>
-              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto">
+              <div className="grid w-full grid-cols-3 gap-2 sm:w-auto sm:gap-3">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center sm:px-4">
                   <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Puntos</p>
                   <p className="mt-1 text-2xl font-black text-tonner-slate">{row.total_points}</p>
@@ -44,6 +44,10 @@ function RankingTable({ ranking, currentUserId }: Props) {
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center sm:px-4">
                   <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Aciertos</p>
                   <p className="mt-1 text-2xl font-black text-tonner-slate">{row.exact_hits}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center sm:px-4">
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Picks</p>
+                  <p className="mt-1 text-2xl font-black text-tonner-slate">{row.prediction_count}</p>
                 </div>
               </div>
             </div>

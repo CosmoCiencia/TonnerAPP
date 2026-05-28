@@ -12,6 +12,8 @@
     "cap:sync": "npm run build && npx cap sync android",
     "cap:open:android": "npx cap open android",
     "android": "npm run cap:sync && npx cap open android",
+    "cup:sync:conmebol": "node scripts/cup/invoke-sync-conmebol-fixtures.mjs",
+    "cup:calculate": "node scripts/cup/invoke-calculate-cup-points.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

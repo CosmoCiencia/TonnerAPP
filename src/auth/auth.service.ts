@@ -28,6 +28,7 @@ async function createCustomerProfile(user: AuthUser) {
     {
       id: user.id,
       email: user.email,
+      full_name: user.fullName,
       role: 'customer',
     },
     { onConflict: 'id' },
@@ -131,5 +132,17 @@ export async function signOut() {
 
   if (error) {
     throw new Error(error.message)
+  }
+}
+
+export async function updateProfileFullName(userId: string, fullName: string) {
+  const supabase = requireSupabase()
+  const { error } = await supabase
+    .from('profiles')
+    .update({ full_name: fullName.trim() })
+    .eq('id', userId)
+
+  if (error) {
+    throw new Error(`No se pudo actualizar el nombre del perfil: ${error.message}`)
   }
 }

@@ -23,6 +23,7 @@ export function useCupData(userId: string | null) {
   const [ranking, setRanking] = useState<RankingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
+  const [refreshingRanking, setRefreshingRanking] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -101,6 +102,22 @@ export function useCupData(userId: string | null) {
     [matches, points, predictions, userId],
   );
 
+  async function refreshRanking(options: { showToast?: boolean } = {}) {
+    setRefreshingRanking(true);
+    try {
+      const rankingResponse = await fetchRanking();
+      setRanking(rankingResponse);
+      if (options.showToast) {
+        setToast('Ranking actualizado');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo actualizar el ranking.';
+      setToast(message);
+    } finally {
+      setRefreshingRanking(false);
+    }
+  }
+
   async function savePrediction(matchId: string, predictionResult: PredictionOutcome) {
     if (!isValidUserId(userId)) {
       setToast('Inicia sesión para guardar tu pronóstico.');
@@ -118,6 +135,7 @@ export function useCupData(userId: string | null) {
             )
           : [...current, nextPrediction];
       });
+      void refreshRanking();
       setToast('Pronóstico guardado');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo guardar el pronóstico.';
@@ -134,6 +152,8 @@ export function useCupData(userId: string | null) {
     ranking,
     points,
     savingMatchId,
+    refreshingRanking,
+    refreshRanking,
     savePrediction,
     toast,
   };

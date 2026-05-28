@@ -2,6 +2,11 @@ import type { MatchWithPrediction } from './types';
 
 export const cupStages = [
   {
+    slug: 'todos',
+    title: 'Partidos',
+    description: 'Calendario de partidos disponibles.',
+  },
+  {
     slug: 'fase-de-grupos',
     title: 'Fase de grupos',
     description: 'Calendario mundialista Tonner.',
@@ -41,6 +46,11 @@ export function getCupStage(slug: string | undefined) {
 
 export function stageMatches(matches: MatchWithPrediction[], slug: string) {
   const stage = getCupStage(slug);
+
+  if (stage.slug === 'todos') {
+    return matches;
+  }
+
   return matches.filter((item) => item.match.stage === stage.title);
 }
 

@@ -45,36 +45,18 @@ function toPoint(row: PointRow): PointEntry {
   };
 }
 
-function isMissingPredictionResultColumn(error: { message?: string; details?: string; hint?: string } | null) {
-  const text = `${error?.message ?? ''} ${error?.details ?? ''} ${error?.hint ?? ''}`.toLowerCase();
-  return text.includes('prediction_result');
-}
-
 export async function fetchPredictions(userId: string): Promise<Prediction[]> {
   const supabase = requireSupabase();
-  const response = await supabase
+  const { data, error } = await supabase
     .from('cup_predictions')
     .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away')
     .eq('user_id', userId);
 
-  if (response.error) {
-    if (isMissingPredictionResultColumn(response.error)) {
-      const legacyResponse = await supabase
-        .from('cup_predictions')
-        .select('id,user_id,match_id,predicted_home,predicted_away')
-        .eq('user_id', userId);
-
-      if (legacyResponse.error) {
-        throw new Error(`No se pudieron cargar tus pronósticos: ${legacyResponse.error.message}`);
-      }
-
-      return ((legacyResponse.data ?? []) as PredictionRow[]).map(toPrediction);
-    }
-
-    throw new Error(`No se pudieron cargar tus pronósticos: ${response.error.message}`);
+  if (error) {
+    throw new Error(`No se pudieron cargar tus pronósticos: ${error.message}`);
   }
 
-  return ((response.data ?? []) as PredictionRow[]).map(toPrediction);
+  return ((data ?? []) as PredictionRow[]).map(toPrediction);
 }
 
 export async function fetchPoints(userId: string): Promise<PointEntry[]> {
@@ -95,7 +77,7 @@ export async function fetchRanking(): Promise<RankingRow[]> {
   const supabase = requireSupabase();
   const { data, error } = await supabase
     .from('cup_ranking_view')
-    .select('position,user_id,display_name,total_points,exact_hits')
+    .select('position,user_id,display_name,total_points,exact_hits,prediction_count')
     .order('position', { ascending: true });
 
   if (error) {
@@ -105,9 +87,10 @@ export async function fetchRanking(): Promise<RankingRow[]> {
   return ((data ?? []) as RankingRowResponse[]).map((row) => ({
     position: row.position,
     user_id: row.user_id,
-    display_name: row.display_name ?? row.user_id,
+    display_name: row.display_name ?? 'Participante',
     total_points: row.total_points,
     exact_hits: row.exact_hits,
+    prediction_count: row.prediction_count ?? 0,
   }));
 }
 
@@ -118,7 +101,7 @@ export async function upsertPrediction(
 ): Promise<Prediction> {
   const supabase = requireSupabase();
   const score = getOutcomeScore(prediction_result);
-  const response = await supabase
+  const { data, error } = await supabase
     .from('cup_predictions')
     .upsert(
       {
@@ -133,40 +116,13 @@ export async function upsertPrediction(
     .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away')
     .single();
 
-  if (response.error) {
-    if (isMissingPredictionResultColumn(response.error)) {
-      const legacyResponse = await supabase
-        .from('cup_predictions')
-        .upsert(
-          {
-            user_id,
-            match_id,
-            predicted_home: score.home,
-            predicted_away: score.away,
-          },
-          { onConflict: 'user_id,match_id' },
-        )
-        .select('id,user_id,match_id,predicted_home,predicted_away')
-        .single();
-
-      if (legacyResponse.error) {
-        throw new Error(
-          `No se pudo guardar el pronóstico. Detalle: ${legacyResponse.error.message}`,
-        );
-      }
-
-      return toPrediction({
-        ...(legacyResponse.data as PredictionRow),
-        prediction_result,
-      });
-    }
-
+  if (error) {
     throw new Error(
-      `No se pudo guardar el pronóstico. Detalle: ${response.error.message}`,
+      `No se pudo guardar el pronóstico. Detalle: ${error.message}`,
     );
   }
 
-  return toPrediction(response.data as PredictionRow);
+  return toPrediction(data as PredictionRow);
 }
 
 export function getUserMatches(

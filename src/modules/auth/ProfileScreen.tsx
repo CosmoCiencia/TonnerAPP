@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import LegalTermsContent from '../../components/LegalTermsContent'
 import { useAuth } from '../../auth/useAuth'
+import { updateProfileFullName } from '../../auth/auth.service'
 import { getOptimizedImageSrc } from '../../services/imageAssets'
 import { AuthShell } from './authScreenUtils'
 
@@ -53,7 +54,7 @@ export default function ProfileScreen() {
     loadEditableProfile(auth.user?.id, auth.user?.fullName),
   )
 
-  const handleProfileSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleProfileSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (auth.user?.id) {
@@ -65,6 +66,15 @@ export default function ProfileScreen() {
           email: auth.user.email,
         }),
       )
+
+      try {
+        await updateProfileFullName(auth.user.id, editableProfile.fullName)
+        setProfileFeedback('Datos actualizados.')
+        return
+      } catch (error) {
+        setProfileFeedback(error instanceof Error ? error.message : 'No se pudo actualizar el perfil.')
+        return
+      }
     }
 
     setProfileFeedback('Datos actualizados en este dispositivo.')
@@ -202,6 +212,8 @@ export default function ProfileScreen() {
         eyebrow="Perfil"
         title="Modo invitado"
         description="Puedes ver catálogo, mapa y paint sin cuenta. Inicia sesión para TonnerCup y funciones personalizadas."
+        showTopBar
+        showHeaderLogo={false}
       >
         <section className="auth-card auth-status-card">
           <Link to="/login" state={{ from: { pathname: '/profile' } }}>
