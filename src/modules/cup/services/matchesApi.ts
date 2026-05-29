@@ -16,13 +16,20 @@ type CupMatchRow = {
   stage: string | null;
   score_home: number | null;
   score_away: number | null;
+  elapsed_minutes: number | null;
+  extra_minutes: number | null;
 };
 
+const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT']);
 const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN']);
 
-function toMatch(row: CupMatchRow): Match {
-  const started = Date.parse(row.date) <= Date.now();
+function getMatchStatus(statusShort: string | null): Match['status'] {
+  if (LIVE_STATUSES.has(statusShort ?? '')) return 'live';
+  if (FINISHED_STATUSES.has(statusShort ?? '')) return 'finished';
+  return 'upcoming';
+}
 
+function toMatch(row: CupMatchRow): Match {
   return {
     id: row.id,
     group: row.group_name ?? 'General',
@@ -35,9 +42,11 @@ function toMatch(row: CupMatchRow): Match {
     city: row.venue_city ?? 'Por definir',
     stage: row.stage ?? 'Fase de grupos',
     round: row.round ?? row.stage ?? 'Fase de grupos',
-    status: FINISHED_STATUSES.has(row.status_short ?? '') || started ? 'finished' : 'upcoming',
+    status: getMatchStatus(row.status_short),
     score_home: row.score_home,
     score_away: row.score_away,
+    elapsed_minutes: row.elapsed_minutes,
+    extra_minutes: row.extra_minutes,
   };
 }
 
@@ -46,7 +55,7 @@ export async function fetchMatches(): Promise<Match[]> {
   const { data, error } = await supabase
     .from('cup_matches')
     .select(
-      'id,round,group_name,date,status_short,home_team_name,home_team_logo,away_team_name,away_team_logo,venue_name,venue_city,stage,score_home,score_away',
+      'id,round,group_name,date,status_short,home_team_name,home_team_logo,away_team_name,away_team_logo,venue_name,venue_city,stage,score_home,score_away,elapsed_minutes,extra_minutes',
     )
     .order('date', { ascending: true });
 

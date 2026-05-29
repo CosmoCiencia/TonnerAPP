@@ -4,16 +4,24 @@ type Props = {
   status: MatchStatus;
 };
 
+const statusStyles: Record<MatchStatus, string> = {
+  finished: 'bg-emerald-400/15 text-emerald-300',
+  live: 'bg-red-400/15 text-red-200',
+  upcoming: 'bg-orange-400/15 text-orange-200',
+};
+
+const statusLabels: Record<MatchStatus, string> = {
+  finished: 'Finalizado',
+  live: 'En vivo',
+  upcoming: 'No iniciado',
+};
+
 function MatchStatusPill({ status }: Props) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${
-        status === 'finished'
-          ? 'bg-emerald-400/15 text-emerald-300'
-          : 'bg-orange-400/15 text-orange-200'
-      }`}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${statusStyles[status]}`}
     >
-      {status === 'finished' ? 'Finalizado' : 'Próximo'}
+      {statusLabels[status]}
     </span>
   );
 }

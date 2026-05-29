@@ -12,6 +12,11 @@ type Props = {
   showAction?: boolean;
 };
 
+function formatMatchMinute(elapsedMinutes: number | null, extraMinutes: number | null) {
+  if (elapsedMinutes === null) return null;
+  return extraMinutes ? `${elapsedMinutes}+${extraMinutes}'` : `${elapsedMinutes}'`;
+}
+
 function MatchCard({
   item,
   ctaTo = '/cup/predictions',
@@ -26,6 +31,12 @@ function MatchCard({
   }).format(new Date(match.date));
   const actionLabel = ctaLabel ?? (prediction ? 'Editar predicción' : 'Predecir');
   const hasScore = match.score_home !== null && match.score_away !== null;
+  const matchMinute = formatMatchMinute(match.elapsed_minutes, match.extra_minutes);
+  const statusLabel = match.status === 'live'
+    ? `EN VIVO${matchMinute ? ` · ${matchMinute}` : ''}`
+    : match.status === 'finished'
+      ? 'FINALIZADO'
+      : 'NO INICIADO';
 
   return (
     <article className="cup-card p-3 text-tonner-slate">
@@ -33,7 +44,23 @@ function MatchCard({
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
           {formatRoundLabel(match.round)}
         </p>
-        <p className="mt-1 text-xs font-black text-tonner-slate">{matchDate}</p>
+        <div className="mt-2 flex justify-center">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${
+              match.status === 'live'
+                ? 'bg-red-50 text-red-700'
+                : match.status === 'finished'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'bg-orange-50 text-tonner-orange'
+            }`}
+          >
+            {match.status === 'live' ? (
+              <span className="h-2 w-2 rounded-full bg-red-600" aria-hidden="true" />
+            ) : null}
+            {statusLabel}
+          </span>
+        </div>
+        <p className="mt-2 text-xs font-black text-tonner-slate">{matchDate}</p>
         <p className="mx-auto mt-1 max-w-[16rem] truncate text-[11px] font-semibold text-slate-500">
           {match.city} · {match.stadium}
         </p>

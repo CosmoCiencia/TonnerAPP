@@ -35,6 +35,7 @@ const response = await fetch(`${supabaseUrl}/functions/v1/sync-cup-fixtures`, {
     'x-tonner-sync-secret': secret,
   },
   body: JSON.stringify({
+    refreshExisting: true,
     targets: [
       { league: 13, season: 2026, next: 5, status: 'NS' },
       { league: 11, season: 2026, next: 5, status: 'NS' },

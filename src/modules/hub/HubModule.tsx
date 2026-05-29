@@ -280,7 +280,7 @@ export function HubModule({
       />
 
       <section
-        className={`hub-content ${activeView === 'profile' ? 'hub-content--profile' : ''}`}
+        className={`hub-content ${activeView === 'home' ? 'hub-content--home' : ''} ${activeView === 'profile' ? 'hub-content--profile' : ''}`}
         aria-label="TonnerHub"
       >
         {activeView === 'home' ? (

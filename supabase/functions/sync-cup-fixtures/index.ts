@@ -14,6 +14,7 @@ type SyncTarget = {
 
 type SyncRequestBody = {
   targets?: SyncTarget[];
+  refreshExisting?: boolean;
 };
 
 type ApiFootballFixture = {
@@ -27,6 +28,8 @@ type ApiFootballFixture = {
     status?: {
       long?: string | null;
       short?: string | null;
+      elapsed?: number | null;
+      extra?: number | null;
     } | null;
   };
   league?: {
@@ -68,6 +71,8 @@ type CupMatchUpsert = {
   date: string;
   status_short: string;
   status_long: string;
+  elapsed_minutes: number | null;
+  extra_minutes: number | null;
   home_team_id: number | null;
   home_team_name: string;
   home_team_logo: string | null;
@@ -80,6 +85,16 @@ type CupMatchUpsert = {
   score_away: number | null;
   raw: ApiFootballFixture;
   updated_at: string;
+};
+
+type ExistingCupMatch = {
+  api_fixture_id: number | null;
+  league_id: number;
+};
+
+type ParsedSyncRequest = {
+  targets: SyncTarget[];
+  refreshExisting: boolean;
 };
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -113,7 +128,7 @@ function requireEnv(name: string): string {
   return value;
 }
 
-async function parseSyncTargets(request: Request): Promise<SyncTarget[]> {
+async function parseSyncRequest(request: Request): Promise<ParsedSyncRequest> {
   let body: SyncRequestBody | null = null;
 
   try {
@@ -126,7 +141,8 @@ async function parseSyncTargets(request: Request): Promise<SyncTarget[]> {
     ? body.targets
     : [{ league: WORLD_CUP_LEAGUE_ID, season: WORLD_CUP_SEASON }];
 
-  return targets.map((target) => {
+  return {
+    targets: targets.map((target) => {
     const league = Number(target.league);
     const season = Number(target.season);
     const next = target.next === undefined ? undefined : Number(target.next);
@@ -145,7 +161,9 @@ async function parseSyncTargets(request: Request): Promise<SyncTarget[]> {
     }
 
     return { league, season, next, status };
-  });
+    }),
+    refreshExisting: body?.refreshExisting ?? false,
+  };
 }
 
 function authorizeInternalRequest(request: Request): Response | null {
@@ -202,6 +220,8 @@ function mapFixture(fixture: ApiFootballFixture): CupMatchUpsert | null {
     date,
     status_short: fixture.fixture?.status?.short ?? 'NS',
     status_long: fixture.fixture?.status?.long ?? 'Not Started',
+    elapsed_minutes: fixture.fixture?.status?.elapsed ?? null,
+    extra_minutes: fixture.fixture?.status?.extra ?? null,
     home_team_id: fixture.teams?.home?.id ?? null,
     home_team_name: fixture.teams?.home?.name ?? 'Por definir',
     home_team_logo: fixture.teams?.home?.logo ?? null,
@@ -217,9 +237,36 @@ function mapFixture(fixture: ApiFootballFixture): CupMatchUpsert | null {
   };
 }
 
+async function fetchApiFootballFixtures(url: URL, apiFootballKey: string): Promise<ApiFootballFixture[]> {
+  const response = await fetch(url, {
+    headers: {
+      'x-apisports-key': apiFootballKey,
+    },
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`API-Football HTTP ${response.status}: ${body}`);
+  }
+
+  const payload = (await response.json()) as ApiFootballResponse;
+  const apiErrors = payload.errors;
+
+  if (
+    apiErrors &&
+    ((Array.isArray(apiErrors) && apiErrors.length > 0) ||
+      (!Array.isArray(apiErrors) && Object.keys(apiErrors as Record<string, unknown>).length > 0))
+  ) {
+    throw new Error(`API-Football returned errors: ${JSON.stringify(apiErrors)}`);
+  }
+
+  return payload.response ?? [];
+}
+
 Deno.serve(async (request) => {
   let supabase: ReturnType<typeof createClient> | null = null;
   let targets: SyncTarget[] | null = null;
+  let refreshExisting = false;
 
   try {
     if (request.method !== 'POST') {
@@ -231,7 +278,9 @@ Deno.serve(async (request) => {
       return unauthorizedResponse;
     }
 
-    targets = await parseSyncTargets(request);
+    const parsedRequest = await parseSyncRequest(request);
+    targets = parsedRequest.targets;
+    refreshExisting = parsedRequest.refreshExisting;
     const supabaseUrl = requireEnv('SUPABASE_URL');
     const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
     const apiFootballKey = requireEnv('API_FOOTBALL_KEY');
@@ -241,6 +290,7 @@ Deno.serve(async (request) => {
     });
 
     const receivedByTarget: Array<SyncTarget & { received: number; upserted: number }> = [];
+    const refreshedExisting: Array<{ api_fixture_id: number; received: number; upserted: number }> = [];
     const rows: CupMatchUpsert[] = [];
 
     for (const target of targets) {
@@ -256,29 +306,7 @@ Deno.serve(async (request) => {
         url.searchParams.set('status', target.status);
       }
 
-      const response = await fetch(url, {
-        headers: {
-          'x-apisports-key': apiFootballKey,
-        },
-      });
-
-      if (!response.ok) {
-        const body = await response.text();
-        throw new Error(`API-Football HTTP ${response.status}: ${body}`);
-      }
-
-      const payload = (await response.json()) as ApiFootballResponse;
-      const apiErrors = payload.errors;
-
-      if (
-        apiErrors &&
-        ((Array.isArray(apiErrors) && apiErrors.length > 0) ||
-          (!Array.isArray(apiErrors) && Object.keys(apiErrors as Record<string, unknown>).length > 0))
-      ) {
-        throw new Error(`API-Football returned errors: ${JSON.stringify(apiErrors)}`);
-      }
-
-      const fixtures = payload.response ?? [];
+      const fixtures = await fetchApiFootballFixtures(url, apiFootballKey);
       const targetRows = fixtures.map(mapFixture).filter((row): row is CupMatchUpsert => Boolean(row));
       rows.push(...targetRows);
       receivedByTarget.push({
@@ -288,10 +316,48 @@ Deno.serve(async (request) => {
       });
     }
 
-    if (rows.length > 0) {
+    if (refreshExisting) {
+      const targetLeagueIds = [...new Set(targets.map((target) => target.league))];
+      const { data: existingMatches, error: existingMatchesError } = await supabase
+        .from('cup_matches')
+        .select('api_fixture_id,league_id')
+        .in('league_id', targetLeagueIds)
+        .not('api_fixture_id', 'is', null);
+
+      if (existingMatchesError) {
+        throw existingMatchesError;
+      }
+
+      const existingFixtureIds = [
+        ...new Set(
+          ((existingMatches ?? []) as ExistingCupMatch[])
+            .map((match) => match.api_fixture_id)
+            .filter((apiFixtureId): apiFixtureId is number => Number.isInteger(apiFixtureId)),
+        ),
+      ];
+
+      for (const apiFixtureId of existingFixtureIds) {
+        const url = new URL('/fixtures', API_FOOTBALL_BASE_URL);
+        url.searchParams.set('id', String(apiFixtureId));
+
+        const fixtures = await fetchApiFootballFixtures(url, apiFootballKey);
+        const fixtureRows = fixtures.map(mapFixture).filter((row): row is CupMatchUpsert => Boolean(row));
+        rows.push(...fixtureRows);
+        refreshedExisting.push({
+          api_fixture_id: apiFixtureId,
+          received: fixtures.length,
+          upserted: fixtureRows.length,
+        });
+      }
+    }
+
+    const rowsByFixtureId = new Map(rows.map((row) => [row.api_fixture_id, row]));
+    const dedupedRows = [...rowsByFixtureId.values()];
+
+    if (dedupedRows.length > 0) {
       const { error } = await supabase
         .from('cup_matches')
-        .upsert(rows, { onConflict: 'api_fixture_id' });
+        .upsert(dedupedRows, { onConflict: 'api_fixture_id' });
 
       if (error) {
         console.error('[sync-cup-fixtures] cup_matches upsert error:', error);
@@ -302,10 +368,11 @@ Deno.serve(async (request) => {
     const { error: logError } = await supabase.from('cup_sync_logs').insert({
       source: 'api-football',
       status: 'success',
-      message: `Synced ${rows.length} fixtures.`,
+      message: `Synced ${dedupedRows.length} fixtures.`,
       metadata: {
         targets: receivedByTarget,
-        upserted: rows.length,
+        refreshed_existing: refreshedExisting,
+        upserted: dedupedRows.length,
       },
     });
 
@@ -317,7 +384,8 @@ Deno.serve(async (request) => {
     return jsonResponse({
       ok: true,
       targets: receivedByTarget,
-      upserted: rows.length,
+      refreshed_existing: refreshedExisting,
+      upserted: dedupedRows.length,
     });
   } catch (error) {
     const message = getErrorMessage(error);
@@ -330,6 +398,7 @@ Deno.serve(async (request) => {
         message,
         metadata: {
           targets,
+          refreshExisting,
         },
       });
 
