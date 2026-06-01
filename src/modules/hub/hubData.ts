@@ -8,10 +8,10 @@ export const hubCards: HubCard[] = [
     variant: 'portfolio',
   },
   {
-    key: 'paint',
-    title: 'TONNER PAINT',
-    image: '/hub/tonner-paint.webp',
-    variant: 'paint',
+    key: 'cup',
+    title: 'POLLAMUNDIALISTA',
+    image: '/cup/fondo-pollatonner-grupos.webp',
+    variant: 'cup',
   },
   {
     key: 'stores',
@@ -20,10 +20,10 @@ export const hubCards: HubCard[] = [
     variant: 'stores',
   },
   {
-    key: 'cup',
-    title: 'POLLAMUNDIALISTA',
-    image: '/cup/fondo-pollatonner-grupos.webp',
-    variant: 'cup',
+    key: 'paint',
+    title: 'TONNER PAINT',
+    image: '/hub/tonner-paint.webp',
+    variant: 'paint',
   },
 ]
 

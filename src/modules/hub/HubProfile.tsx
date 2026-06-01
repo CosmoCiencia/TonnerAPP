@@ -114,7 +114,7 @@ function HubProfilePanel({
         <h1>Atención al Cliente</h1>
         <div className="hub-support-actions">
           <a href="tel:+573000000000">Llamar a Tonner</a>
-          <a href="mailto:servicioalcliente@pinturastonner.com">Enviar correo</a>
+          <a href="mailto:marketing@pinturastonner.com">Enviar correo</a>
           <a href="https://wa.me/573000000000">WhatsApp</a>
         </div>
       </section>

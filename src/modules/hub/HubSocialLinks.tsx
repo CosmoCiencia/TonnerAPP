@@ -1,18 +1,23 @@
 const socialLinks = [
   {
     label: 'Instagram',
-    href: 'https://instagram.com/pinturastonner',
+    href: 'https://www.instagram.com/pinturastonner/',
     variant: 'instagram',
   },
   {
     label: 'TikTok',
-    href: 'https://www.tiktok.com/search?q=pinturas%20tonner',
+    href: 'https://www.tiktok.com/@pinturas.tonner?_r=1&_t=ZS-96k7Em65hkD',
     variant: 'tiktok',
   },
   {
     label: 'Facebook',
     href: 'https://www.facebook.com/people/Pinturas-Tonner/100063534484222/',
     variant: 'facebook',
+  },
+  {
+    label: 'LinkedIn',
+    href: 'https://www.linkedin.com/company/pinturastonner/',
+    variant: 'linkedin',
   },
 ] as const
 
@@ -31,6 +36,14 @@ function SocialIcon({ variant }: { variant: (typeof socialLinks)[number]['varian
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M14.2 8.1h2.1V4.6c-.36-.05-1.6-.16-3.05-.16-3.02 0-5.1 1.85-5.1 5.25v2.95H4.75v3.92h3.4v7h4.18v-7h3.28l.52-3.92h-3.8V10.1c0-1.13.31-2 1.87-2Z" />
+      </svg>
+    )
+  }
+
+  if (variant === 'linkedin') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M5.2 8.55h3.42v10.98H5.2V8.55Zm1.72-5.45a1.98 1.98 0 1 1 0 3.96 1.98 1.98 0 0 1 0-3.96Zm4.1 5.45h3.28v1.5h.05c.46-.86 1.57-1.76 3.23-1.76 3.45 0 4.08 2.27 4.08 5.22v6.02h-3.42v-5.34c0-1.27-.02-2.91-1.77-2.91-1.78 0-2.05 1.39-2.05 2.82v5.43h-3.4V8.55Z" />
       </svg>
     )
   }

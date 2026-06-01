@@ -45,6 +45,142 @@ function formatMatchDateRange(matches: ReturnTypeCupData['userMatches']) {
   return formatDateRange([...new Set(matches.map((item) => getDateKey(item.match.date)))]);
 }
 
+function statusOrder(status: ReturnTypeCupData['userMatches'][number]['match']['status']) {
+  if (status === 'live') return 0;
+  if (status === 'upcoming') return 1;
+  return 2;
+}
+
+function sortMatchesForOverview(matches: ReturnTypeCupData['userMatches']) {
+  return [...matches].sort((first, second) => {
+    const statusDelta = statusOrder(first.match.status) - statusOrder(second.match.status);
+    if (statusDelta !== 0) return statusDelta;
+
+    if (first.match.status === 'finished' && second.match.status === 'finished') {
+      return Date.parse(second.match.date) - Date.parse(first.match.date);
+    }
+
+    return Date.parse(first.match.date) - Date.parse(second.match.date);
+  });
+}
+
+function MatchStatusSection({
+  title,
+  matches,
+  emptyDescription,
+  expanded,
+  onToggle,
+  visibleCount,
+  onShowMore,
+}: {
+  title: string;
+  matches: ReturnTypeCupData['userMatches'];
+  emptyDescription: string;
+  expanded: boolean;
+  onToggle: () => void;
+  visibleCount?: number;
+  onShowMore?: () => void;
+}) {
+  const visibleMatches = visibleCount === undefined ? matches : matches.slice(0, visibleCount);
+  const hasMoreMatches = visibleMatches.length < matches.length;
+
+  return (
+    <section className="space-y-3">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full rounded-xl border border-white/15 bg-tonner-blue px-4 py-3 text-left text-white shadow-[0_12px_24px_rgba(8,43,104,0.2)]"
+        aria-expanded={expanded}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-display text-lg font-black">{title}</p>
+            <p className="mt-0.5 text-xs font-semibold text-white/75">
+              {matches.length === 1 ? '1 partido' : `${matches.length} partidos`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black">
+              {matches.length}
+            </span>
+            <span className="text-lg font-black" aria-hidden="true">
+              {expanded ? '−' : '+'}
+            </span>
+          </div>
+        </div>
+      </button>
+
+      {expanded ? (
+        matches.length > 0 ? (
+          <>
+            {visibleMatches.map((item) => (
+              <MatchCard key={item.match.id} item={item} showPredictionStatus />
+            ))}
+
+            {hasMoreMatches && onShowMore ? (
+              <button
+                type="button"
+                className="w-full rounded-xl bg-white px-5 py-3 text-sm font-black text-tonner-blue shadow-[0_12px_24px_rgba(45,89,199,0.16)]"
+                onClick={onShowMore}
+              >
+                Ver más {title.toLowerCase()}
+              </button>
+            ) : null}
+          </>
+        ) : (
+          <div className="rounded-xl bg-white px-4 py-3 text-center text-sm font-semibold text-slate-500 shadow-[0_10px_22px_rgba(15,23,42,0.08)]">
+            {emptyDescription}
+          </div>
+        )
+      ) : null}
+    </section>
+  );
+}
+
+function StatusOverview({ matches }: { matches: ReturnTypeCupData['userMatches'] }) {
+  const liveMatches = sortMatchesForOverview(matches.filter((item) => item.match.status === 'live'));
+  const upcomingMatches = sortMatchesForOverview(matches.filter((item) => item.match.status === 'upcoming'));
+  const finishedMatches = sortMatchesForOverview(matches.filter((item) => item.match.status === 'finished'));
+  const defaultSection = liveMatches.length > 0 ? 'live' : upcomingMatches.length > 0 ? 'upcoming' : 'finished';
+  const [expandedSection, setExpandedSection] = useState(defaultSection);
+  const [visibleUpcoming, setVisibleUpcoming] = useState(5);
+  const [visibleFinished, setVisibleFinished] = useState(5);
+
+  const toggleSection = (section: string) => {
+    setExpandedSection((current) => (current === section ? '' : section));
+  };
+
+  return (
+    <div className="space-y-3">
+      <MatchStatusSection
+        title="En vivo"
+        matches={liveMatches}
+        emptyDescription="No hay partidos en vivo ahora."
+        expanded={expandedSection === 'live'}
+        onToggle={() => toggleSection('live')}
+      />
+      <MatchStatusSection
+        title="Próximos"
+        matches={upcomingMatches}
+        emptyDescription="No hay próximos partidos cargados."
+        expanded={expandedSection === 'upcoming'}
+        onToggle={() => toggleSection('upcoming')}
+        visibleCount={visibleUpcoming}
+        onShowMore={() => setVisibleUpcoming((current) => current + 5)}
+      />
+      <MatchStatusSection
+        title="Finalizados"
+        matches={finishedMatches}
+        emptyDescription="Todavía no hay partidos finalizados."
+        expanded={expandedSection === 'finished'}
+        onToggle={() => toggleSection('finished')}
+        visibleCount={visibleFinished}
+        onShowMore={() => setVisibleFinished((current) => current + 5)}
+      />
+    </div>
+  );
+}
+
 function StageMatchesPage() {
   const { stageSlug } = useParams();
   const cupData = useOutletContext<ReturnTypeCupData>();
@@ -63,6 +199,7 @@ function StageMatchesPage() {
     dateKey,
     matches: roundMatches.filter((item) => getDateKey(item.match.date) === dateKey),
   }));
+  const showStatusOverview = stage.slug === 'todos';
 
   return (
     <section className="space-y-5">
@@ -77,6 +214,8 @@ function StageMatchesPage() {
           title={`No hay partidos de ${stage.title.toLowerCase()}`}
           description="Cuando API-Football publique fixtures para esta fase, aparecerán aquí."
         />
+      ) : showStatusOverview ? (
+        <StatusOverview matches={matches} />
       ) : (
         <div className="space-y-5">
           <div className="flex justify-center gap-2 overflow-x-auto pb-1">

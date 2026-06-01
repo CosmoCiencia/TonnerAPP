@@ -36,18 +36,18 @@ function RankingTable({ ranking, currentUserId }: Props) {
                   </p>
                 </div>
               </div>
-              <div className="grid w-full grid-cols-3 gap-2 sm:w-auto sm:gap-3">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center sm:px-4">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Puntos</p>
-                  <p className="mt-1 text-2xl font-black text-tonner-slate">{row.total_points}</p>
+              <div className="grid w-full min-w-0 grid-cols-3 gap-1.5 sm:w-auto sm:min-w-[21rem] sm:gap-3">
+                <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-2 text-center sm:rounded-2xl sm:px-4 sm:py-3">
+                  <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:text-[11px] sm:tracking-[0.18em]">Puntos</p>
+                  <p className="mt-1 text-xl font-black leading-none text-tonner-slate sm:text-2xl">{row.total_points}</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center sm:px-4">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Aciertos</p>
-                  <p className="mt-1 text-2xl font-black text-tonner-slate">{row.exact_hits}</p>
+                <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-2 text-center sm:rounded-2xl sm:px-4 sm:py-3">
+                  <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:text-[11px] sm:tracking-[0.18em]">Aciertos</p>
+                  <p className="mt-1 text-xl font-black leading-none text-tonner-slate sm:text-2xl">{row.exact_hits}</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center sm:px-4">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Picks</p>
-                  <p className="mt-1 text-2xl font-black text-tonner-slate">{row.prediction_count}</p>
+                <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-2 text-center sm:rounded-2xl sm:px-4 sm:py-3">
+                  <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:text-[11px] sm:tracking-[0.18em]">Picks</p>
+                  <p className="mt-1 text-xl font-black leading-none text-tonner-slate sm:text-2xl">{row.prediction_count}</p>
                 </div>
               </div>
             </div>

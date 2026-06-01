@@ -81,11 +81,33 @@ export function HubModule({
   )
   const [products, setProducts] = useState<Product[]>([])
   const [productSearch, setProductSearch] = useState('')
+  const [showScrollHint, setShowScrollHint] = useState(false)
   const profileFirstName = hubProfile.fullName.trim().split(/\s+/)[0] || 'Perfil'
 
   useEffect(() => {
     getProducts().then(setProducts)
   }, [])
+
+  useEffect(() => {
+    if (activeView !== 'home' || productSearch.trim()) {
+      return
+    }
+
+    const updateScrollHint = () => {
+      const canScroll = document.documentElement.scrollHeight - window.innerHeight > 12
+      setShowScrollHint(canScroll && window.scrollY < 24)
+    }
+
+    const initialFrame = window.requestAnimationFrame(updateScrollHint)
+    window.addEventListener('scroll', updateScrollHint, { passive: true })
+    window.addEventListener('resize', updateScrollHint)
+
+    return () => {
+      window.cancelAnimationFrame(initialFrame)
+      window.removeEventListener('scroll', updateScrollHint)
+      window.removeEventListener('resize', updateScrollHint)
+    }
+  }, [activeView, productSearch])
 
   const searchResults = useMemo(() => {
     const normalizedSearch = productSearch.trim().toLowerCase()
@@ -271,6 +293,8 @@ export function HubModule({
     )
   }
 
+  const shouldShowScrollHint = activeView === 'home' && !productSearch.trim() && showScrollHint
+
   return (
     <main className="hub-shell">
       <HubHeader
@@ -280,7 +304,7 @@ export function HubModule({
       />
 
       <section
-        className={`hub-content ${activeView === 'home' ? 'hub-content--home' : ''} ${activeView === 'profile' ? 'hub-content--profile' : ''}`}
+        className={`hub-content ${activeView === 'profile' ? 'hub-content--profile' : ''}`}
         aria-label="TonnerHub"
       >
         {activeView === 'home' ? (
@@ -297,6 +321,12 @@ export function HubModule({
 
         {renderContent()}
       </section>
+
+      {shouldShowScrollHint ? (
+        <div className="hub-scroll-hint" aria-hidden="true">
+          <span />
+        </div>
+      ) : null}
 
       {showBottomNav ? (
         <nav className="hub-bottom-nav" aria-label="Navegacion principal">
