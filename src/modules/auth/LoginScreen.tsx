@@ -64,7 +64,7 @@ export default function LoginScreen() {
       </form>
 
       <footer className="auth-footer">
-        <Link to="/register" state={location.state}>
+        <Link to="/register-type" state={location.state}>
           Crear cuenta cliente
         </Link>
         <Link to="/">Seguir como invitado</Link>

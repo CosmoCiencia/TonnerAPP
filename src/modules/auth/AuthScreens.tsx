@@ -1,4 +1,5 @@
 export { default as LoginScreen } from './LoginScreen'
+export { default as ParticipantTypeScreen } from './ParticipantTypeScreen'
 export { default as ProfileScreen } from './ProfileScreen'
 export { default as RegisterScreen } from './RegisterScreen'
 export { AccessDeniedScreen, InternalToolsScreen, PendingApprovalScreen } from './StatusScreens'

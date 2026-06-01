@@ -28,7 +28,7 @@ export function AuthShell({
           ) : null}
           <span>{eyebrow}</span>
           <h1>{title}</h1>
-          <p>{description}</p>
+          {description ? <p>{description}</p> : null}
         </header>
         {children}
       </section>

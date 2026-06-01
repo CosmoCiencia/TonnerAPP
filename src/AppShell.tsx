@@ -20,6 +20,9 @@ const InternalToolsScreen = lazy(() =>
   import('./modules/auth/AuthScreens').then((module) => ({ default: module.InternalToolsScreen })),
 )
 const LoginScreen = lazy(() => import('./modules/auth/AuthScreens').then((module) => ({ default: module.LoginScreen })))
+const ParticipantTypeScreen = lazy(() =>
+  import('./modules/auth/AuthScreens').then((module) => ({ default: module.ParticipantTypeScreen })),
+)
 const PendingApprovalScreen = lazy(() =>
   import('./modules/auth/AuthScreens').then((module) => ({ default: module.PendingApprovalScreen })),
 )
@@ -259,6 +262,7 @@ export default function AppShell() {
           <Route path="/calculator" element={<HubRoute view="calculator" />} />
           <Route path="/profile" element={<ProfileScreen />} />
           <Route path="/login" element={<LoginScreen />} />
+          <Route path="/register-type" element={<ParticipantTypeScreen />} />
           <Route path="/register" element={<RegisterScreen />} />
           <Route path="/pending-approval" element={<PendingApprovalScreen />} />
           <Route path="/access-denied" element={<AccessDeniedScreen />} />

@@ -77,7 +77,7 @@ export async function fetchRanking(): Promise<RankingRow[]> {
   const supabase = requireSupabase();
   const { data, error } = await supabase
     .from('cup_ranking_view')
-    .select('position,user_id,display_name,total_points,exact_hits,prediction_count')
+    .select('position,user_id,display_name,cup_user_type,total_points,exact_hits,prediction_count')
     .order('position', { ascending: true });
 
   if (error) {
@@ -88,6 +88,7 @@ export async function fetchRanking(): Promise<RankingRow[]> {
     position: row.position,
     user_id: row.user_id,
     display_name: row.display_name ?? 'Participante',
+    cup_user_type: row.cup_user_type,
     total_points: row.total_points,
     exact_hits: row.exact_hits,
     prediction_count: row.prediction_count ?? 0,

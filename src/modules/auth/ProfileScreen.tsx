@@ -47,7 +47,6 @@ const loadEditableProfile = (userId: string | undefined, fullName: string | unde
 export default function ProfileScreen() {
   const auth = useAuth()
   const navigate = useNavigate()
-  const [showTerms, setShowTerms] = useState(false)
   const [profilePanel, setProfilePanel] = useState<ProfilePanel | null>(null)
   const [profileFeedback, setProfileFeedback] = useState('')
   const [editableProfile, setEditableProfile] = useState<EditableProfile>(() =>
@@ -215,22 +214,14 @@ export default function ProfileScreen() {
         showTopBar
         showHeaderLogo={false}
       >
-        <section className="auth-card auth-status-card">
+        <section className="auth-card auth-status-card auth-status-card--guest-login">
           <Link to="/login" state={{ from: { pathname: '/profile' } }}>
             Iniciar sesión
           </Link>
-          <Link to="/register" state={{ from: { pathname: '/profile' } }}>
+          <Link to="/register-type" state={{ from: { pathname: '/profile' } }}>
             Crear cuenta cliente
           </Link>
-          <button type="button" onClick={() => setShowTerms((current) => !current)}>
-            Términos y condiciones
-          </button>
         </section>
-        {showTerms ? (
-          <section className="auth-card auth-terms-card">
-            <LegalTermsContent />
-          </section>
-        ) : null}
       </AuthShell>
     )
   }

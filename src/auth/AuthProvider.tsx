@@ -39,12 +39,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tonnerWindow = window as Window & {
       __TONNER_CONTEXT__?: {
         user_id?: string
+        cup_user_type?: string
       }
     }
 
     tonnerWindow.__TONNER_CONTEXT__ = {
       ...tonnerWindow.__TONNER_CONTEXT__,
       user_id: user?.id,
+      cup_user_type: user?.cupUserType,
     }
   }, [user])
 

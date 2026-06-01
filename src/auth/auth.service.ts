@@ -1,43 +1,69 @@
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 import { isSupabaseConfigured, requireSupabase } from '../lib/supabase'
-import type { AuthUser, LoginInput, RegisterInput } from './auth.types'
+import type { AuthUser, CupUserType, LoginInput, RegisterInput } from './auth.types'
 
 type AuthStateChangeCallback = (event: AuthChangeEvent, user: AuthUser | null) => void
 
-function toCustomerUser(session: Session | null): AuthUser | null {
+type ProfileRow = {
+  full_name: string | null
+  role: AuthUser['role'] | null
+  cup_user_type: CupUserType | null
+}
+
+function normalizeCupUserType(value: string | null | undefined): CupUserType {
+  if (value === 'internal' || value === 'distributor') return value
+  return 'public'
+}
+
+async function toCustomerUser(session: Session | null): Promise<AuthUser | null> {
   const user = session?.user
 
   if (!user?.email) {
     return null
   }
 
+  const supabase = requireSupabase()
+  const { data } = await supabase
+    .from('profiles')
+    .select('full_name,role,cup_user_type')
+    .eq('id', user.id)
+    .maybeSingle()
+  const profile = data as ProfileRow | null
+
   return {
     id: user.id,
     email: user.email,
-    fullName: user.user_metadata?.full_name || user.email,
-    role: 'customer',
+    fullName: profile?.full_name || user.user_metadata?.full_name || user.email,
+    cupUserType: normalizeCupUserType(profile?.cup_user_type),
+    role: profile?.role ?? 'customer',
     status: 'active',
     permissions: ['cup.play'],
   }
 }
 
-async function createCustomerProfile(user: AuthUser) {
+async function createCustomerProfile(user: AuthUser, accessCode?: string) {
   const supabase = requireSupabase()
-  const { error } = await supabase.from('profiles').upsert(
-    {
-      id: user.id,
-      email: user.email,
-      full_name: user.fullName,
-      role: 'customer',
-    },
-    { onConflict: 'id' },
-  )
+  const { data, error } = await supabase
+    .rpc('upsert_own_customer_profile', {
+      profile_full_name: user.fullName,
+      access_code: accessCode?.trim() || null,
+    })
+    .single()
 
   if (error) {
     throw new Error(
-      `El usuario fue creado, pero no se pudo crear el perfil. Revisa que la tabla profiles tenga permisos para authenticated. Detalle: ${error.message}`,
+      `El usuario fue creado, pero no se pudo crear el perfil. Detalle: ${error.message}`,
     )
+  }
+
+  const profile = data as ProfileRow & { full_name: string | null }
+
+  return {
+    ...user,
+    fullName: profile.full_name || user.fullName,
+    cupUserType: normalizeCupUserType(profile.cup_user_type),
+    role: profile.role ?? 'customer',
   }
 }
 
@@ -63,7 +89,12 @@ export function onAuthStateChange(callback: AuthStateChangeCallback) {
 
   const supabase = requireSupabase()
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
-    callback(event, toCustomerUser(session))
+    void toCustomerUser(session)
+      .then((user) => callback(event, user))
+      .catch((error) => {
+        console.error(error)
+        callback(event, null)
+      })
   })
 
   return () => data.subscription.unsubscribe()
@@ -80,7 +111,7 @@ export async function signIn({ email, password }: LoginInput) {
     throw new Error(error.message)
   }
 
-  const user = toCustomerUser(data.session)
+  const user = await toCustomerUser(data.session)
 
   if (!user) {
     throw new Error('No se pudo restaurar la sesión.')
@@ -89,7 +120,7 @@ export async function signIn({ email, password }: LoginInput) {
   return user
 }
 
-export async function signUp({ email, fullName, password }: RegisterInput) {
+export async function signUp({ email, fullName, password, accessCode }: RegisterInput) {
   const supabase = requireSupabase()
   const { data, error } = await supabase.auth.signUp({
     email: email.trim().toLowerCase(),
@@ -105,12 +136,13 @@ export async function signUp({ email, fullName, password }: RegisterInput) {
     throw new Error(error.message)
   }
 
-  const user = toCustomerUser(data.session) ?? (
+  const user = (await toCustomerUser(data.session)) ?? (
     data.user?.email
       ? {
           id: data.user.id,
           email: data.user.email,
           fullName: data.user.user_metadata?.full_name || fullName.trim() || data.user.email,
+          cupUserType: 'public' as const,
           role: 'customer' as const,
           status: 'active' as const,
           permissions: ['cup.play' as const],
@@ -122,8 +154,7 @@ export async function signUp({ email, fullName, password }: RegisterInput) {
     throw new Error('No se pudo crear el usuario.')
   }
 
-  await createCustomerProfile(user)
-  return user
+  return createCustomerProfile(user, accessCode)
 }
 
 export async function signOut() {

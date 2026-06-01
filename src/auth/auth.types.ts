@@ -9,11 +9,13 @@ export type Permission =
   | 'internal.tools'
 
 export type ProfileStatus = 'active' | 'pending' | 'blocked'
+export type CupUserType = 'public' | 'internal' | 'distributor'
 
 export type AuthUser = {
   id: string
   email: string
   fullName: string
+  cupUserType: CupUserType
   role: Exclude<UserRole, 'guest'>
   status: ProfileStatus
   permissions: Permission[]
@@ -33,4 +35,6 @@ export type LoginInput = {
 
 export type RegisterInput = LoginInput & {
   fullName: string
+  participantType: CupUserType
+  accessCode?: string
 }

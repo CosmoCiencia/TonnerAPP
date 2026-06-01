@@ -5,6 +5,12 @@ type Props = {
   currentUserId: string | null;
 };
 
+const cupUserTypeLabels = {
+  public: 'Público',
+  internal: 'Interno',
+  distributor: 'Distribuidor',
+} as const;
+
 function RankingTable({ ranking, currentUserId }: Props) {
   return (
     <div className="cup-card overflow-hidden">
@@ -32,7 +38,7 @@ function RankingTable({ ranking, currentUserId }: Props) {
                     {row.display_name ?? 'Participante'}
                   </p>
                   <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                    {row.position === 1 ? 'Lider con glow' : 'Competidor mundialista'}
+                    {row.cup_user_type ? cupUserTypeLabels[row.cup_user_type] : 'Competidor mundialista'}
                   </p>
                 </div>
               </div>

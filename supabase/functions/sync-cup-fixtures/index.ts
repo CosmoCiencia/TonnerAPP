@@ -3,7 +3,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.87.1';
 const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
 const WORLD_CUP_LEAGUE_ID = 1;
 const WORLD_CUP_SEASON = 2026;
-const ALLOWED_LEAGUE_IDS = new Set([WORLD_CUP_LEAGUE_ID, 13, 11]);
+const ALLOWED_LEAGUE_IDS = new Set([WORLD_CUP_LEAGUE_ID]);
+const CLOSING_REFRESH_STATUSES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT'];
+const CLOSING_REFRESH_LOOKBACK_HOURS = 4;
+const CLOSING_REFRESH_LOOKAHEAD_HOURS = 1;
 
 type SyncTarget = {
   league: number;
@@ -16,16 +19,11 @@ type SyncTarget = {
 };
 
 type SyncRequestBody = {
-  mode?: 'standard' | 'live' | 'test-week';
+  mode?: 'standard' | 'live';
   league?: number;
   season?: number;
-  from?: string;
-  to?: string;
-  limit?: number;
   targets?: SyncTarget[];
   refreshExisting?: boolean;
-  resetBeforeSync?: boolean;
-  resetConfirmation?: string;
 };
 
 type ApiFootballFixture = {
@@ -103,41 +101,44 @@ type ExistingCupMatch = {
   league_id: number;
 };
 
+type ClosingRefreshCandidate = {
+  api_fixture_id: number | null;
+};
+
+type FixtureSummary = {
+  api_fixture_id: number;
+  status_short: string;
+  status_long: string;
+  elapsed_minutes: number | null;
+  extra_minutes: number | null;
+  score_home: number | null;
+  score_away: number | null;
+  home_team_name: string;
+  away_team_name: string;
+};
+
 type LiveSyncMetadata = {
   mode: 'live';
   league: number;
   season: number;
-  api_requests: number;
-  received: number;
-  filtered: number;
-  upserted: number;
-  fixtures: Array<{
-    api_fixture_id: number;
-    status_short: string;
-    status_long: string;
-    elapsed_minutes: number | null;
-    extra_minutes: number | null;
-    score_home: number | null;
-    score_away: number | null;
-    home_team_name: string;
-    away_team_name: string;
-  }>;
+  live_received: number;
+  live_filtered: number;
+  live_upserted: number;
+  closing_refresh_count: number;
+  closing_upserted: number;
+  api_requests_total: number;
+  live_fixtures: FixtureSummary[];
+  closing_fixtures: FixtureSummary[];
 };
 
 type ParsedSyncRequest = {
-  mode: 'standard' | 'live' | 'test-week';
+  mode: 'standard' | 'live';
   liveTarget?: {
     league: number;
     season: number;
   };
-  testWeek?: {
-    from?: string;
-    to?: string;
-    limit: number;
-  };
   targets: SyncTarget[];
   refreshExisting: boolean;
-  resetBeforeSync: boolean;
 };
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -182,7 +183,7 @@ async function parseSyncRequest(request: Request): Promise<ParsedSyncRequest> {
 
   const mode = body?.mode ?? 'standard';
 
-  if (mode !== 'standard' && mode !== 'live' && mode !== 'test-week') {
+  if (mode !== 'standard' && mode !== 'live') {
     throw new Error(`Unsupported sync mode: ${body?.mode}`);
   }
 
@@ -197,44 +198,7 @@ async function parseSyncRequest(request: Request): Promise<ParsedSyncRequest> {
       liveTarget: { league, season },
       targets: [{ league, season }],
       refreshExisting: false,
-      resetBeforeSync: false,
     };
-  }
-
-  if (mode === 'test-week') {
-    const from = normalizeApiDate(body?.from, 'from');
-    const to = normalizeApiDate(body?.to, 'to');
-    const limit = body?.limit === undefined ? 18 : Number(body.limit);
-
-    if ((from && !to) || (!from && to)) {
-      throw new Error('Both from and to are required for test-week date sync.');
-    }
-
-    if (from && to && from > to) {
-      throw new Error(`Invalid test-week date range: from ${from} is after to ${to}.`);
-    }
-
-    if (!Number.isInteger(limit) || limit < 1 || limit > 30) {
-      throw new Error(`Invalid test-week fixture limit: ${body?.limit}`);
-    }
-
-    if (body?.resetConfirmation !== 'LOAD_CUP_TEST_WEEK') {
-      throw new Error('Missing confirmation for test-week fixture sync.');
-    }
-
-    return {
-      mode,
-      testWeek: { from, to, limit },
-      targets: [],
-      refreshExisting: false,
-      resetBeforeSync: false,
-    };
-  }
-
-  const resetBeforeSync = body?.resetBeforeSync ?? false;
-
-  if (resetBeforeSync && body?.resetConfirmation !== 'DELETE_CUP_TEST_DATA') {
-    throw new Error('Missing reset confirmation for fixture sync cleanup.');
   }
 
   return {
@@ -272,7 +236,6 @@ async function parseSyncRequest(request: Request): Promise<ParsedSyncRequest> {
       return { league, season, next, status, date, from, to };
     }),
     refreshExisting: body?.refreshExisting ?? false,
-    resetBeforeSync,
   };
 }
 
@@ -405,30 +368,111 @@ function isTargetFixture(fixture: ApiFootballFixture, league: number, season: nu
   return fixture.league?.id === league && fixture.league?.season === season;
 }
 
+function getFixtureSummary(rows: CupMatchUpsert[]): FixtureSummary[] {
+  return rows.map((row) => ({
+    api_fixture_id: row.api_fixture_id,
+    status_short: row.status_short,
+    status_long: row.status_long,
+    elapsed_minutes: row.elapsed_minutes,
+    extra_minutes: row.extra_minutes,
+    score_home: row.score_home,
+    score_away: row.score_away,
+    home_team_name: row.home_team_name,
+    away_team_name: row.away_team_name,
+  }));
+}
+
 function getLiveSyncMetadata(
   target: { league: number; season: number },
   received: ApiFootballFixture[],
   rows: CupMatchUpsert[],
+  closingRefreshCount: number,
+  closingRows: CupMatchUpsert[],
 ): LiveSyncMetadata {
   return {
     mode: 'live',
     league: target.league,
     season: target.season,
-    api_requests: 1,
-    received: received.length,
-    filtered: rows.length,
-    upserted: rows.length,
-    fixtures: rows.map((row) => ({
-      api_fixture_id: row.api_fixture_id,
-      status_short: row.status_short,
-      status_long: row.status_long,
-      elapsed_minutes: row.elapsed_minutes,
-      extra_minutes: row.extra_minutes,
-      score_home: row.score_home,
-      score_away: row.score_away,
-      home_team_name: row.home_team_name,
-      away_team_name: row.away_team_name,
-    })),
+    live_received: received.length,
+    live_filtered: rows.length,
+    live_upserted: rows.length,
+    closing_refresh_count: closingRefreshCount,
+    closing_upserted: closingRows.length,
+    api_requests_total: 1 + closingRefreshCount,
+    live_fixtures: getFixtureSummary(rows),
+    closing_fixtures: getFixtureSummary(closingRows),
+  };
+}
+
+async function getClosingRefreshCandidates(
+  supabase: ReturnType<typeof createClient>,
+  target: { league: number; season: number },
+): Promise<number[]> {
+  const now = Date.now();
+  const from = new Date(now - CLOSING_REFRESH_LOOKBACK_HOURS * 60 * 60 * 1000).toISOString();
+  const to = new Date(now + CLOSING_REFRESH_LOOKAHEAD_HOURS * 60 * 60 * 1000).toISOString();
+  const selectedColumns = 'api_fixture_id';
+
+  const { data: liveCandidates, error: liveError } = await supabase
+    .from('cup_matches')
+    .select(selectedColumns)
+    .eq('league_id', target.league)
+    .eq('season', target.season)
+    .in('status_short', CLOSING_REFRESH_STATUSES)
+    .not('api_fixture_id', 'is', null);
+
+  if (liveError) {
+    throw liveError;
+  }
+
+  const { data: recentCandidates, error: recentError } = await supabase
+    .from('cup_matches')
+    .select(selectedColumns)
+    .eq('league_id', target.league)
+    .eq('season', target.season)
+    .gte('date', from)
+    .lte('date', to)
+    .not('api_fixture_id', 'is', null);
+
+  if (recentError) {
+    throw recentError;
+  }
+
+  return [
+    ...new Set(
+      ([...((liveCandidates ?? []) as ClosingRefreshCandidate[]), ...((recentCandidates ?? []) as ClosingRefreshCandidate[])])
+        .map((match) => match.api_fixture_id)
+        .filter((apiFixtureId): apiFixtureId is number => Number.isInteger(apiFixtureId)),
+    ),
+  ];
+}
+
+async function refreshClosingFixtures(
+  supabase: ReturnType<typeof createClient>,
+  target: { league: number; season: number },
+  apiFootballKey: string,
+): Promise<{ requested: number; rows: CupMatchUpsert[] }> {
+  const fixtureIds = await getClosingRefreshCandidates(supabase, target);
+  const rows: CupMatchUpsert[] = [];
+
+  for (const apiFixtureId of fixtureIds) {
+    const url = new URL('/fixtures', API_FOOTBALL_BASE_URL);
+    url.searchParams.set('id', String(apiFixtureId));
+
+    const fixtures = await fetchApiFootballFixtures(url, apiFootballKey);
+    rows.push(
+      ...fixtures
+        .filter((fixture) => isTargetFixture(fixture, target.league, target.season))
+        .map(mapFixture)
+        .filter((row): row is CupMatchUpsert => Boolean(row)),
+    );
+  }
+
+  const dedupedRows = await upsertCupMatches(supabase, rows);
+
+  return {
+    requested: fixtureIds.length,
+    rows: dedupedRows,
   };
 }
 
@@ -453,107 +497,12 @@ async function upsertCupMatches(
   return dedupedRows;
 }
 
-function prepareTestWeekRows(fixtures: ApiFootballFixture[], limit: number): CupMatchUpsert[] {
-  return fixtures
-    .map(mapFixture)
-    .filter((row): row is CupMatchUpsert => Boolean(row))
-    .filter((row) => row.status_short === 'NS')
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, limit)
-    .map((row) => ({
-      ...row,
-      stage: 'Fase de grupos',
-      group_name: 'TEST',
-    }));
-}
-
-function getDatesBetween(from: string, to: string): string[] {
-  const dates: string[] = [];
-  const cursor = new Date(`${from}T00:00:00.000Z`);
-  const end = new Date(`${to}T00:00:00.000Z`);
-
-  while (cursor <= end) {
-    dates.push(cursor.toISOString().slice(0, 10));
-    cursor.setUTCDate(cursor.getUTCDate() + 1);
-  }
-
-  return dates;
-}
-
-async function resetCupTestData(
-  supabase: ReturnType<typeof createClient>,
-  targets: SyncTarget[],
-): Promise<{ league_ids: number[]; seasons: number[]; matches: number; predictions: number; points: number }> {
-  const leagueIds = [...new Set(targets.map((target) => target.league))];
-  const seasons = [...new Set(targets.map((target) => target.season))];
-
-  const { data: matchesToDelete, error: matchesToDeleteError } = await supabase
-    .from('cup_matches')
-    .select('id')
-    .in('league_id', leagueIds)
-    .in('season', seasons);
-
-  if (matchesToDeleteError) {
-    throw matchesToDeleteError;
-  }
-
-  const matchIds = ((matchesToDelete ?? []) as Array<{ id: string }>).map((match) => match.id);
-  let deletedPredictions = 0;
-
-  if (matchIds.length > 0) {
-    const { count: predictionsCount, error: predictionsDeleteError } = await supabase
-      .from('cup_predictions')
-      .delete({ count: 'exact' })
-      .in('match_id', matchIds);
-
-    if (predictionsDeleteError) {
-      throw predictionsDeleteError;
-    }
-
-    deletedPredictions = predictionsCount ?? 0;
-  }
-
-  const { count: pointsCount, error: pointsDeleteError } = await supabase
-    .from('cup_points')
-    .delete({ count: 'exact' })
-    .not('id', 'is', null);
-
-  if (pointsDeleteError) {
-    throw pointsDeleteError;
-  }
-
-  let deletedMatches = 0;
-
-  if (matchIds.length > 0) {
-    const { count: matchesCount, error: matchesDeleteError } = await supabase
-      .from('cup_matches')
-      .delete({ count: 'exact' })
-      .in('id', matchIds);
-
-    if (matchesDeleteError) {
-      throw matchesDeleteError;
-    }
-
-    deletedMatches = matchesCount ?? 0;
-  }
-
-  return {
-    league_ids: leagueIds,
-    seasons,
-    matches: deletedMatches,
-    predictions: deletedPredictions,
-    points: pointsCount ?? 0,
-  };
-}
-
 Deno.serve(async (request) => {
   let supabase: ReturnType<typeof createClient> | null = null;
   let targets: SyncTarget[] | null = null;
   let refreshExisting = false;
-  let resetBeforeSync = false;
   let mode: ParsedSyncRequest['mode'] | null = null;
   let liveTarget: ParsedSyncRequest['liveTarget'] | null = null;
-  let testWeek: ParsedSyncRequest['testWeek'] | null = null;
 
   try {
     if (request.method !== 'POST') {
@@ -569,9 +518,7 @@ Deno.serve(async (request) => {
     mode = parsedRequest.mode;
     targets = parsedRequest.targets;
     refreshExisting = parsedRequest.refreshExisting;
-    resetBeforeSync = parsedRequest.resetBeforeSync;
     liveTarget = parsedRequest.liveTarget ?? null;
-    testWeek = parsedRequest.testWeek ?? null;
     const supabaseUrl = requireEnv('SUPABASE_URL');
     const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
     const apiFootballKey = requireEnv('API_FOOTBALL_KEY');
@@ -583,7 +530,6 @@ Deno.serve(async (request) => {
     const receivedByTarget: Array<SyncTarget & { received: number; upserted: number }> = [];
     const refreshedExisting: Array<{ api_fixture_id: number; received: number; upserted: number }> = [];
     const rows: CupMatchUpsert[] = [];
-    let reset: Awaited<ReturnType<typeof resetCupTestData>> | null = null;
 
     if (mode === 'live') {
       if (!liveTarget) {
@@ -599,12 +545,19 @@ Deno.serve(async (request) => {
         .map(mapFixture)
         .filter((row): row is CupMatchUpsert => Boolean(row));
       const dedupedRows = await upsertCupMatches(supabase, liveRows);
-      const metadata = getLiveSyncMetadata(liveTarget, fixtures, dedupedRows);
+      const closingRefresh = await refreshClosingFixtures(supabase, liveTarget, apiFootballKey);
+      const metadata = getLiveSyncMetadata(
+        liveTarget,
+        fixtures,
+        dedupedRows,
+        closingRefresh.requested,
+        closingRefresh.rows,
+      );
 
       const { error: logError } = await supabase.from('cup_sync_logs').insert({
         source: 'api-football',
         status: 'success',
-        message: `Live synced ${dedupedRows.length} fixtures.`,
+        message: `Live synced ${dedupedRows.length} fixtures. Closing refresh updated ${closingRefresh.rows.length}.`,
         metadata,
       });
 
@@ -617,72 +570,6 @@ Deno.serve(async (request) => {
         ok: true,
         ...metadata,
       });
-    }
-
-    if (mode === 'test-week') {
-      if (!testWeek) {
-        throw new Error('Missing test-week sync options.');
-      }
-
-      const fixtures: ApiFootballFixture[] = [];
-      let apiRequests = 0;
-
-      if (testWeek.from && testWeek.to) {
-        for (const date of getDatesBetween(testWeek.from, testWeek.to)) {
-          const url = new URL('/fixtures', API_FOOTBALL_BASE_URL);
-          url.searchParams.set('date', date);
-          fixtures.push(...(await fetchApiFootballFixtures(url, apiFootballKey)));
-          apiRequests += 1;
-        }
-      } else {
-        const url = new URL('/fixtures', API_FOOTBALL_BASE_URL);
-        url.searchParams.set('next', String(testWeek.limit));
-        fixtures.push(...(await fetchApiFootballFixtures(url, apiFootballKey)));
-        apiRequests += 1;
-      }
-
-      const testRows = prepareTestWeekRows(fixtures, testWeek.limit);
-      const dedupedRows = await upsertCupMatches(supabase, testRows);
-      const metadata = {
-        mode,
-        from: testWeek.from ?? null,
-        to: testWeek.to ?? null,
-        limit: testWeek.limit,
-        api_requests: apiRequests,
-        received: fixtures.length,
-        selected: testRows.length,
-        upserted: dedupedRows.length,
-        fixtures: dedupedRows.map((row) => ({
-          api_fixture_id: row.api_fixture_id,
-          league_id: row.league_id,
-          season: row.season,
-          date: row.date,
-          status_short: row.status_short,
-          home_team_name: row.home_team_name,
-          away_team_name: row.away_team_name,
-        })),
-      };
-
-      const { error: logError } = await supabase.from('cup_sync_logs').insert({
-        source: 'api-football',
-        status: 'success',
-        message: `Test-week synced ${dedupedRows.length} fixtures.`,
-        metadata,
-      });
-
-      if (logError) {
-        console.error('[sync-cup-fixtures] test-week success log insert error:', logError);
-        throw logError;
-      }
-
-      return jsonResponse({
-        ok: true,
-        ...metadata,
-      });
-    }
-
-    if (resetBeforeSync) {
-      reset = await resetCupTestData(supabase, targets);
     }
 
     for (const target of targets) {
@@ -762,7 +649,6 @@ Deno.serve(async (request) => {
         mode,
         targets: receivedByTarget,
         refreshed_existing: refreshedExisting,
-        reset,
         api_requests: receivedByTarget.length + refreshedExisting.length,
         upserted: dedupedRows.length,
       },
@@ -793,9 +679,7 @@ Deno.serve(async (request) => {
           mode,
           targets,
           liveTarget,
-          testWeek,
           refreshExisting,
-          resetBeforeSync,
         },
       });
 

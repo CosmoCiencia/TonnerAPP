@@ -52,6 +52,7 @@ export type RankingRow = {
   position: number;
   user_id: string;
   display_name?: string;
+  cup_user_type?: 'public' | 'internal' | 'distributor';
   total_points: number;
   exact_hits: number;
   prediction_count: number;
