@@ -39,7 +39,8 @@ function MatchCard({
       : 'NO INICIADO';
 
   return (
-    <article className="cup-card p-3 text-tonner-slate">
+    <article className={`cup-card p-3 text-tonner-slate ${match.status === 'live' ? 'cup-card--live' : ''}`}>
+      {match.status === 'live' ? <span className="cup-live-strip" aria-hidden="true" /> : null}
       <div className="mb-3 text-center">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
           {formatRoundLabel(match.round)}
@@ -55,7 +56,7 @@ function MatchCard({
             }`}
           >
             {match.status === 'live' ? (
-              <span className="h-2 w-2 rounded-full bg-red-600" aria-hidden="true" />
+              <span className="cup-live-dot" aria-hidden="true" />
             ) : null}
             {statusLabel}
           </span>
@@ -105,7 +106,7 @@ function MatchCard({
           </div>
         ) : null}
 
-        {showAction ? (
+        {showAction && match.status !== 'live' ? (
           <Link
             to={ctaTo}
             className="shrink-0 rounded-xl bg-tonner-blue px-6 py-2 text-xs font-bold text-white"

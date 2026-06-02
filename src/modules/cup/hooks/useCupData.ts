@@ -28,66 +28,54 @@ export function useCupData(userId: string | null) {
 
   useEffect(() => {
     let mounted = true;
+    let loadingData = false;
 
-    async function load() {
-      setLoading(true);
+    async function load(options: { silent?: boolean } = {}) {
+      if (loadingData) return;
+
+      loadingData = true;
+      if (!options.silent) {
+        setLoading(true);
+      }
       const hasValidUserId = isValidUserId(userId);
 
-      try {
-        const matchesResponse = await fetchMatches();
-        if (!mounted) return;
+      const [matchesResult, predictionsResult, pointsResult, rankingResult] = await Promise.allSettled([
+        fetchMatches(),
+        hasValidUserId ? fetchPredictions(userId) : Promise.resolve([]),
+        hasValidUserId ? fetchPoints(userId) : Promise.resolve([]),
+        fetchRanking(),
+      ]);
 
-        setMatches(matchesResponse);
-      } catch (error) {
-        if (!mounted) return;
-        const message = error instanceof Error ? error.message : 'No se pudo cargar TonnerCup.';
+      if (!mounted) {
+        loadingData = false;
+        return;
+      }
+
+      if (matchesResult.status === 'fulfilled') {
+        setMatches(matchesResult.value);
+      } else if (!options.silent) {
+        const message = matchesResult.reason instanceof Error ? matchesResult.reason.message : 'No se pudo cargar TonnerCup.';
         setToast(message);
       }
 
-      if (!mounted) return;
+      setPredictions(predictionsResult.status === 'fulfilled' ? predictionsResult.value : []);
+      setPoints(pointsResult.status === 'fulfilled' ? pointsResult.value : []);
+      setRanking(rankingResult.status === 'fulfilled' ? rankingResult.value : []);
 
-      if (hasValidUserId) {
-        const [predictionsResult, pointsResult] = await Promise.allSettled([
-          fetchPredictions(userId),
-          fetchPoints(userId),
-        ]);
-
-        if (!mounted) return;
-
-        if (predictionsResult.status === 'fulfilled') {
-          setPredictions(predictionsResult.value);
-        } else {
-          setPredictions([]);
-        }
-
-        if (pointsResult.status === 'fulfilled') {
-          setPoints(pointsResult.value);
-        } else {
-          setPoints([]);
-        }
-      } else {
-        setPredictions([]);
-        setPoints([]);
-      }
-
-      try {
-        const rankingResponse = await fetchRanking();
-        if (!mounted) return;
-        setRanking(rankingResponse);
-      } catch {
-        if (!mounted) return;
-        setRanking([]);
-      } finally {
-        if (mounted) {
+      if (mounted) {
+        if (!options.silent) {
           setLoading(false);
         }
+        loadingData = false;
       }
     }
 
     void load();
+    const refreshInterval = window.setInterval(() => void load({ silent: true }), 30_000);
 
     return () => {
       mounted = false;
+      window.clearInterval(refreshInterval);
     };
   }, [userId]);
 

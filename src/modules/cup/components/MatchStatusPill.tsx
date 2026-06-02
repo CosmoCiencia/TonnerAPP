@@ -19,8 +19,9 @@ const statusLabels: Record<MatchStatus, string> = {
 function MatchStatusPill({ status }: Props) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${statusStyles[status]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${statusStyles[status]}`}
     >
+      {status === 'live' ? <span className="cup-live-dot" aria-hidden="true" /> : null}
       {statusLabels[status]}
     </span>
   );

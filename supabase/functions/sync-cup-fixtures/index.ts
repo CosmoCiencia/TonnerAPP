@@ -3,7 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.87.1';
 const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
 const WORLD_CUP_LEAGUE_ID = 1;
 const WORLD_CUP_SEASON = 2026;
-const ALLOWED_LEAGUE_IDS = new Set([WORLD_CUP_LEAGUE_ID]);
+const REAL_TEST_LEAGUE_ID = 256;
+const ALLOWED_LEAGUE_IDS = new Set([WORLD_CUP_LEAGUE_ID, REAL_TEST_LEAGUE_ID]);
 const CLOSING_REFRESH_STATUSES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT'];
 const CLOSING_REFRESH_LOOKBACK_HOURS = 4;
 const CLOSING_REFRESH_LOOKAHEAD_HOURS = 1;
@@ -663,7 +664,6 @@ Deno.serve(async (request) => {
       ok: true,
       targets: receivedByTarget,
       refreshed_existing: refreshedExisting,
-      reset,
       upserted: dedupedRows.length,
     });
   } catch (error) {

@@ -72,7 +72,8 @@ function PredictionEditorCard({
   };
 
   return (
-    <article className="cup-card p-4 text-tonner-slate">
+    <article className={`cup-card p-4 text-tonner-slate ${match.status === 'live' ? 'cup-card--live' : ''}`}>
+      {match.status === 'live' ? <span className="cup-live-strip" aria-hidden="true" /> : null}
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
