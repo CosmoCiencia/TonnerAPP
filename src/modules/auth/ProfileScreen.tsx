@@ -19,6 +19,12 @@ type ProfilePanel = 'data' | 'distributor' | 'preferences' | 'terms' | 'support'
 const getProfileStorageKey = (userId: string) => `tonnerapp-profile-${userId}`
 const HUB_PROFILE_STORAGE_KEY = 'tonnerapp-hub-profile'
 
+const cupUserTypeLabels = {
+  public: 'Cliente normal',
+  internal: 'Interno',
+  distributor: 'Distribuidor',
+} as const
+
 const loadEditableProfile = (userId: string | undefined, fullName: string | undefined): EditableProfile => {
   const fallbackProfile = {
     fullName: fullName ?? '',
@@ -94,6 +100,7 @@ export default function ProfileScreen() {
   }
 
   const profileName = editableProfile.fullName || auth.user?.fullName || 'Usuario Tonner'
+  const profileTypeLabel = cupUserTypeLabels[auth.user?.cupUserType ?? 'public']
 
   const renderProfilePanel = () => {
     if (profilePanel === 'data') {
@@ -122,6 +129,10 @@ export default function ProfileScreen() {
             <label>
               <span>Correo</span>
               <input type="email" value={auth.user?.email ?? ''} readOnly />
+            </label>
+            <label>
+              <span>Tipo de cuenta</span>
+              <input value={profileTypeLabel} readOnly />
             </label>
             <label>
               <span>Teléfono</span>
@@ -265,7 +276,10 @@ export default function ProfileScreen() {
                 <div className="auth-profile-hero-card__avatar">
                   {editableProfile.avatar ? <img src={editableProfile.avatar} alt="" /> : null}
                 </div>
-                <strong>{profileName}</strong>
+                <div className="auth-profile-hero-card__identity">
+                  <strong>{profileName}</strong>
+                  <span className="auth-profile-hero-card__type">{profileTypeLabel}</span>
+                </div>
               </section>
 
               <h1 className="auth-profile-heading">CONFIGURACIÓN</h1>

@@ -397,7 +397,14 @@
   object-fit: cover;
 }
 
-.auth-profile-hero-card strong {
+.auth-profile-hero-card__identity {
+  display: grid;
+  min-width: 0;
+  gap: 0.8rem;
+  justify-items: start;
+}
+
+.auth-profile-hero-card__identity strong {
   min-width: 0;
   color: #ffffff;
   font-family: 'Sora', 'Manrope', sans-serif;
@@ -405,6 +412,18 @@
   font-weight: 900;
   line-height: 1;
   overflow-wrap: anywhere;
+}
+
+.auth-profile-hero-card__type {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 0.45rem 0.8rem;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .auth-profile-distributor,
