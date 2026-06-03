@@ -6,6 +6,7 @@ import {
   getPredictionOutcome,
   type PredictionOutcome,
 } from '../services/predictionOutcome';
+import GoalEventsList from './GoalEventsList';
 import MatchStatusPill from './MatchStatusPill';
 import TeamBadge from './TeamBadge';
 
@@ -46,6 +47,8 @@ function PredictionEditorCard({
   const hasStarted = Date.parse(match.date) <= now;
   const isLocked = match.status === 'finished' || hasStarted;
   const selectedIsSaved = Boolean(savedOutcome && selectedOutcome === savedOutcome);
+  const homeGoals = match.goal_events.filter((event) => event.side === 'home');
+  const awayGoals = match.goal_events.filter((event) => event.side === 'away');
   const savePrediction = () => {
     if (!selectedOutcome) return;
 
@@ -93,6 +96,7 @@ function PredictionEditorCard({
             <p className="mx-auto mt-2 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
               {match.team_home}
             </p>
+            <GoalEventsList events={homeGoals} />
             {renderOutcomeButton('home', 'mt-3 min-h-[2.45rem] w-full whitespace-nowrap')}
           </div>
 
@@ -109,6 +113,7 @@ function PredictionEditorCard({
             <p className="mx-auto mt-2 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
               {match.team_away}
             </p>
+            <GoalEventsList events={awayGoals} />
             {renderOutcomeButton('away', 'mt-3 min-h-[2.45rem] w-full whitespace-nowrap')}
           </div>
         </div>

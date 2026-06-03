@@ -21,6 +21,7 @@ export function useCupData(userId: string | null) {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [points, setPoints] = useState<PointEntry[]>([]);
   const [ranking, setRanking] = useState<RankingRow[]>([]);
+  const [rankingError, setRankingError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
   const [refreshingRanking, setRefreshingRanking] = useState(false);
@@ -43,7 +44,7 @@ export function useCupData(userId: string | null) {
         fetchMatches(),
         hasValidUserId ? fetchPredictions(userId) : Promise.resolve([]),
         hasValidUserId ? fetchPoints(userId) : Promise.resolve([]),
-        fetchRanking(),
+        hasValidUserId ? fetchRanking(userId) : Promise.reject(new Error('No hay usuario autenticado para cargar el ranking.')),
       ]);
 
       if (!mounted) {
@@ -60,7 +61,19 @@ export function useCupData(userId: string | null) {
 
       setPredictions(predictionsResult.status === 'fulfilled' ? predictionsResult.value : []);
       setPoints(pointsResult.status === 'fulfilled' ? pointsResult.value : []);
-      setRanking(rankingResult.status === 'fulfilled' ? rankingResult.value : []);
+      if (rankingResult.status === 'fulfilled') {
+        setRanking(rankingResult.value);
+        setRankingError(null);
+      } else {
+        const message = rankingResult.reason instanceof Error
+          ? rankingResult.reason.message
+          : 'No se pudo cargar el ranking.';
+        console.error('[TonnerCup] Ranking load failed:', rankingResult.reason);
+        setRankingError(message);
+        if (!options.silent) {
+          setToast(message);
+        }
+      }
 
       if (mounted) {
         if (!options.silent) {
@@ -93,13 +106,20 @@ export function useCupData(userId: string | null) {
   async function refreshRanking(options: { showToast?: boolean } = {}) {
     setRefreshingRanking(true);
     try {
-      const rankingResponse = await fetchRanking();
+      if (!isValidUserId(userId)) {
+        throw new Error('No hay usuario autenticado para actualizar el ranking.');
+      }
+
+      const rankingResponse = await fetchRanking(userId);
       setRanking(rankingResponse);
+      setRankingError(null);
       if (options.showToast) {
         setToast('Ranking actualizado');
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo actualizar el ranking.';
+      console.error('[TonnerCup] Ranking refresh failed:', error);
+      setRankingError(message);
       setToast(message);
     } finally {
       setRefreshingRanking(false);
@@ -138,6 +158,7 @@ export function useCupData(userId: string | null) {
     matches,
     userMatches,
     ranking,
+    rankingError,
     points,
     savingMatchId,
     refreshingRanking,

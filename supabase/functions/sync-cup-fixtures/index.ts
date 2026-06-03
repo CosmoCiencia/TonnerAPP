@@ -3,8 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.87.1';
 const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
 const WORLD_CUP_LEAGUE_ID = 1;
 const WORLD_CUP_SEASON = 2026;
-const REAL_TEST_LEAGUE_ID = 256;
-const ALLOWED_LEAGUE_IDS = new Set([WORLD_CUP_LEAGUE_ID, REAL_TEST_LEAGUE_ID]);
+const ALLOWED_LEAGUE_IDS = new Set([WORLD_CUP_LEAGUE_ID]);
 const CLOSING_REFRESH_STATUSES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT'];
 const CLOSING_REFRESH_LOOKBACK_HOURS = 4;
 const CLOSING_REFRESH_LOOKAHEAD_HOURS = 1;
@@ -63,11 +62,39 @@ type ApiFootballFixture = {
     home?: number | null;
     away?: number | null;
   } | null;
+  events?: ApiFootballEvent[];
 };
 
 type ApiFootballResponse = {
   errors?: unknown;
   response?: ApiFootballFixture[];
+};
+
+type ApiFootballEvent = {
+  time?: {
+    elapsed?: number | null;
+    extra?: number | null;
+  };
+  team?: {
+    id?: number | null;
+    name?: string | null;
+  };
+  player?: {
+    id?: number | null;
+    name?: string | null;
+  };
+  assist?: {
+    id?: number | null;
+    name?: string | null;
+  };
+  type?: string | null;
+  detail?: string | null;
+  comments?: string | null;
+};
+
+type ApiFootballEventsResponse = {
+  errors?: unknown;
+  response?: ApiFootballEvent[];
 };
 
 type CupMatchUpsert = {
@@ -127,6 +154,7 @@ type LiveSyncMetadata = {
   live_upserted: number;
   closing_refresh_count: number;
   closing_upserted: number;
+  event_requests: number;
   api_requests_total: number;
   live_fixtures: FixtureSummary[];
   closing_fixtures: FixtureSummary[];
@@ -365,8 +393,71 @@ async function fetchApiFootballFixtures(url: URL, apiFootballKey: string): Promi
   return payload.response ?? [];
 }
 
+async function fetchApiFootballEvents(apiFixtureId: number, apiFootballKey: string): Promise<ApiFootballEvent[]> {
+  const url = new URL('/fixtures/events', API_FOOTBALL_BASE_URL);
+  url.searchParams.set('fixture', String(apiFixtureId));
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'x-apisports-key': apiFootballKey,
+      },
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      console.error(`[sync-cup-fixtures] fixture events HTTP ${response.status}: ${body}`);
+      return [];
+    }
+
+    const payload = (await response.json()) as ApiFootballEventsResponse;
+    const apiErrors = payload.errors;
+
+    if (
+      apiErrors &&
+      ((Array.isArray(apiErrors) && apiErrors.length > 0) ||
+        (!Array.isArray(apiErrors) && Object.keys(apiErrors as Record<string, unknown>).length > 0))
+    ) {
+      console.error(`[sync-cup-fixtures] fixture events returned errors: ${JSON.stringify(apiErrors)}`);
+      return [];
+    }
+
+    return payload.response ?? [];
+  } catch (error) {
+    console.error('[sync-cup-fixtures] fixture events fetch failed:', error);
+    return [];
+  }
+}
+
 function isTargetFixture(fixture: ApiFootballFixture, league: number, season: number): boolean {
   return fixture.league?.id === league && fixture.league?.season === season;
+}
+
+function isGoalEvent(event: ApiFootballEvent): boolean {
+  return event.type === 'Goal' && event.detail !== 'Missed Penalty';
+}
+
+async function attachGoalEvents(
+  rows: CupMatchUpsert[],
+  apiFootballKey: string,
+): Promise<{ rows: CupMatchUpsert[]; eventRequests: number }> {
+  const enrichedRows: CupMatchUpsert[] = [];
+
+  for (const row of rows) {
+    const events = await fetchApiFootballEvents(row.api_fixture_id, apiFootballKey);
+    enrichedRows.push({
+      ...row,
+      raw: {
+        ...row.raw,
+        events: events.filter(isGoalEvent),
+      },
+    });
+  }
+
+  return {
+    rows: enrichedRows,
+    eventRequests: rows.length,
+  };
 }
 
 function getFixtureSummary(rows: CupMatchUpsert[]): FixtureSummary[] {
@@ -389,6 +480,7 @@ function getLiveSyncMetadata(
   rows: CupMatchUpsert[],
   closingRefreshCount: number,
   closingRows: CupMatchUpsert[],
+  eventRequests: number,
 ): LiveSyncMetadata {
   return {
     mode: 'live',
@@ -399,7 +491,8 @@ function getLiveSyncMetadata(
     live_upserted: rows.length,
     closing_refresh_count: closingRefreshCount,
     closing_upserted: closingRows.length,
-    api_requests_total: 1 + closingRefreshCount,
+    event_requests: eventRequests,
+    api_requests_total: 1 + closingRefreshCount + eventRequests,
     live_fixtures: getFixtureSummary(rows),
     closing_fixtures: getFixtureSummary(closingRows),
   };
@@ -452,7 +545,7 @@ async function refreshClosingFixtures(
   supabase: ReturnType<typeof createClient>,
   target: { league: number; season: number },
   apiFootballKey: string,
-): Promise<{ requested: number; rows: CupMatchUpsert[] }> {
+): Promise<{ requested: number; rows: CupMatchUpsert[]; eventRequests: number }> {
   const fixtureIds = await getClosingRefreshCandidates(supabase, target);
   const rows: CupMatchUpsert[] = [];
 
@@ -469,11 +562,13 @@ async function refreshClosingFixtures(
     );
   }
 
-  const dedupedRows = await upsertCupMatches(supabase, rows);
+  const withEvents = await attachGoalEvents(rows, apiFootballKey);
+  const dedupedRows = await upsertCupMatches(supabase, withEvents.rows);
 
   return {
     requested: fixtureIds.length,
     rows: dedupedRows,
+    eventRequests: withEvents.eventRequests,
   };
 }
 
@@ -545,7 +640,8 @@ Deno.serve(async (request) => {
         .filter((fixture) => isTargetFixture(fixture, liveTarget.league, liveTarget.season))
         .map(mapFixture)
         .filter((row): row is CupMatchUpsert => Boolean(row));
-      const dedupedRows = await upsertCupMatches(supabase, liveRows);
+      const liveWithEvents = await attachGoalEvents(liveRows, apiFootballKey);
+      const dedupedRows = await upsertCupMatches(supabase, liveWithEvents.rows);
       const closingRefresh = await refreshClosingFixtures(supabase, liveTarget, apiFootballKey);
       const metadata = getLiveSyncMetadata(
         liveTarget,
@@ -553,6 +649,7 @@ Deno.serve(async (request) => {
         dedupedRows,
         closingRefresh.requested,
         closingRefresh.rows,
+        liveWithEvents.eventRequests + closingRefresh.eventRequests,
       );
 
       const { error: logError } = await supabase.from('cup_sync_logs').insert({

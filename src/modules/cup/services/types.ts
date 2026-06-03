@@ -4,6 +4,8 @@ export type Match = {
   id: string;
   team_home: string;
   team_away: string;
+  home_team_id: number | null;
+  away_team_id: number | null;
   home_logo: string | null;
   away_logo: string | null;
   group: string;
@@ -17,6 +19,15 @@ export type Match = {
   stage: string;
   round: string;
   city: string;
+  goal_events: GoalEvent[];
+};
+
+export type GoalEvent = {
+  side: 'home' | 'away';
+  player_name: string;
+  elapsed: number | null;
+  extra: number | null;
+  detail: string | null;
 };
 
 export type GroupStanding = {

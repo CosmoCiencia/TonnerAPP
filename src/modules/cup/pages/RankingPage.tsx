@@ -50,6 +50,11 @@ function RankingPage() {
           <LoadingCard />
           <LoadingCard />
         </div>
+      ) : cupData.rankingError ? (
+        <EmptyState
+          title="No se pudo cargar el ranking"
+          description={cupData.rankingError}
+        />
       ) : cupData.ranking.length === 0 ? (
         <EmptyState
           title="Todavía no hay ranking"

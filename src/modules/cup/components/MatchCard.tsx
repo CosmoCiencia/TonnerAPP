@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { formatRoundLabel } from '../services/stages';
 import { getOutcomeLabel, getPredictionOutcome } from '../services/predictionOutcome';
 import type { MatchWithPrediction } from '../services/types';
+import GoalEventsList from './GoalEventsList';
 import TeamBadge from './TeamBadge';
 
 type Props = {
@@ -32,6 +33,8 @@ function MatchCard({
   const actionLabel = ctaLabel ?? (prediction ? 'Editar predicción' : 'Predecir');
   const hasScore = match.score_home !== null && match.score_away !== null;
   const matchMinute = formatMatchMinute(match.elapsed_minutes, match.extra_minutes);
+  const homeGoals = match.goal_events.filter((event) => event.side === 'home');
+  const awayGoals = match.goal_events.filter((event) => event.side === 'away');
   const statusLabel = match.status === 'live'
     ? `EN VIVO${matchMinute ? ` · ${matchMinute}` : ''}`
     : match.status === 'finished'
@@ -75,6 +78,7 @@ function MatchCard({
           <p className="mx-auto mt-1.5 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
             {match.team_home}
           </p>
+          <GoalEventsList events={homeGoals} />
         </div>
 
         <div className="flex min-w-[3.7rem] shrink-0 items-center justify-center pt-3">
@@ -90,6 +94,7 @@ function MatchCard({
           <p className="mx-auto mt-1.5 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
             {match.team_away}
           </p>
+          <GoalEventsList events={awayGoals} />
         </div>
       </div>
 

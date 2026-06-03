@@ -73,8 +73,24 @@ export async function fetchPoints(userId: string): Promise<PointEntry[]> {
   return ((data ?? []) as PointRow[]).map(toPoint);
 }
 
-export async function fetchRanking(): Promise<RankingRow[]> {
+export async function fetchRanking(expectedUserId?: string): Promise<RankingRow[]> {
   const supabase = requireSupabase();
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+  if (sessionError) {
+    throw new Error(`No se pudo validar la sesión para cargar el ranking: ${sessionError.message}`);
+  }
+
+  const sessionUserId = sessionData.session?.user.id;
+
+  if (!sessionData.session?.access_token || !sessionUserId) {
+    throw new Error('No hay una sesión Supabase activa para cargar el ranking.');
+  }
+
+  if (expectedUserId && sessionUserId !== expectedUserId) {
+    throw new Error('La sesión Supabase activa no coincide con el usuario actual del ranking.');
+  }
+
   const { data, error } = await supabase
     .from('cup_ranking_view')
     .select('position,user_id,display_name,cup_user_type,total_points,exact_hits,prediction_count')
