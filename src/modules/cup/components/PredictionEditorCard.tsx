@@ -198,7 +198,7 @@ function PredictionEditorCard({
         }`}>
           {hasValidScore && selectedOutcome && !scoreMatchesOutcome
             ? 'El marcador debe coincidir con tu elección.'
-            : 'El marcador exacto suma 2 puntos adicionales.'}
+            : 'El marcador exacto suma 5 puntos adicionales.'}
         </p>
       </div>
 

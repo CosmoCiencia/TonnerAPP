@@ -25,7 +25,7 @@ type CupPointUpsert = {
 
 const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
 const POINTS_FOR_RESULT_HIT = 3;
-const POINTS_FOR_EXACT_HIT = 2;
+const POINTS_FOR_EXACT_HIT = 5;
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
