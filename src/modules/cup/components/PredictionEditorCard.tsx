@@ -156,35 +156,37 @@ function PredictionEditorCard({
         <p className="text-center text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
           Marcador exacto
         </p>
-        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_1.5rem_minmax(0,1fr)] items-center gap-2">
-          <label className="min-w-0 text-center">
+        <div className="mt-3 flex items-center justify-center gap-3">
+          <label className="text-center">
             <span className="sr-only">Goles de {match.team_home}</span>
             <input
-              type="number"
+              type="text"
               inputMode="numeric"
-              min="0"
-              max={MAX_PREDICTED_SCORE}
-              step="1"
+              pattern="[0-9]*"
               disabled={isLocked || saving}
               value={selectedHome}
-              onChange={(event) => setSelectedHome(event.target.value)}
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-2 text-center text-lg font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
+              onChange={(event) => {
+                const nextValue = event.target.value.replace(/\D/g, '').slice(0, 2);
+                setSelectedHome(nextValue);
+              }}
+              className="h-10 w-14 rounded-lg border border-slate-200 bg-white px-1 text-center text-lg font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
               placeholder="0"
             />
           </label>
           <span className="text-center text-lg font-black text-slate-400">-</span>
-          <label className="min-w-0 text-center">
+          <label className="text-center">
             <span className="sr-only">Goles de {match.team_away}</span>
             <input
-              type="number"
+              type="text"
               inputMode="numeric"
-              min="0"
-              max={MAX_PREDICTED_SCORE}
-              step="1"
+              pattern="[0-9]*"
               disabled={isLocked || saving}
               value={selectedAway}
-              onChange={(event) => setSelectedAway(event.target.value)}
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-2 text-center text-lg font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
+              onChange={(event) => {
+                const nextValue = event.target.value.replace(/\D/g, '').slice(0, 2);
+                setSelectedAway(nextValue);
+              }}
+              className="h-10 w-14 rounded-lg border border-slate-200 bg-white px-1 text-center text-lg font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
               placeholder="0"
             />
           </label>
