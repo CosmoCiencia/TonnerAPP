@@ -170,7 +170,7 @@ function PredictionsPage() {
       <SectionIntro
         eyebrow="Predicciones"
         title="Elige tus pronósticos"
-        description="Selecciona quién gana o si el partido empata."
+        description="Elige el resultado y pronostica el marcador final."
       />
 
       <div className="grid gap-3">

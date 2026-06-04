@@ -9,7 +9,9 @@ type CupMatch = {
 type CupPrediction = {
   user_id: string;
   match_id: string;
-  prediction_result: 'home' | 'draw' | 'away';
+  prediction_result: MatchResult;
+  predicted_home: number;
+  predicted_away: number;
 };
 
 type CupPointUpsert = {
@@ -22,7 +24,8 @@ type CupPointUpsert = {
 };
 
 const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
-const POINTS_FOR_HIT = 5;
+const POINTS_FOR_RESULT_HIT = 3;
+const POINTS_FOR_EXACT_HIT = 2;
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -65,13 +68,19 @@ function authorizeInternalRequest(request: Request): Response | null {
   return null;
 }
 
-function getActualResult(match: CupMatch): CupPrediction['prediction_result'] {
-  const home = match.score_home ?? 0;
-  const away = match.score_away ?? 0;
+type MatchResult = 'home' | 'draw' | 'away';
 
+function getScoreResult(home: number, away: number): MatchResult {
   if (home > away) return 'home';
   if (home < away) return 'away';
   return 'draw';
+}
+
+function getActualResult(match: CupMatch): MatchResult {
+  const home = match.score_home ?? 0;
+  const away = match.score_away ?? 0;
+
+  return getScoreResult(home, away);
 }
 
 Deno.serve(async (request) => {
@@ -116,7 +125,7 @@ Deno.serve(async (request) => {
 
     const { data: predictionsData, error: predictionsError } = await supabase
       .from('cup_predictions')
-      .select('user_id,match_id,prediction_result')
+      .select('user_id,match_id,prediction_result,predicted_home,predicted_away')
       .in('match_id', matchIds);
 
     if (predictionsError) {
@@ -132,13 +141,17 @@ Deno.serve(async (request) => {
       if (!match) return [];
 
       const resultHit = prediction.prediction_result === getActualResult(match);
+      const exactHit = prediction.predicted_home === match.score_home
+        && prediction.predicted_away === match.score_away;
+      const pointsAwarded = (resultHit ? POINTS_FOR_RESULT_HIT : 0)
+        + (exactHit ? POINTS_FOR_EXACT_HIT : 0);
 
       return [
         {
           user_id: prediction.user_id,
           match_id: prediction.match_id,
-          points_awarded: resultHit ? POINTS_FOR_HIT : 0,
-          exact_hit: false,
+          points_awarded: pointsAwarded,
+          exact_hit: exactHit,
           result_hit: resultHit,
           calculated_at: calculatedAt,
         },

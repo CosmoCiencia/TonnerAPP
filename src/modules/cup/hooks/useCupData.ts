@@ -126,7 +126,12 @@ export function useCupData(userId: string | null) {
     }
   }
 
-  async function savePrediction(matchId: string, predictionResult: PredictionOutcome) {
+  async function savePrediction(
+    matchId: string,
+    predictionResult: PredictionOutcome,
+    predictedHome: number,
+    predictedAway: number,
+  ) {
     if (!isValidUserId(userId)) {
       setToast('Inicia sesión para guardar tu pronóstico.');
       return;
@@ -134,7 +139,13 @@ export function useCupData(userId: string | null) {
 
     setSavingMatchId(matchId);
     try {
-      const nextPrediction = await upsertPrediction(userId, matchId, predictionResult);
+      const nextPrediction = await upsertPrediction(
+        userId,
+        matchId,
+        predictionResult,
+        predictedHome,
+        predictedAway,
+      );
       setPredictions((current) => {
         const exists = current.find((prediction) => prediction.id === nextPrediction.id);
         return exists

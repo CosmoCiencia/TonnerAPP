@@ -107,7 +107,9 @@ function MatchCard({
                 : 'bg-orange-50 text-tonner-orange'
             }`}
           >
-            {prediction ? `Tu pick: ${getOutcomeLabel(match, getPredictionOutcome(prediction))}` : 'Sin predicción'}
+            {prediction
+              ? `Tu pick: ${prediction.predicted_home} - ${prediction.predicted_away} · ${getOutcomeLabel(match, getPredictionOutcome(prediction))}`
+              : 'Sin predicción'}
           </div>
         ) : null}
 

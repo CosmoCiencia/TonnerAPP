@@ -1,5 +1,5 @@
 import { requireSupabase } from '../../../lib/supabase';
-import { getOutcomeScore, type PredictionOutcome } from './predictionOutcome';
+import { getScoreOutcome, type PredictionOutcome } from './predictionOutcome';
 import type { Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from './types';
 
 type PredictionRow = {
@@ -115,9 +115,23 @@ export async function upsertPrediction(
   user_id: string,
   match_id: string,
   prediction_result: PredictionOutcome,
+  predicted_home: number,
+  predicted_away: number,
 ): Promise<Prediction> {
+  if (
+    !Number.isInteger(predicted_home)
+    || !Number.isInteger(predicted_away)
+    || predicted_home < 0
+    || predicted_away < 0
+  ) {
+    throw new Error('El marcador pronosticado debe usar números enteros mayores o iguales a cero.');
+  }
+
+  if (getScoreOutcome(predicted_home, predicted_away) !== prediction_result) {
+    throw new Error('El marcador exacto debe coincidir con el resultado elegido.');
+  }
+
   const supabase = requireSupabase();
-  const score = getOutcomeScore(prediction_result);
   const { data, error } = await supabase
     .from('cup_predictions')
     .upsert(
@@ -125,8 +139,8 @@ export async function upsertPrediction(
         user_id,
         match_id,
         prediction_result,
-        predicted_home: score.home,
-        predicted_away: score.away,
+        predicted_home,
+        predicted_away,
       },
       { onConflict: 'user_id,match_id' },
     )

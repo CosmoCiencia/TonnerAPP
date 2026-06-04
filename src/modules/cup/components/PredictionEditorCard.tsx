@@ -4,6 +4,7 @@ import { formatRoundLabel } from '../services/stages';
 import {
   getOutcomeLabel,
   getPredictionOutcome,
+  getScoreOutcome,
   type PredictionOutcome,
 } from '../services/predictionOutcome';
 import GoalEventsList from './GoalEventsList';
@@ -13,8 +14,15 @@ import TeamBadge from './TeamBadge';
 type Props = {
   item: MatchWithPrediction;
   saving?: boolean;
-  onSave: (id: string, result: PredictionOutcome) => void;
+  onSave: (
+    id: string,
+    predictionResult: PredictionOutcome,
+    predictedHome: number,
+    predictedAway: number,
+  ) => void;
 };
+
+const MAX_PREDICTED_SCORE = 20;
 
 function formatEditDeadline(date: string) {
   return new Intl.DateTimeFormat('es-CO', {
@@ -32,9 +40,12 @@ function PredictionEditorCard({
 }: Props) {
   const { match, prediction } = item;
   const savedOutcome = getPredictionOutcome(prediction);
-
-  const [selectedOutcome, setSelectedOutcome] = useState<PredictionOutcome | null>(
-    savedOutcome,
+  const [selectedOutcome, setSelectedOutcome] = useState<PredictionOutcome | null>(savedOutcome);
+  const [selectedHome, setSelectedHome] = useState(
+    prediction ? String(prediction.predicted_home) : '',
+  );
+  const [selectedAway, setSelectedAway] = useState(
+    prediction ? String(prediction.predicted_away) : '',
   );
   const [now, setNow] = useState(() => Date.now());
 
@@ -46,13 +57,31 @@ function PredictionEditorCard({
   const editDeadline = formatEditDeadline(match.date);
   const hasStarted = Date.parse(match.date) <= now;
   const isLocked = match.status === 'finished' || hasStarted;
-  const selectedIsSaved = Boolean(savedOutcome && selectedOutcome === savedOutcome);
+  const predictedHome = Number(selectedHome);
+  const predictedAway = Number(selectedAway);
+  const hasValidScore = selectedHome !== ''
+    && selectedAway !== ''
+    && Number.isInteger(predictedHome)
+    && Number.isInteger(predictedAway)
+    && predictedHome >= 0
+    && predictedAway >= 0
+    && predictedHome <= MAX_PREDICTED_SCORE
+    && predictedAway <= MAX_PREDICTED_SCORE;
+  const scoreOutcome = hasValidScore ? getScoreOutcome(predictedHome, predictedAway) : null;
+  const scoreMatchesOutcome = Boolean(selectedOutcome && scoreOutcome === selectedOutcome);
+  const selectedIsSaved = Boolean(
+    prediction
+    && hasValidScore
+    && selectedOutcome === savedOutcome
+    && predictedHome === prediction.predicted_home
+    && predictedAway === prediction.predicted_away,
+  );
   const homeGoals = match.goal_events.filter((event) => event.side === 'home');
   const awayGoals = match.goal_events.filter((event) => event.side === 'away');
   const savePrediction = () => {
-    if (!selectedOutcome) return;
+    if (!selectedOutcome || !hasValidScore || !scoreMatchesOutcome) return;
 
-    onSave(match.id, selectedOutcome);
+    onSave(match.id, selectedOutcome, predictedHome, predictedAway);
   };
   const renderOutcomeButton = (outcome: PredictionOutcome, className = '') => {
     const selected = selectedOutcome === outcome;
@@ -123,9 +152,57 @@ function PredictionEditorCard({
         {renderOutcomeButton('draw', 'min-h-[2.45rem] min-w-[9rem] whitespace-nowrap px-5')}
       </div>
 
+      <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+        <p className="text-center text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+          Marcador exacto
+        </p>
+        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_1.5rem_minmax(0,1fr)] items-center gap-2">
+          <label className="min-w-0 text-center">
+            <span className="sr-only">Goles de {match.team_home}</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              max={MAX_PREDICTED_SCORE}
+              step="1"
+              disabled={isLocked || saving}
+              value={selectedHome}
+              onChange={(event) => setSelectedHome(event.target.value)}
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-2 text-center text-lg font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
+              placeholder="0"
+            />
+          </label>
+          <span className="text-center text-lg font-black text-slate-400">-</span>
+          <label className="min-w-0 text-center">
+            <span className="sr-only">Goles de {match.team_away}</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              max={MAX_PREDICTED_SCORE}
+              step="1"
+              disabled={isLocked || saving}
+              value={selectedAway}
+              onChange={(event) => setSelectedAway(event.target.value)}
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-2 text-center text-lg font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
+              placeholder="0"
+            />
+          </label>
+        </div>
+        <p className={`mt-2 text-center text-xs font-semibold ${
+          hasValidScore && selectedOutcome && !scoreMatchesOutcome
+            ? 'text-red-600'
+            : 'text-slate-500'
+        }`}>
+          {hasValidScore && selectedOutcome && !scoreMatchesOutcome
+            ? 'El marcador debe coincidir con tu elección.'
+            : 'El marcador exacto suma 2 puntos adicionales.'}
+        </p>
+      </div>
+
       <button
         type="button"
-        disabled={isLocked || saving || !selectedOutcome}
+        disabled={isLocked || saving || !selectedOutcome || !hasValidScore || !scoreMatchesOutcome}
         onClick={savePrediction}
         className={`mt-4 flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white transition disabled:opacity-50 ${
           selectedIsSaved ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-tonner-blue hover:bg-[#0f5fd7]'
