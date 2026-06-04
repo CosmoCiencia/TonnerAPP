@@ -3,12 +3,14 @@ import { getTeamFlag } from '../services/teamMeta';
 type Props = {
   name: string;
   logo: string | null;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 };
 
 function TeamBadge({ name, logo, size = 'md' }: Props) {
   const sizeClass =
-    size === 'sm'
+    size === 'xs'
+      ? 'h-6 w-6 text-sm'
+      : size === 'sm'
       ? 'h-9 w-9 text-xl'
       : size === 'lg'
         ? 'h-14 w-14 text-3xl'

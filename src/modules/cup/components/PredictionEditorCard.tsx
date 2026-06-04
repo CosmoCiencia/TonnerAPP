@@ -1,14 +1,11 @@
+import { ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { MatchWithPrediction } from '../services/types';
-import { formatRoundLabel } from '../services/stages';
 import {
-  getOutcomeLabel,
   getPredictionOutcome,
   getScoreOutcome,
   type PredictionOutcome,
 } from '../services/predictionOutcome';
-import GoalEventsList from './GoalEventsList';
-import MatchStatusPill from './MatchStatusPill';
 import TeamBadge from './TeamBadge';
 
 type Props = {
@@ -33,13 +30,22 @@ function formatEditDeadline(date: string) {
   }).format(new Date(date));
 }
 
-function PredictionEditorCard({
-  item,
-  saving,
-  onSave,
-}: Props) {
+function formatMatchTime(date: string) {
+  return new Intl.DateTimeFormat('es-CO', {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(date));
+}
+
+function formatMatchMinute(elapsedMinutes: number | null, extraMinutes: number | null) {
+  if (elapsedMinutes === null) return 'EN VIVO';
+  return extraMinutes ? `${elapsedMinutes}+${extraMinutes}'` : `${elapsedMinutes}'`;
+}
+
+function PredictionEditorCard({ item, saving, onSave }: Props) {
   const { match, prediction } = item;
   const savedOutcome = getPredictionOutcome(prediction);
+  const [expanded, setExpanded] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<PredictionOutcome | null>(savedOutcome);
   const [selectedHome, setSelectedHome] = useState(
     prediction ? String(prediction.predicted_home) : '',
@@ -76,14 +82,18 @@ function PredictionEditorCard({
     && predictedHome === prediction.predicted_home
     && predictedAway === prediction.predicted_away,
   );
-  const homeGoals = match.goal_events.filter((event) => event.side === 'home');
-  const awayGoals = match.goal_events.filter((event) => event.side === 'away');
+  const statusLabel = match.status === 'live'
+    ? formatMatchMinute(match.elapsed_minutes, match.extra_minutes)
+    : match.status === 'finished'
+      ? 'FT'
+      : formatMatchTime(match.date);
+
   const savePrediction = () => {
     if (!selectedOutcome || !hasValidScore || !scoreMatchesOutcome) return;
-
     onSave(match.id, selectedOutcome, predictedHome, predictedAway);
   };
-  const renderOutcomeButton = (outcome: PredictionOutcome, className = '') => {
+
+  const renderOutcomeButton = (outcome: PredictionOutcome, label: string) => {
     const selected = selectedOutcome === outcome;
 
     return (
@@ -92,142 +102,141 @@ function PredictionEditorCard({
         disabled={isLocked || saving}
         aria-pressed={selected}
         onClick={() => setSelectedOutcome(outcome)}
-        className={`rounded-xl border px-2.5 py-2 text-[11px] font-black leading-none transition ${
+        className={`min-w-0 rounded-md border px-1.5 py-2 text-[10px] font-black leading-tight transition ${
           selected
-            ? 'border-tonner-blue bg-tonner-blue text-white shadow-[0_10px_22px_rgba(45,89,199,0.22)]'
+            ? 'border-tonner-blue bg-tonner-blue text-white'
             : 'border-slate-200 bg-white text-tonner-blue'
-        } ${className}`}
+        }`}
       >
-        {getOutcomeLabel(match, outcome)}
+        <span className="block truncate">{label}</span>
       </button>
     );
   };
 
   return (
-    <article className={`cup-card p-4 text-tonner-slate ${match.status === 'live' ? 'cup-card--live' : ''}`}>
+    <article className={`relative border-b border-slate-100 bg-white last:border-b-0 ${match.status === 'live' ? 'bg-red-50/30' : ''}`}>
       {match.status === 'live' ? <span className="cup-live-strip" aria-hidden="true" /> : null}
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-            {formatRoundLabel(match.round)}
-          </p>
-          <p className="mt-2 truncate text-sm text-slate-500">{match.city}</p>
-        </div>
-        <MatchStatusPill status={match.status} />
-      </div>
-
-      <div>
-        <div className="grid grid-cols-[minmax(0,1fr)_2.8rem_minmax(0,1fr)] items-start gap-2">
-          <div className="min-w-0 text-center">
-            <div className="flex justify-center">
-              <TeamBadge name={match.team_home} logo={match.home_logo} size="lg" />
-            </div>
-            <p className="mx-auto mt-2 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
-              {match.team_home}
-            </p>
-            <GoalEventsList events={homeGoals} />
-            {renderOutcomeButton('home', 'mt-3 min-h-[2.45rem] w-full whitespace-nowrap')}
-          </div>
-
-          <div className="flex shrink-0 items-center justify-center pt-5">
-            <span className="rounded-full bg-tonner-blue px-2.5 py-1 text-xs font-black text-white">
-              VS
-            </span>
-          </div>
-
-          <div className="min-w-0 text-center">
-            <div className="flex justify-center">
-              <TeamBadge name={match.team_away} logo={match.away_logo} size="lg" />
-            </div>
-            <p className="mx-auto mt-2 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
-              {match.team_away}
-            </p>
-            <GoalEventsList events={awayGoals} />
-            {renderOutcomeButton('away', 'mt-3 min-h-[2.45rem] w-full whitespace-nowrap')}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-3 flex justify-center">
-        {renderOutcomeButton('draw', 'min-h-[2.45rem] min-w-[9rem] whitespace-nowrap px-5')}
-      </div>
-
-      <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
-        <p className="text-center text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-          Marcador exacto
-        </p>
-        <div className="mt-3 flex items-center justify-center gap-3">
-          <label className="text-center">
-            <span className="sr-only">Goles de {match.team_home}</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              disabled={isLocked || saving}
-              value={selectedHome}
-              onChange={(event) => {
-                const nextValue = event.target.value.replace(/\D/g, '').slice(0, 2);
-                setSelectedHome(nextValue);
-              }}
-              className="h-10 w-14 rounded-lg border border-slate-200 bg-white px-1 text-center text-lg font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
-              placeholder="0"
-            />
-          </label>
-          <span className="text-center text-lg font-black text-slate-400">-</span>
-          <label className="text-center">
-            <span className="sr-only">Goles de {match.team_away}</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              disabled={isLocked || saving}
-              value={selectedAway}
-              onChange={(event) => {
-                const nextValue = event.target.value.replace(/\D/g, '').slice(0, 2);
-                setSelectedAway(nextValue);
-              }}
-              className="h-10 w-14 rounded-lg border border-slate-200 bg-white px-1 text-center text-lg font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
-              placeholder="0"
-            />
-          </label>
-        </div>
-        <p className={`mt-2 text-center text-xs font-semibold ${
-          hasValidScore && selectedOutcome && !scoreMatchesOutcome
-            ? 'text-red-600'
-            : 'text-slate-500'
-        }`}>
-          {hasValidScore && selectedOutcome && !scoreMatchesOutcome
-            ? 'El marcador debe coincidir con tu elección.'
-            : 'El marcador exacto suma 5 puntos adicionales.'}
-        </p>
-      </div>
-
       <button
         type="button"
-        disabled={isLocked || saving || !selectedOutcome || !hasValidScore || !scoreMatchesOutcome}
-        onClick={savePrediction}
-        className={`mt-4 flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white transition disabled:opacity-50 ${
-          selectedIsSaved ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-tonner-blue hover:bg-[#0f5fd7]'
-        }`}
+        onClick={() => setExpanded((current) => !current)}
+        className="grid w-full grid-cols-[3.5rem_minmax(0,1fr)_3rem_1.5rem] items-center gap-2 px-3 py-2.5 text-left"
+        aria-expanded={expanded}
       >
-        {saving
-          ? 'Guardando...'
-          : isLocked
-            ? 'Predicción cerrada'
-            : selectedIsSaved
-              ? 'Predicción guardada'
-              : prediction
-                ? 'Actualizar predicción'
-                : 'Guardar predicción'}
+        <span className={`text-center text-[11px] font-black ${
+          match.status === 'live'
+            ? 'text-red-600'
+            : match.status === 'finished'
+              ? 'text-emerald-700'
+              : 'text-slate-500'
+        }`}>
+          {match.status === 'live' ? <span className="cup-live-dot mx-auto mb-1 block" aria-hidden="true" /> : null}
+          {statusLabel}
+        </span>
+
+        <span className="min-w-0">
+          <span className="flex min-w-0 items-center gap-2">
+            <TeamBadge name={match.team_home} logo={match.home_logo} size="xs" />
+            <span className="truncate text-xs font-black text-tonner-slate">{match.team_home}</span>
+          </span>
+          <span className="mt-1.5 flex min-w-0 items-center gap-2">
+            <TeamBadge name={match.team_away} logo={match.away_logo} size="xs" />
+            <span className="truncate text-xs font-black text-tonner-slate">{match.team_away}</span>
+          </span>
+        </span>
+
+        <span className={`text-center text-xs font-black ${prediction ? 'text-emerald-700' : 'text-slate-400'}`}>
+          {prediction ? (
+            <>
+              <span className="block">{prediction.predicted_home}</span>
+              <span className="mt-1.5 block">{prediction.predicted_away}</span>
+            </>
+          ) : (
+            <span className="block text-[10px] leading-tight">Sin pick</span>
+          )}
+        </span>
+
+        <ChevronDown
+          size={17}
+          strokeWidth={2.5}
+          className={`text-tonner-blue transition-transform ${expanded ? 'rotate-180' : ''}`}
+          aria-hidden="true"
+        />
       </button>
 
-      <p className="mt-3 text-center text-xs text-slate-500">
-        {isLocked
-          ? 'Predicción cerrada. El partido ya inició.'
-          : selectedIsSaved
-            ? `Guardada. Puedes editarla hasta el ${editDeadline}.`
-            : `Puedes editar tu predicción hasta el ${editDeadline}.`}
-      </p>
+      {expanded ? (
+        <div className="border-t border-slate-100 bg-slate-50/70 px-3 pb-3 pt-3">
+          <div className="grid grid-cols-3 gap-1.5">
+            {renderOutcomeButton('home', `Gana ${match.team_home}`)}
+            {renderOutcomeButton('draw', 'Empate')}
+            {renderOutcomeButton('away', `Gana ${match.team_away}`)}
+          </div>
+
+          <div className="mt-3 flex items-center justify-center gap-3">
+            <label className="text-center">
+              <span className="sr-only">Goles de {match.team_home}</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                disabled={isLocked || saving}
+                value={selectedHome}
+                onChange={(event) => setSelectedHome(event.target.value.replace(/\D/g, '').slice(0, 2))}
+                className="h-9 w-12 rounded-md border border-slate-200 bg-white px-1 text-center text-base font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
+                placeholder="0"
+              />
+            </label>
+            <span className="text-sm font-black text-slate-400">-</span>
+            <label className="text-center">
+              <span className="sr-only">Goles de {match.team_away}</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                disabled={isLocked || saving}
+                value={selectedAway}
+                onChange={(event) => setSelectedAway(event.target.value.replace(/\D/g, '').slice(0, 2))}
+                className="h-9 w-12 rounded-md border border-slate-200 bg-white px-1 text-center text-base font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
+                placeholder="0"
+              />
+            </label>
+          </div>
+
+          <p className={`mt-2 text-center text-[10px] font-semibold ${
+            hasValidScore && selectedOutcome && !scoreMatchesOutcome
+              ? 'text-red-600'
+              : 'text-slate-500'
+          }`}>
+            {hasValidScore && selectedOutcome && !scoreMatchesOutcome
+              ? 'El marcador debe coincidir con tu elección.'
+              : 'Marcador exacto: 5 puntos adicionales.'}
+          </p>
+
+          <button
+            type="button"
+            disabled={isLocked || saving || !selectedOutcome || !hasValidScore || !scoreMatchesOutcome}
+            onClick={savePrediction}
+            className={`mt-3 flex h-9 w-full items-center justify-center rounded-md px-3 text-xs font-black text-white transition disabled:opacity-50 ${
+              selectedIsSaved ? 'bg-emerald-600' : 'bg-tonner-blue'
+            }`}
+          >
+            {saving
+              ? 'Guardando...'
+              : isLocked
+                ? 'Predicción cerrada'
+                : selectedIsSaved
+                  ? 'Predicción guardada'
+                  : prediction
+                    ? 'Actualizar predicción'
+                    : 'Guardar predicción'}
+          </button>
+
+          <p className="mt-2 text-center text-[10px] text-slate-500">
+            {isLocked
+              ? 'El partido ya inició.'
+              : `Editable hasta el ${editDeadline}.`}
+          </p>
+        </div>
+      ) : null}
     </article>
   );
 }

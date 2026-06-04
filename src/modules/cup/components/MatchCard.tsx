@@ -1,5 +1,5 @@
+import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { formatRoundLabel } from '../services/stages';
 import { getOutcomeLabel, getPredictionOutcome } from '../services/predictionOutcome';
 import type { MatchWithPrediction } from '../services/types';
 import GoalEventsList from './GoalEventsList';
@@ -26,9 +26,9 @@ function MatchCard({
   showAction = true,
 }: Props) {
   const { match, prediction } = item;
-  const matchDate = new Intl.DateTimeFormat('es-CO', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+  const matchTime = new Intl.DateTimeFormat('es-CO', {
+    hour: 'numeric',
+    minute: '2-digit',
   }).format(new Date(match.date));
   const actionLabel = ctaLabel ?? (prediction ? 'Editar predicción' : 'Predecir');
   const hasScore = match.score_home !== null && match.score_away !== null;
@@ -36,90 +36,80 @@ function MatchCard({
   const homeGoals = match.goal_events.filter((event) => event.side === 'home');
   const awayGoals = match.goal_events.filter((event) => event.side === 'away');
   const statusLabel = match.status === 'live'
-    ? `EN VIVO${matchMinute ? ` · ${matchMinute}` : ''}`
+    ? matchMinute ?? 'EN VIVO'
     : match.status === 'finished'
-      ? 'FINALIZADO'
-      : 'NO INICIADO';
+      ? 'FT'
+      : matchTime;
 
   return (
-    <article className={`cup-card p-3 text-tonner-slate ${match.status === 'live' ? 'cup-card--live' : ''}`}>
+    <article className={`relative border-b border-slate-100 bg-white last:border-b-0 ${match.status === 'live' ? 'bg-red-50/30' : ''}`}>
       {match.status === 'live' ? <span className="cup-live-strip" aria-hidden="true" /> : null}
-      <div className="mb-3 text-center">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-          {formatRoundLabel(match.round)}
-        </p>
-        <div className="mt-2 flex justify-center">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${
-              match.status === 'live'
-                ? 'bg-red-50 text-red-700'
-                : match.status === 'finished'
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-orange-50 text-tonner-orange'
-            }`}
-          >
-            {match.status === 'live' ? (
-              <span className="cup-live-dot" aria-hidden="true" />
-            ) : null}
-            {statusLabel}
-          </span>
+      <div className="grid grid-cols-[3.5rem_minmax(0,1fr)_2.4rem] items-center gap-2 px-3 py-2.5">
+        <div className={`text-center text-[11px] font-black ${
+          match.status === 'live'
+            ? 'text-red-600'
+            : match.status === 'finished'
+              ? 'text-emerald-700'
+              : 'text-slate-500'
+        }`}>
+          {match.status === 'live' ? <span className="cup-live-dot mx-auto mb-1 block" aria-hidden="true" /> : null}
+          <span>{statusLabel}</span>
         </div>
-        <p className="mt-2 text-xs font-black text-tonner-slate">{matchDate}</p>
-        <p className="mx-auto mt-1 max-w-[16rem] truncate text-[11px] font-semibold text-slate-500">
-          {match.city} · {match.stadium}
-        </p>
+
+        <div className="min-w-0">
+          <div className="grid grid-cols-[minmax(0,1fr)_1.5rem] items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <TeamBadge name={match.team_home} logo={match.home_logo} size="xs" />
+              <div className="min-w-0">
+                <p className="truncate text-xs font-black text-tonner-slate">{match.team_home}</p>
+                <GoalEventsList events={homeGoals} />
+              </div>
+            </div>
+            <span className="text-right text-xs font-black text-tonner-slate">
+              {hasScore ? match.score_home : '-'}
+            </span>
+          </div>
+
+          <div className="mt-1.5 grid grid-cols-[minmax(0,1fr)_1.5rem] items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <TeamBadge name={match.team_away} logo={match.away_logo} size="xs" />
+              <div className="min-w-0">
+                <p className="truncate text-xs font-black text-tonner-slate">{match.team_away}</p>
+                <GoalEventsList events={awayGoals} />
+              </div>
+            </div>
+            <span className="text-right text-xs font-black text-tonner-slate">
+              {hasScore ? match.score_away : '-'}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          {showAction && match.status !== 'live' ? (
+            <Link
+              to={ctaTo}
+              aria-label={actionLabel}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-tonner-blue hover:bg-blue-50"
+            >
+              <ChevronRight size={18} strokeWidth={2.5} aria-hidden="true" />
+            </Link>
+          ) : null}
+        </div>
       </div>
 
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">
-        <div className="min-w-0 text-center">
-          <div className="flex justify-center">
-            <TeamBadge name={match.team_home} logo={match.home_logo} size="md" />
-          </div>
-          <p className="mx-auto mt-1.5 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
-            {match.team_home}
-          </p>
-          <GoalEventsList events={homeGoals} />
-        </div>
-
-        <div className="flex min-w-[3.7rem] shrink-0 items-center justify-center pt-3">
-          <span className="rounded-full bg-tonner-blue px-3 py-1 text-xs font-black text-white">
-            {hasScore ? `${match.score_home} - ${match.score_away}` : 'VS'}
-          </span>
-        </div>
-
-        <div className="min-w-0 text-center">
-          <div className="flex justify-center">
-            <TeamBadge name={match.team_away} logo={match.away_logo} size="md" />
-          </div>
-          <p className="mx-auto mt-1.5 line-clamp-2 max-w-[6.3rem] text-sm font-black leading-tight text-tonner-slate">
-            {match.team_away}
-          </p>
-          <GoalEventsList events={awayGoals} />
-        </div>
-      </div>
-
-      <div className="mt-3 flex flex-col items-center gap-2 text-center">
+      <div className="px-3 pb-2.5 pl-[4.25rem]">
         {showPredictionStatus ? (
-          <div
-            className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${
+          <p
+            className={`truncate text-[10px] font-bold ${
               prediction
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'bg-orange-50 text-tonner-orange'
+                ? 'text-emerald-700'
+                : 'text-slate-400'
             }`}
           >
             {prediction
               ? `Tu pick: ${prediction.predicted_home} - ${prediction.predicted_away} · ${getOutcomeLabel(match, getPredictionOutcome(prediction))}`
               : 'Sin predicción'}
-          </div>
-        ) : null}
-
-        {showAction && match.status !== 'live' ? (
-          <Link
-            to={ctaTo}
-            className="shrink-0 rounded-xl bg-tonner-blue px-6 py-2 text-xs font-bold text-white"
-          >
-            {actionLabel}
-          </Link>
+          </p>
         ) : null}
       </div>
     </article>
