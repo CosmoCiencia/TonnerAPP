@@ -134,7 +134,7 @@
 
 .cup-launch-hero {
   position: relative;
-  min-height: clamp(16.5rem, 42dvh, 22rem);
+  min-height: clamp(17.6rem, 45dvh, 23.2rem);
   overflow: hidden;
   isolation: isolate;
   background: #109bd2;
@@ -176,17 +176,17 @@
 }
 
 .cup-launch-copy-top {
-  top: 2.55rem;
+  top: 3.05rem;
 }
 
 .cup-launch-copy-bottom {
-  bottom: 1.55rem;
+  bottom: 1.85rem;
 }
 
 .cup-launch-trophy {
   position: absolute;
   left: 50%;
-  top: 48%;
+  top: 50%;
   width: clamp(3.95rem, 20vw, 5.45rem);
   height: auto;
   transform: translate(-50%, -50%);
