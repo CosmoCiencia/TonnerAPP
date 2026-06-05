@@ -21,7 +21,7 @@
 .catalog-app .catalog-home,
 .catalog-app .catalog-detail,
 .catalog-app .catalog-stores {
-  padding-bottom: calc(6.2rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(4.85rem + env(safe-area-inset-bottom));
 }
 
 .catalog-top {

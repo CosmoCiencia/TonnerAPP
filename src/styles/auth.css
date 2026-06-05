@@ -324,7 +324,7 @@
 
 .auth-profile-body {
   min-height: calc(100dvh - 5.2rem);
-  padding: 1.45rem 1.45rem calc(7.4rem + env(safe-area-inset-bottom));
+  padding: 1.45rem 1.45rem calc(5.55rem + env(safe-area-inset-bottom));
 }
 
 .auth-profile-top button {

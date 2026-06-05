@@ -17,7 +17,7 @@ function AppShell() {
           {!isLaunch ? <CupTopBar /> : null}
           <main
             className={`flex-1 overflow-y-auto scroll-smooth animate-fadeIn ${
-              isLaunch ? 'p-0' : 'px-3 pb-28 pt-4 sm:px-4 sm:pt-5'
+              isLaunch ? 'p-0' : 'px-3 pb-20 pt-4 sm:px-4 sm:pt-5'
             }`}
           >
             <Outlet context={cupData} />
