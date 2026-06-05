@@ -50,6 +50,8 @@ export type Prediction = {
   prediction_result: 'home' | 'draw' | 'away';
   predicted_home: number;
   predicted_away: number;
+  predicted_scorer_player_id: number | null;
+  predicted_scorer_name: string | null;
 };
 
 export type PointEntry = {
@@ -57,6 +59,16 @@ export type PointEntry = {
   user_id: string;
   match_id: string;
   points_awarded: number;
+};
+
+export type CupTeamPlayer = {
+  team_id: number;
+  team_name: string | null;
+  player_id: number;
+  player_name: string;
+  number: number | null;
+  position: string | null;
+  photo: string | null;
 };
 
 export type RankingRow = {
@@ -73,6 +85,7 @@ export type MatchWithPrediction = {
   match: Match;
   prediction?: Prediction;
   points?: PointEntry;
+  players: CupTeamPlayer[];
 };
 
 declare global {

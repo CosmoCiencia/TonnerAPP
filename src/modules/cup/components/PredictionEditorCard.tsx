@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { MatchWithPrediction } from '../services/types';
+import type { CupTeamPlayer, MatchWithPrediction } from '../services/types';
 import {
   getPredictionOutcome,
   getScoreOutcome,
@@ -16,6 +16,8 @@ type Props = {
     predictionResult: PredictionOutcome,
     predictedHome: number,
     predictedAway: number,
+    predictedScorerPlayerId?: number | null,
+    predictedScorerName?: string | null,
   ) => void;
 };
 
@@ -42,8 +44,14 @@ function formatMatchMinute(elapsedMinutes: number | null, extraMinutes: number |
   return extraMinutes ? `${elapsedMinutes}+${extraMinutes}'` : `${elapsedMinutes}'`;
 }
 
+function getPlayerLabel(player: CupTeamPlayer) {
+  const numberLabel = player.number ? `#${player.number} ` : '';
+  const positionLabel = player.position ? ` · ${player.position}` : '';
+  return `${numberLabel}${player.player_name}${positionLabel}`;
+}
+
 function PredictionEditorCard({ item, saving, onSave }: Props) {
-  const { match, prediction } = item;
+  const { match, prediction, players } = item;
   const savedOutcome = getPredictionOutcome(prediction);
   const [expanded, setExpanded] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<PredictionOutcome | null>(savedOutcome);
@@ -52,6 +60,9 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
   );
   const [selectedAway, setSelectedAway] = useState(
     prediction ? String(prediction.predicted_away) : '',
+  );
+  const [selectedScorerId, setSelectedScorerId] = useState(
+    prediction?.predicted_scorer_player_id ? String(prediction.predicted_scorer_player_id) : '',
   );
   const [now, setNow] = useState(() => Date.now());
 
@@ -75,13 +86,22 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
     && predictedAway <= MAX_PREDICTED_SCORE;
   const scoreOutcome = hasValidScore ? getScoreOutcome(predictedHome, predictedAway) : null;
   const scoreMatchesOutcome = Boolean(selectedOutcome && scoreOutcome === selectedOutcome);
+  const selectedScorerPlayerId = selectedScorerId ? Number(selectedScorerId) : null;
   const selectedIsSaved = Boolean(
     prediction
     && hasValidScore
     && selectedOutcome === savedOutcome
     && predictedHome === prediction.predicted_home
-    && predictedAway === prediction.predicted_away,
+    && predictedAway === prediction.predicted_away
+    && selectedScorerPlayerId === prediction.predicted_scorer_player_id,
   );
+  const selectedScorer = players.find((player) => String(player.player_id) === selectedScorerId) ?? null;
+  const homePlayers = match.home_team_id
+    ? players.filter((player) => player.team_id === match.home_team_id)
+    : [];
+  const awayPlayers = match.away_team_id
+    ? players.filter((player) => player.team_id === match.away_team_id)
+    : [];
   const statusLabel = match.status === 'live'
     ? formatMatchMinute(match.elapsed_minutes, match.extra_minutes)
     : match.status === 'finished'
@@ -90,7 +110,14 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
 
   const savePrediction = () => {
     if (!selectedOutcome || !hasValidScore || !scoreMatchesOutcome) return;
-    onSave(match.id, selectedOutcome, predictedHome, predictedAway);
+    onSave(
+      match.id,
+      selectedOutcome,
+      predictedHome,
+      predictedAway,
+      selectedScorer?.player_id ?? null,
+      selectedScorer?.player_name ?? null,
+    );
   };
 
   const renderOutcomeButton = (outcome: PredictionOutcome, label: string) => {
@@ -210,6 +237,48 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
               ? 'El marcador debe coincidir con tu elección.'
               : 'Marcador exacto: 5 puntos adicionales.'}
           </p>
+
+          <div className="mt-3">
+            <label className="block text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">
+              Goleador opcional
+            </label>
+            <select
+              disabled={isLocked || saving || players.length === 0}
+              value={selectedScorerId}
+              onChange={(event) => setSelectedScorerId(event.target.value)}
+              className="mt-1 h-9 w-full rounded-md border border-slate-200 bg-white px-2 text-xs font-bold text-tonner-slate outline-none transition focus:border-tonner-blue disabled:opacity-50"
+            >
+              <option value="">Sin goleador</option>
+              {homePlayers.length > 0 ? (
+                <optgroup label={match.team_home}>
+                  {homePlayers.map((player) => (
+                    <option key={`${player.team_id}-${player.player_id}`} value={player.player_id}>
+                      {getPlayerLabel(player)}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              {awayPlayers.length > 0 ? (
+                <optgroup label={match.team_away}>
+                  {awayPlayers.map((player) => (
+                    <option key={`${player.team_id}-${player.player_id}`} value={player.player_id}>
+                      {getPlayerLabel(player)}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              {selectedScorerId && !selectedScorer && prediction?.predicted_scorer_name ? (
+                <option value={selectedScorerId}>
+                  {prediction.predicted_scorer_name}
+                </option>
+              ) : null}
+            </select>
+            <p className="mt-1 text-center text-[10px] text-slate-500">
+              {players.length > 0
+                ? 'Si marca durante el partido, suma 2 puntos.'
+                : 'Goleadores no disponibles para este partido.'}
+            </p>
+          </div>
 
           <button
             type="button"

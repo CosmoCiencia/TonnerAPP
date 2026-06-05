@@ -1,6 +1,6 @@
 import { requireSupabase } from '../../../lib/supabase';
 import { getScoreOutcome, type PredictionOutcome } from './predictionOutcome';
-import type { Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from './types';
+import type { CupTeamPlayer, Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from './types';
 
 type PredictionRow = {
   id: string;
@@ -9,6 +9,8 @@ type PredictionRow = {
   prediction_result?: PredictionOutcome | null;
   predicted_home: number;
   predicted_away: number;
+  predicted_scorer_player_id?: number | null;
+  predicted_scorer_name?: string | null;
 };
 
 type PointRow = {
@@ -33,6 +35,8 @@ function toPrediction(row: PredictionRow): Prediction {
       ),
     predicted_home: row.predicted_home,
     predicted_away: row.predicted_away,
+    predicted_scorer_player_id: row.predicted_scorer_player_id ?? null,
+    predicted_scorer_name: row.predicted_scorer_name ?? null,
   };
 }
 
@@ -49,7 +53,7 @@ export async function fetchPredictions(userId: string): Promise<Prediction[]> {
   const supabase = requireSupabase();
   const { data, error } = await supabase
     .from('cup_predictions')
-    .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away')
+    .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away,predicted_scorer_player_id,predicted_scorer_name')
     .eq('user_id', userId);
 
   if (error) {
@@ -117,6 +121,8 @@ export async function upsertPrediction(
   prediction_result: PredictionOutcome,
   predicted_home: number,
   predicted_away: number,
+  predicted_scorer_player_id?: number | null,
+  predicted_scorer_name?: string | null,
 ): Promise<Prediction> {
   if (
     !Number.isInteger(predicted_home)
@@ -131,6 +137,13 @@ export async function upsertPrediction(
     throw new Error('El marcador exacto debe coincidir con el resultado elegido.');
   }
 
+  const normalizedScorerPlayerId = Number.isInteger(predicted_scorer_player_id)
+    ? predicted_scorer_player_id
+    : null;
+  const normalizedScorerName = normalizedScorerPlayerId
+    ? predicted_scorer_name?.trim() || null
+    : null;
+
   const supabase = requireSupabase();
   const { data, error } = await supabase
     .from('cup_predictions')
@@ -141,10 +154,12 @@ export async function upsertPrediction(
         prediction_result,
         predicted_home,
         predicted_away,
+        predicted_scorer_player_id: normalizedScorerPlayerId,
+        predicted_scorer_name: normalizedScorerName,
       },
       { onConflict: 'user_id,match_id' },
     )
-    .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away')
+    .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away,predicted_scorer_player_id,predicted_scorer_name')
     .single();
 
   if (error) {
@@ -160,6 +175,7 @@ export function getUserMatches(
   matches: Match[],
   predictions: Prediction[],
   points: PointEntry[],
+  players: CupTeamPlayer[],
   user_id: string,
 ): MatchWithPrediction[] {
   const predictionsByMatch = new Map(
@@ -170,10 +186,21 @@ export function getUserMatches(
   const pointsByMatch = new Map(
     points.filter((entry) => entry.user_id === user_id).map((entry) => [entry.match_id, entry]),
   );
+  const playersByTeam = new Map<number, CupTeamPlayer[]>();
+
+  for (const player of players) {
+    const teamPlayers = playersByTeam.get(player.team_id) ?? [];
+    teamPlayers.push(player);
+    playersByTeam.set(player.team_id, teamPlayers);
+  }
 
   return matches.map((match) => ({
     match,
     prediction: predictionsByMatch.get(match.id),
     points: pointsByMatch.get(match.id),
+    players: [
+      ...(match.home_team_id ? playersByTeam.get(match.home_team_id) ?? [] : []),
+      ...(match.away_team_id ? playersByTeam.get(match.away_team_id) ?? [] : []),
+    ],
   }));
 }

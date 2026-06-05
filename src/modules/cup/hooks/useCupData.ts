@@ -7,8 +7,9 @@ import {
   getUserMatches,
   upsertPrediction,
 } from '../services/predictionsStore';
+import { fetchTeamPlayers } from '../services/teamPlayersStore';
 import type { PredictionOutcome } from '../services/predictionOutcome';
-import type { Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from '../services/types';
+import type { CupTeamPlayer, Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from '../services/types';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -20,6 +21,7 @@ export function useCupData(userId: string | null) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [points, setPoints] = useState<PointEntry[]>([]);
+  const [teamPlayers, setTeamPlayers] = useState<CupTeamPlayer[]>([]);
   const [ranking, setRanking] = useState<RankingRow[]>([]);
   const [rankingError, setRankingError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,8 +42,9 @@ export function useCupData(userId: string | null) {
       }
       const hasValidUserId = isValidUserId(userId);
 
+      const matchesPromise = fetchMatches();
       const [matchesResult, predictionsResult, pointsResult, rankingResult] = await Promise.allSettled([
-        fetchMatches(),
+        matchesPromise,
         hasValidUserId ? fetchPredictions(userId) : Promise.resolve([]),
         hasValidUserId ? fetchPoints(userId) : Promise.resolve([]),
         hasValidUserId ? fetchRanking(userId) : Promise.reject(new Error('No hay usuario autenticado para cargar el ranking.')),
@@ -54,6 +57,18 @@ export function useCupData(userId: string | null) {
 
       if (matchesResult.status === 'fulfilled') {
         setMatches(matchesResult.value);
+        const teamIds = matchesResult.value.flatMap((match) => [
+          match.home_team_id,
+          match.away_team_id,
+        ]).filter((teamId): teamId is number => Number.isInteger(teamId));
+
+        fetchTeamPlayers(teamIds)
+          .then((players) => {
+            if (mounted) setTeamPlayers(players);
+          })
+          .catch((error) => {
+            console.error('[TonnerCup] Team players load failed:', error);
+          });
       } else if (!options.silent) {
         const message = matchesResult.reason instanceof Error ? matchesResult.reason.message : 'No se pudo cargar TonnerCup.';
         setToast(message);
@@ -99,8 +114,8 @@ export function useCupData(userId: string | null) {
   }, [toast]);
 
   const userMatches: MatchWithPrediction[] = useMemo(
-    () => getUserMatches(matches, predictions, points, userId ?? ''),
-    [matches, points, predictions, userId],
+    () => getUserMatches(matches, predictions, points, teamPlayers, userId ?? ''),
+    [matches, points, predictions, teamPlayers, userId],
   );
 
   async function refreshRanking(options: { showToast?: boolean } = {}) {
@@ -131,6 +146,8 @@ export function useCupData(userId: string | null) {
     predictionResult: PredictionOutcome,
     predictedHome: number,
     predictedAway: number,
+    predictedScorerPlayerId?: number | null,
+    predictedScorerName?: string | null,
   ) {
     if (!isValidUserId(userId)) {
       setToast('Inicia sesión para guardar tu pronóstico.');
@@ -145,6 +162,8 @@ export function useCupData(userId: string | null) {
         predictionResult,
         predictedHome,
         predictedAway,
+        predictedScorerPlayerId,
+        predictedScorerName,
       );
       setPredictions((current) => {
         const exists = current.find((prediction) => prediction.id === nextPrediction.id);
@@ -171,6 +190,7 @@ export function useCupData(userId: string | null) {
     ranking,
     rankingError,
     points,
+    teamPlayers,
     savingMatchId,
     refreshingRanking,
     refreshRanking,
