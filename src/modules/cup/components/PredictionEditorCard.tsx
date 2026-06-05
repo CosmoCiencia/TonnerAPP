@@ -17,7 +17,7 @@ type Props = {
     predictedHome: number,
     predictedAway: number,
     predictedScorerPlayerId?: number | null,
-    predictedScorerName?: string | null,
+    predictedScorerName?: string | null
   ) => void;
 };
 
@@ -56,13 +56,13 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<PredictionOutcome | null>(savedOutcome);
   const [selectedHome, setSelectedHome] = useState(
-    prediction ? String(prediction.predicted_home) : '',
+    prediction ? String(prediction.predicted_home) : ''
   );
   const [selectedAway, setSelectedAway] = useState(
-    prediction ? String(prediction.predicted_away) : '',
+    prediction ? String(prediction.predicted_away) : ''
   );
   const [selectedScorerId, setSelectedScorerId] = useState(
-    prediction?.predicted_scorer_player_id ? String(prediction.predicted_scorer_player_id) : '',
+    prediction?.predicted_scorer_player_id ? String(prediction.predicted_scorer_player_id) : ''
   );
   const [now, setNow] = useState(() => Date.now());
 
@@ -76,37 +76,40 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
   const isLocked = match.status === 'finished' || hasStarted;
   const predictedHome = Number(selectedHome);
   const predictedAway = Number(selectedAway);
-  const hasValidScore = selectedHome !== ''
-    && selectedAway !== ''
-    && Number.isInteger(predictedHome)
-    && Number.isInteger(predictedAway)
-    && predictedHome >= 0
-    && predictedAway >= 0
-    && predictedHome <= MAX_PREDICTED_SCORE
-    && predictedAway <= MAX_PREDICTED_SCORE;
+  const hasValidScore =
+    selectedHome !== '' &&
+    selectedAway !== '' &&
+    Number.isInteger(predictedHome) &&
+    Number.isInteger(predictedAway) &&
+    predictedHome >= 0 &&
+    predictedAway >= 0 &&
+    predictedHome <= MAX_PREDICTED_SCORE &&
+    predictedAway <= MAX_PREDICTED_SCORE;
   const scoreOutcome = hasValidScore ? getScoreOutcome(predictedHome, predictedAway) : null;
   const scoreMatchesOutcome = Boolean(selectedOutcome && scoreOutcome === selectedOutcome);
   const selectedScorerPlayerId = selectedScorerId ? Number(selectedScorerId) : null;
   const selectedIsSaved = Boolean(
-    prediction
-    && hasValidScore
-    && selectedOutcome === savedOutcome
-    && predictedHome === prediction.predicted_home
-    && predictedAway === prediction.predicted_away
-    && selectedScorerPlayerId === prediction.predicted_scorer_player_id,
+    prediction &&
+    hasValidScore &&
+    selectedOutcome === savedOutcome &&
+    predictedHome === prediction.predicted_home &&
+    predictedAway === prediction.predicted_away &&
+    selectedScorerPlayerId === prediction.predicted_scorer_player_id
   );
-  const selectedScorer = players.find((player) => String(player.player_id) === selectedScorerId) ?? null;
+  const selectedScorer =
+    players.find((player) => String(player.player_id) === selectedScorerId) ?? null;
   const homePlayers = match.home_team_id
     ? players.filter((player) => player.team_id === match.home_team_id)
     : [];
   const awayPlayers = match.away_team_id
     ? players.filter((player) => player.team_id === match.away_team_id)
     : [];
-  const statusLabel = match.status === 'live'
-    ? formatMatchMinute(match.elapsed_minutes, match.extra_minutes)
-    : match.status === 'finished'
-      ? 'FT'
-      : formatMatchTime(match.date);
+  const statusLabel =
+    match.status === 'live'
+      ? formatMatchMinute(match.elapsed_minutes, match.extra_minutes)
+      : match.status === 'finished'
+        ? 'FT'
+        : formatMatchTime(match.date);
 
   const savePrediction = () => {
     if (!selectedOutcome || !hasValidScore || !scoreMatchesOutcome) return;
@@ -116,7 +119,7 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
       predictedHome,
       predictedAway,
       selectedScorer?.player_id ?? null,
-      selectedScorer?.player_name ?? null,
+      selectedScorer?.player_name ?? null
     );
   };
 
@@ -141,7 +144,9 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
   };
 
   return (
-    <article className={`relative border-b border-slate-100 bg-white last:border-b-0 ${match.status === 'live' ? 'bg-red-50/30' : ''}`}>
+    <article
+      className={`relative border-b border-slate-100 bg-white last:border-b-0 ${match.status === 'live' ? 'bg-red-50/30' : ''}`}
+    >
       {match.status === 'live' ? <span className="cup-live-strip" aria-hidden="true" /> : null}
       <button
         type="button"
@@ -149,14 +154,18 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
         className="grid w-full grid-cols-[3.5rem_minmax(0,1fr)_3rem_1.5rem] items-center gap-2 px-3 py-2.5 text-left"
         aria-expanded={expanded}
       >
-        <span className={`text-center text-[11px] font-black ${
-          match.status === 'live'
-            ? 'text-red-600'
-            : match.status === 'finished'
-              ? 'text-emerald-700'
-              : 'text-slate-500'
-        }`}>
-          {match.status === 'live' ? <span className="cup-live-dot mx-auto mb-1 block" aria-hidden="true" /> : null}
+        <span
+          className={`text-center text-[11px] font-black ${
+            match.status === 'live'
+              ? 'text-red-600'
+              : match.status === 'finished'
+                ? 'text-emerald-700'
+                : 'text-slate-500'
+          }`}
+        >
+          {match.status === 'live' ? (
+            <span className="cup-live-dot mx-auto mb-1 block" aria-hidden="true" />
+          ) : null}
           {statusLabel}
         </span>
 
@@ -171,7 +180,9 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
           </span>
         </span>
 
-        <span className={`text-center text-xs font-black ${prediction ? 'text-emerald-700' : 'text-slate-400'}`}>
+        <span
+          className={`text-center text-xs font-black ${prediction ? 'text-emerald-700' : 'text-slate-400'}`}
+        >
           {prediction ? (
             <>
               <span className="block">{prediction.predicted_home}</span>
@@ -207,7 +218,9 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
                 pattern="[0-9]*"
                 disabled={isLocked || saving}
                 value={selectedHome}
-                onChange={(event) => setSelectedHome(event.target.value.replace(/\D/g, '').slice(0, 2))}
+                onChange={(event) =>
+                  setSelectedHome(event.target.value.replace(/\D/g, '').slice(0, 2))
+                }
                 className="h-9 w-12 rounded-md border border-slate-200 bg-white px-1 text-center text-base font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
                 placeholder="0"
               />
@@ -221,21 +234,25 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
                 pattern="[0-9]*"
                 disabled={isLocked || saving}
                 value={selectedAway}
-                onChange={(event) => setSelectedAway(event.target.value.replace(/\D/g, '').slice(0, 2))}
+                onChange={(event) =>
+                  setSelectedAway(event.target.value.replace(/\D/g, '').slice(0, 2))
+                }
                 className="h-9 w-12 rounded-md border border-slate-200 bg-white px-1 text-center text-base font-black text-tonner-blue outline-none transition focus:border-tonner-blue disabled:opacity-50"
                 placeholder="0"
               />
             </label>
           </div>
 
-          <p className={`mt-2 text-center text-[10px] font-semibold ${
-            hasValidScore && selectedOutcome && !scoreMatchesOutcome
-              ? 'text-red-600'
-              : 'text-slate-500'
-          }`}>
+          <p
+            className={`mt-2 text-center text-[10px] font-semibold ${
+              hasValidScore && selectedOutcome && !scoreMatchesOutcome
+                ? 'text-red-600'
+                : 'text-slate-500'
+            }`}
+          >
             {hasValidScore && selectedOutcome && !scoreMatchesOutcome
               ? 'El marcador debe coincidir con tu elección.'
-              : 'Marcador exacto: 5 puntos adicionales.'}
+              : ''}
           </p>
 
           <div className="mt-3">
@@ -268,21 +285,21 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
                 </optgroup>
               ) : null}
               {selectedScorerId && !selectedScorer && prediction?.predicted_scorer_name ? (
-                <option value={selectedScorerId}>
-                  {prediction.predicted_scorer_name}
-                </option>
+                <option value={selectedScorerId}>{prediction.predicted_scorer_name}</option>
               ) : null}
             </select>
             <p className="mt-1 text-center text-[10px] text-slate-500">
               {players.length > 0
-                ? 'Si marca durante el partido, suma 2 puntos.'
+                ? ''
                 : 'Goleadores no disponibles para este partido.'}
             </p>
           </div>
 
           <button
             type="button"
-            disabled={isLocked || saving || !selectedOutcome || !hasValidScore || !scoreMatchesOutcome}
+            disabled={
+              isLocked || saving || !selectedOutcome || !hasValidScore || !scoreMatchesOutcome
+            }
             onClick={savePrediction}
             className={`mt-3 flex h-9 w-full items-center justify-center rounded-md px-3 text-xs font-black text-white transition disabled:opacity-50 ${
               selectedIsSaved ? 'bg-emerald-600' : 'bg-tonner-blue'
@@ -300,9 +317,7 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
           </button>
 
           <p className="mt-2 text-center text-[10px] text-slate-500">
-            {isLocked
-              ? 'El partido ya inició.'
-              : `Editable hasta el ${editDeadline}.`}
+            {isLocked ? 'El partido ya inició.' : `Editable hasta el ${editDeadline}.`}
           </p>
         </div>
       ) : null}
