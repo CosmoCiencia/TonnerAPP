@@ -6,23 +6,16 @@ import MatchDateNavigator from '../components/MatchDateNavigator';
 import MatchStatusFilter, { type MatchStatusFilterValue } from '../components/MatchStatusFilter';
 import PredictionEditorCard from '../components/PredictionEditorCard';
 import SectionIntro from '../components/SectionIntro';
+import { getCupDateKey, getCupTodayKey } from '../services/cupDateKeys';
 import type { MatchWithPrediction } from '../services/types';
 import type { ReturnTypeCupData } from './types';
-
-function getDateKey(date: string) {
-  return new Date(date).toISOString().slice(0, 10);
-}
-
-function getTodayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function sortMatches(matches: MatchWithPrediction[]) {
   return [...matches].sort((first, second) => Date.parse(first.match.date) - Date.parse(second.match.date));
 }
 
 function getDefaultDate(dateKeys: string[]) {
-  const today = getTodayKey();
+  const today = getCupTodayKey();
   return dateKeys.find((dateKey) => dateKey >= today) ?? dateKeys[dateKeys.length - 1] ?? '';
 }
 
@@ -44,9 +37,9 @@ function PredictionsPage() {
   const filteredMatches = statusFilter === 'all'
     ? matches
     : matches.filter((item) => item.match.status === statusFilter);
-  const dateKeys = [...new Set(filteredMatches.map((item) => getDateKey(item.match.date)))];
+  const dateKeys = [...new Set(filteredMatches.map((item) => getCupDateKey(item.match.date)))];
   const activeDate = dateKeys.includes(selectedDate) ? selectedDate : getDefaultDate(dateKeys);
-  const dayMatches = filteredMatches.filter((item) => getDateKey(item.match.date) === activeDate);
+  const dayMatches = filteredMatches.filter((item) => getCupDateKey(item.match.date) === activeDate);
 
   return (
     <section className="min-w-0 space-y-4">
