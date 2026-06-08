@@ -166,6 +166,27 @@ export async function signOut() {
   }
 }
 
+export async function sendPasswordRecoveryEmail(email: string) {
+  const supabase = requireSupabase()
+  const redirectTo = `${window.location.origin}/reset-password`
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo,
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}
+
+export async function updatePassword(password: string) {
+  const supabase = requireSupabase()
+  const { error } = await supabase.auth.updateUser({ password })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}
+
 export async function updateProfileFullName(userId: string, fullName: string) {
   const supabase = requireSupabase()
   const { error } = await supabase

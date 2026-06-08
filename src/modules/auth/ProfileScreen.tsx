@@ -201,6 +201,13 @@ export default function ProfileScreen() {
             <a href="mailto:marketing@pinturastonner.com">Enviar correo</a>
             <a href="tel:+573000000000">Llamar a Tonner</a>
             <a href="https://wa.me/573000000000">WhatsApp</a>
+            <a
+              href={`mailto:marketing@pinturastonner.com?subject=${encodeURIComponent('Solicitud de eliminación de cuenta TonnerApp')}&body=${encodeURIComponent(
+                `Hola, solicito la eliminación de mi cuenta TonnerApp y los datos personales asociados.\n\nCorreo de la cuenta: ${auth.user?.email ?? ''}\nNombre: ${auth.user?.fullName ?? ''}`,
+              )}`}
+            >
+              Solicitar eliminación de cuenta
+            </a>
           </div>
         </section>
       )

@@ -1,12 +1,29 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 
-import { getSession, onAuthStateChange, signIn, signOut, signUp } from './auth.service'
+import { getSession, onAuthStateChange, signIn, signOut, signUp, updatePassword } from './auth.service'
 import { AuthContext, type AuthContextValue } from './auth.context'
 import type { AuthState, AuthUser } from './auth.types'
+
+const PASSWORD_RECOVERY_STORAGE_KEY = 'tonnerapp-password-recovery'
+
+function loadPasswordRecoveryState() {
+  return window.sessionStorage.getItem(PASSWORD_RECOVERY_STORAGE_KEY) === 'true'
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [status, setStatus] = useState<AuthState['status']>('loading')
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(loadPasswordRecoveryState)
+
+  const setPasswordRecovery = (isActive: boolean) => {
+    setIsPasswordRecovery(isActive)
+
+    if (isActive) {
+      window.sessionStorage.setItem(PASSWORD_RECOVERY_STORAGE_KEY, 'true')
+    } else {
+      window.sessionStorage.removeItem(PASSWORD_RECOVERY_STORAGE_KEY)
+    }
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -24,7 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStatus('guest')
       })
 
-    const unsubscribe = onAuthStateChange((_event, sessionUser) => {
+    const unsubscribe = onAuthStateChange((event, sessionUser) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true)
+      }
+
       setUser(sessionUser)
       setStatus(sessionUser ? 'authenticated' : 'guest')
     })
@@ -56,29 +77,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       role: user?.role ?? 'guest',
       permissions: user?.permissions ?? [],
+      isPasswordRecovery,
     }
 
     return {
       ...authState,
       async login(input) {
         const nextUser = await signIn(input)
+        setPasswordRecovery(false)
         setUser(nextUser)
         setStatus('authenticated')
         return nextUser
       },
       async registerCustomer(input) {
         const nextUser = await signUp(input)
+        setPasswordRecovery(false)
         setUser(nextUser)
         setStatus('authenticated')
         return nextUser
       },
+      async completePasswordRecovery(password) {
+        if (!isPasswordRecovery) {
+          throw new Error('Abre el enlace de recuperación enviado a tu correo para cambiar la contraseña.')
+        }
+
+        await updatePassword(password)
+        setPasswordRecovery(false)
+      },
       async logout() {
         await signOut()
+        setPasswordRecovery(false)
         setUser(null)
         setStatus('guest')
       },
     }
-  }, [status, user])
+  }, [isPasswordRecovery, status, user])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

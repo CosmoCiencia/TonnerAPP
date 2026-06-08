@@ -26,6 +26,7 @@ export type AuthState = {
   user: AuthUser | null
   role: UserRole
   permissions: Permission[]
+  isPasswordRecovery: boolean
 }
 
 export type LoginInput = {

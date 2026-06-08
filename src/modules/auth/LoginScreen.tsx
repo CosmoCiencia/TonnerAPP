@@ -64,6 +64,9 @@ export default function LoginScreen() {
       </form>
 
       <footer className="auth-footer">
+        <Link to="/forgot-password" state={location.state}>
+          Olvidé mi contraseña
+        </Link>
         <Link to="/register-type" state={location.state}>
           Crear cuenta cliente
         </Link>

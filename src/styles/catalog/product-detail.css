@@ -52,8 +52,9 @@
 
 .catalog-detail p {
   margin: 5px 0 0;
-  color: #b1c3ee;
+  color: #48618f;
   font-size: 11px;
+  font-weight: 500;
   line-height: 1.05;
   text-align: justify;
 }
@@ -103,8 +104,9 @@
   border: 1px solid #b8c8ef;
   border-radius: 999px;
   padding: 5px 8px;
-  color: #8aa7ed;
+  color: #36558f;
   font-size: 9px;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -134,8 +136,9 @@
 
 .catalog-detail__feature small {
   min-height: 22px;
-  color: #b1c3ee;
+  color: #48618f;
   font-size: 6.5px;
+  font-weight: 800;
   line-height: 1.05;
   text-align: center;
 }
@@ -191,8 +194,9 @@
 }
 
 .catalog-detail__empty {
-  color: #8aa7ed;
+  color: #48618f;
   font-size: 11px;
+  font-weight: 700;
 }
 
 .catalog-detail__datasheet {
@@ -221,6 +225,6 @@
 
 .catalog-detail__datasheet.is-disabled {
   background: #d9e3f6;
-  color: #8aa7ed;
+  color: #48618f;
   cursor: not-allowed;
 }

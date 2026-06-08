@@ -5,6 +5,7 @@ import type { AuthState, AuthUser, LoginInput, RegisterInput } from './auth.type
 export type AuthContextValue = AuthState & {
   login: (input: LoginInput) => Promise<AuthUser>
   registerCustomer: (input: RegisterInput) => Promise<AuthUser>
+  completePasswordRecovery: (password: string) => Promise<void>
   logout: () => Promise<void>
 }
 

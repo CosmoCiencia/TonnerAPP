@@ -20,6 +20,9 @@ const InternalToolsScreen = lazy(() =>
   import('./modules/auth/AuthScreens').then((module) => ({ default: module.InternalToolsScreen })),
 )
 const LoginScreen = lazy(() => import('./modules/auth/AuthScreens').then((module) => ({ default: module.LoginScreen })))
+const ForgotPasswordScreen = lazy(() =>
+  import('./modules/auth/AuthScreens').then((module) => ({ default: module.ForgotPasswordScreen })),
+)
 const ParticipantTypeScreen = lazy(() =>
   import('./modules/auth/AuthScreens').then((module) => ({ default: module.ParticipantTypeScreen })),
 )
@@ -31,6 +34,9 @@ const ProfileScreen = lazy(() =>
 )
 const RegisterScreen = lazy(() =>
   import('./modules/auth/AuthScreens').then((module) => ({ default: module.RegisterScreen })),
+)
+const ResetPasswordScreen = lazy(() =>
+  import('./modules/auth/AuthScreens').then((module) => ({ default: module.ResetPasswordScreen })),
 )
 
 type GlobalNavKey = 'home' | 'work' | 'favorites' | 'calculator' | 'profile'
@@ -244,9 +250,15 @@ export default function AppShell() {
   }
 
   const activeGlobalKey = pathToActiveGlobalKey(location.pathname)
-  const isAuthRoute = ['/login', '/register', '/pending-approval', '/access-denied', '/internal'].some((path) =>
-    location.pathname.startsWith(path),
-  )
+  const isAuthRoute = [
+    '/login',
+    '/forgot-password',
+    '/reset-password',
+    '/register',
+    '/pending-approval',
+    '/access-denied',
+    '/internal',
+  ].some((path) => location.pathname.startsWith(path))
   const hideGlobalNav = location.pathname.startsWith('/paint') || isAuthRoute
 
   if (showSplash) {
@@ -262,6 +274,8 @@ export default function AppShell() {
           <Route path="/calculator" element={<HubRoute view="calculator" />} />
           <Route path="/profile" element={<ProfileScreen />} />
           <Route path="/login" element={<LoginScreen />} />
+          <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+          <Route path="/reset-password" element={<ResetPasswordScreen />} />
           <Route path="/register-type" element={<ParticipantTypeScreen />} />
           <Route path="/register" element={<RegisterScreen />} />
           <Route path="/pending-approval" element={<PendingApprovalScreen />} />
