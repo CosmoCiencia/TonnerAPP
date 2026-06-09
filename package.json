@@ -12,6 +12,7 @@
     "cap:sync": "npm run build && npx cap sync android",
     "cap:open:android": "npx cap open android",
     "android": "npm run cap:sync && npx cap open android",
+    "cup:audit": "node scripts/cup/audit-tonnercup.mjs",
     "cup:calculate": "node scripts/cup/invoke-calculate-cup-points.mjs",
     "lint": "eslint .",
     "preview": "vite preview"

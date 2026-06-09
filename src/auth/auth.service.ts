@@ -42,12 +42,13 @@ async function toCustomerUser(session: Session | null): Promise<AuthUser | null>
   }
 }
 
-async function createCustomerProfile(user: AuthUser, accessCode?: string) {
+async function createCustomerProfile(user: AuthUser, participantType: CupUserType, accessCode?: string) {
   const supabase = requireSupabase()
   const { data, error } = await supabase
     .rpc('upsert_own_customer_profile', {
       profile_full_name: user.fullName,
       access_code: accessCode?.trim() || null,
+      requested_cup_user_type: participantType,
     })
     .single()
 
@@ -120,7 +121,7 @@ export async function signIn({ email, password }: LoginInput) {
   return user
 }
 
-export async function signUp({ email, fullName, password, accessCode }: RegisterInput) {
+export async function signUp({ email, fullName, password, participantType, accessCode }: RegisterInput) {
   const supabase = requireSupabase()
   const { data, error } = await supabase.auth.signUp({
     email: email.trim().toLowerCase(),
@@ -154,7 +155,7 @@ export async function signUp({ email, fullName, password, accessCode }: Register
     throw new Error('No se pudo crear el usuario.')
   }
 
-  return createCustomerProfile(user, accessCode)
+  return createCustomerProfile(user, participantType, accessCode)
 }
 
 export async function signOut() {

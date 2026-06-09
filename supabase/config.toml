@@ -1,0 +1,10 @@
+project_id = "zwyvdhextasmpomyykce"
+
+[functions.sync-cup-fixtures]
+verify_jwt = false
+
+[functions.calculate-cup-points]
+verify_jwt = false
+
+[functions.sync-cup-squads]
+verify_jwt = false
