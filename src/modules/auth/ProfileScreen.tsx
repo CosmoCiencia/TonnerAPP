@@ -236,7 +236,7 @@ export default function ProfileScreen() {
           <Link to="/login" state={{ from: { pathname: '/profile' } }}>
             Iniciar sesión
           </Link>
-          <Link to="/register-type" state={{ from: { pathname: '/profile' } }}>
+          <Link to="/register" state={{ from: { pathname: '/profile' } }}>
             Crear cuenta cliente
           </Link>
         </section>

@@ -2,36 +2,14 @@ import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../../auth/useAuth'
-import type { CupUserType } from '../../auth/auth.types'
 import { AuthShell } from './authScreenUtils'
 import { getRedirectPath } from './redirectPath'
-
-const participantLabels: Record<CupUserType, string> = {
-  public: 'Cliente normal',
-  distributor: 'Distribuidor',
-  internal: 'Interno',
-}
-
-const getSelectedParticipantType = (state: unknown): CupUserType => {
-  if (!state || typeof state !== 'object' || !('participantType' in state)) return 'public'
-
-  const participantType = state.participantType
-
-  if (participantType === 'internal' || participantType === 'distributor' || participantType === 'public') {
-    return participantType
-  }
-
-  return 'public'
-}
 
 export default function RegisterScreen() {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const selectedParticipantType = getSelectedParticipantType(location.state)
   const [values, setValues] = useState({
-    participantType: selectedParticipantType,
-    accessCode: '',
     fullName: '',
     email: '',
     password: '',
@@ -39,19 +17,23 @@ export default function RegisterScreen() {
   const [errorMessage, setErrorMessage] = useState('')
   const redirectPath = getRedirectPath(location.state)
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+
+    navigate('/login')
+  }
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage('')
 
-    if (values.participantType !== 'public' && !values.accessCode.trim()) {
-      setErrorMessage('Ingresa el código de acceso para este tipo de participante.')
-      return
-    }
-
     try {
       await auth.registerCustomer({
         ...values,
-        accessCode: values.participantType === 'public' ? undefined : values.accessCode,
+        participantType: 'public',
       })
       navigate(redirectPath, { replace: true })
     } catch (error) {
@@ -63,30 +45,9 @@ export default function RegisterScreen() {
     <AuthShell
       eyebrow="Registro cliente"
       title="Crear cuenta"
-      description="El registro público crea solo clientes. Distribuidores e internos se aprueban manualmente."
+      description="Crea tu cuenta cliente para usar TonnerCup, ranking y funciones personalizadas."
     >
       <form className="auth-card" onSubmit={handleSubmit}>
-        <div className="auth-selected-type">
-          <span>Tipo de cuenta</span>
-          <strong>{participantLabels[values.participantType]}</strong>
-          <Link to="/register-type" state={location.state}>
-            Cambiar
-          </Link>
-        </div>
-
-        {values.participantType !== 'public' ? (
-          <label>
-            <span>Código de acceso</span>
-            <input
-              type="password"
-              autoComplete="off"
-              value={values.accessCode}
-              onChange={(event) => setValues((current) => ({ ...current, accessCode: event.target.value }))}
-              required
-            />
-          </label>
-        ) : null}
-
         <label>
           <span>Nombre</span>
           <input
@@ -125,9 +86,9 @@ export default function RegisterScreen() {
         <Link to="/login" state={location.state}>
           Ya tengo cuenta
         </Link>
-        <Link to="/register-type" state={location.state}>
+        <button type="button" onClick={handleBack}>
           Volver atrás
-        </Link>
+        </button>
       </footer>
     </AuthShell>
   )

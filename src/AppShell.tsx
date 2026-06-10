@@ -254,6 +254,7 @@ export default function AppShell() {
     '/login',
     '/forgot-password',
     '/reset-password',
+    '/register-type',
     '/register',
     '/pending-approval',
     '/access-denied',

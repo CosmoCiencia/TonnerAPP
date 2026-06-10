@@ -121,7 +121,7 @@ export async function signIn({ email, password }: LoginInput) {
   return user
 }
 
-export async function signUp({ email, fullName, password, participantType, accessCode }: RegisterInput) {
+export async function signUp({ email, fullName, password }: RegisterInput) {
   const supabase = requireSupabase()
   const { data, error } = await supabase.auth.signUp({
     email: email.trim().toLowerCase(),
@@ -155,7 +155,7 @@ export async function signUp({ email, fullName, password, participantType, acces
     throw new Error('No se pudo crear el usuario.')
   }
 
-  return createCustomerProfile(user, participantType, accessCode)
+  return createCustomerProfile(user, 'public')
 }
 
 export async function signOut() {

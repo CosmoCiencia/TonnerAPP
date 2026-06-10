@@ -67,7 +67,7 @@ export default function LoginScreen() {
         <Link to="/forgot-password" state={location.state}>
           Olvidé mi contraseña
         </Link>
-        <Link to="/register-type" state={location.state}>
+        <Link to="/register" state={location.state}>
           Crear cuenta cliente
         </Link>
         <Link to="/">Seguir como invitado</Link>
