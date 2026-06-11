@@ -189,7 +189,7 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
               <span className="mt-1.5 block">{prediction.predicted_away}</span>
             </>
           ) : (
-            <span className="block text-[10px] leading-tight">Sin pick</span>
+            <span className="block text-[10px] leading-tight">Sin predicción</span>
           )}
         </span>
 

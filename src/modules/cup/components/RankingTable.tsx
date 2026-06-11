@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { RankingRow } from '../services/types';
 
 type Props = {
@@ -12,6 +13,22 @@ const cupUserTypeLabels = {
 } as const;
 
 function RankingTable({ ranking, currentUserId }: Props) {
+  const currentUserRowRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!currentUserId || !currentUserRowRef.current) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      currentUserRowRef.current?.scrollIntoView({
+        block: 'center',
+        inline: 'nearest',
+        behavior: 'auto',
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [currentUserId, ranking]);
+
   return (
     <div className="cup-card overflow-hidden">
       <div className="grid gap-3">
@@ -20,6 +37,7 @@ function RankingTable({ ranking, currentUserId }: Props) {
 
           return (
             <div
+              ref={isCurrentUser ? currentUserRowRef : undefined}
               key={row.user_id}
               className={`rounded-[1.4rem] border px-4 py-4 ${
                 isCurrentUser
@@ -64,7 +82,7 @@ function RankingTable({ ranking, currentUserId }: Props) {
                     <p className="mt-1 text-xl font-black leading-none text-tonner-slate sm:text-2xl">{row.exact_hits}</p>
                   </div>
                   <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-2 text-center sm:rounded-2xl sm:px-4 sm:py-3">
-                    <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:text-[11px] sm:tracking-[0.18em]">Picks</p>
+                    <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:text-[11px] sm:tracking-[0.18em]">Predicciones</p>
                     <p className="mt-1 text-xl font-black leading-none text-tonner-slate sm:text-2xl">{row.prediction_count}</p>
                   </div>
                 </div>

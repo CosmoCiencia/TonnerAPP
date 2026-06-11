@@ -107,7 +107,7 @@ function MatchCard({
             }`}
           >
             {prediction
-              ? `Tu pick: ${prediction.predicted_home} - ${prediction.predicted_away} · ${getOutcomeLabel(match, getPredictionOutcome(prediction))}${prediction.predicted_scorer_name ? ` · Gol: ${prediction.predicted_scorer_name}` : ''}`
+              ? `Tu predicción: ${prediction.predicted_home} - ${prediction.predicted_away} · ${getOutcomeLabel(match, getPredictionOutcome(prediction))}${prediction.predicted_scorer_name ? ` · Gol: ${prediction.predicted_scorer_name}` : ''}`
               : 'Sin predicción'}
           </p>
         ) : null}
