@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/useAuth'
 import type { LoginInput } from '../../auth/auth.types'
 import { AuthShell } from './authScreenUtils'
 import { getRedirectPath } from './redirectPath'
+import { PasswordField } from './PasswordField'
 
 export default function LoginScreen() {
   const auth = useAuth()
@@ -48,16 +49,13 @@ export default function LoginScreen() {
             required
           />
         </label>
-        <label>
-          <span>Contraseña</span>
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={values.password}
-            onChange={(event) => setValues((current) => ({ ...current, password: event.target.value }))}
-            required
-          />
-        </label>
+        <PasswordField
+          label="Contraseña"
+          autoComplete="current-password"
+          value={values.password}
+          onChange={(password) => setValues((current) => ({ ...current, password }))}
+          required
+        />
         {errorMessage ? <p className="auth-error">{errorMessage}</p> : null}
         <button type="submit">Entrar</button>
       </form>

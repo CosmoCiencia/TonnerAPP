@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../../auth/useAuth'
 import { AuthShell } from './authScreenUtils'
+import { PasswordField } from './PasswordField'
 
 export default function ResetPasswordScreen() {
   const auth = useAuth()
@@ -79,28 +80,22 @@ export default function ResetPasswordScreen() {
       showHeaderLogo={false}
     >
       <form className="auth-card" onSubmit={handleSubmit}>
-        <label>
-          <span>Contraseña nueva</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            minLength={6}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-        </label>
-        <label>
-          <span>Confirmar contraseña</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            minLength={6}
-            value={passwordConfirmation}
-            onChange={(event) => setPasswordConfirmation(event.target.value)}
-            required
-          />
-        </label>
+        <PasswordField
+          label="Contraseña nueva"
+          autoComplete="new-password"
+          minLength={6}
+          value={password}
+          onChange={setPassword}
+          required
+        />
+        <PasswordField
+          label="Confirmar contraseña"
+          autoComplete="new-password"
+          minLength={6}
+          value={passwordConfirmation}
+          onChange={setPasswordConfirmation}
+          required
+        />
         {errorMessage ? <p className="auth-error">{errorMessage}</p> : null}
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Guardando...' : 'Guardar contraseña'}

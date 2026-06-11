@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import { AuthShell } from './authScreenUtils'
 import { getRedirectPath } from './redirectPath'
+import { PasswordField } from './PasswordField'
 
 export default function RegisterScreen() {
   const auth = useAuth()
@@ -67,17 +68,14 @@ export default function RegisterScreen() {
             required
           />
         </label>
-        <label>
-          <span>Contraseña</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            minLength={6}
-            value={values.password}
-            onChange={(event) => setValues((current) => ({ ...current, password: event.target.value }))}
-            required
-          />
-        </label>
+        <PasswordField
+          label="Contraseña"
+          autoComplete="new-password"
+          minLength={6}
+          value={values.password}
+          onChange={(password) => setValues((current) => ({ ...current, password }))}
+          required
+        />
         {errorMessage ? <p className="auth-error">{errorMessage}</p> : null}
         <button type="submit">Crear cuenta cliente</button>
       </form>

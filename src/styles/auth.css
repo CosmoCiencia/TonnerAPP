@@ -91,6 +91,39 @@
   box-shadow: 0 0 0 3px rgba(45, 89, 199, 0.12);
 }
 
+.auth-password-field__control {
+  position: relative;
+}
+
+.auth-password-field__control input {
+  padding-right: 3rem;
+}
+
+.auth-card .auth-password-field__toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  min-height: 2rem;
+  width: 2rem;
+  padding: 0;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: transparent;
+  color: #48618f;
+}
+
+.auth-card .auth-password-field__toggle:hover,
+.auth-card .auth-password-field__toggle:focus-visible {
+  background: #eef4ff;
+  color: #2d59c7;
+}
+
+.auth-password-field__toggle svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  stroke-width: 2.4;
+}
+
 .auth-card button,
 .auth-card a,
 .auth-footer a,
