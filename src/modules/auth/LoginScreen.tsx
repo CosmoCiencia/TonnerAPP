@@ -35,7 +35,6 @@ export default function LoginScreen() {
       eyebrow="Acceso Tonner"
       title="Iniciar sesión"
       description="Entra para usar TonnerCup, ranking y funciones personalizadas."
-      showTopBar
       showHeaderLogo={false}
     >
       <form className="auth-card" onSubmit={handleSubmit}>

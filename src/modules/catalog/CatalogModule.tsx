@@ -23,7 +23,6 @@ interface CatalogModuleProps {
   favoriteStoreIds: Set<string>;
   onToggleFavorite: (product: Product) => void;
   onToggleStoreFavorite: (distributor: Distributor) => void;
-  onHome: () => void;
 }
 
 const lineTabs: Array<{ label: string; value: TonnerLineKey }> = [
@@ -50,7 +49,6 @@ export default function CatalogModule({
   favoriteStoreIds,
   onToggleFavorite,
   onToggleStoreFavorite,
-  onHome,
 }: CatalogModuleProps) {
   const [view, setView] = useState<CatalogView>(initialView);
   const [storesMode, setStoresMode] = useState<StoresMode>(initialStoresMode);
@@ -123,15 +121,6 @@ export default function CatalogModule({
   const currentProducts = view === 'favorites' ? favoriteProducts : visibleProducts;
   const displayedProducts = currentProducts.slice(0, productLimit);
   const hasMoreProducts = productLimit < currentProducts.length;
-
-  const handleBack = () => {
-    if (selectedProduct) {
-      setSelectedProduct(null);
-      return;
-    }
-
-    onHome();
-  };
 
   const renderMainContent = () => {
     if (selectedProduct) {
@@ -441,16 +430,6 @@ export default function CatalogModule({
 
   return (
     <div className="catalog-app">
-      <header className="catalog-top">
-        <button type="button" className="catalog-top__back" aria-label="Regresar" onClick={handleBack}>
-          <img src="/icons/boton regreso.png" alt="" />
-        </button>
-        <img src={getOptimizedImageSrc('/brand/logo.webp')} alt="Pinturas Tonner" decoding="async" />
-        <button type="button" className="catalog-top__bell" aria-label="Notificaciones">
-          <img src="/shared/campana-icon.png" alt="" />
-        </button>
-      </header>
-
       {renderMainContent()}
     </div>
   );

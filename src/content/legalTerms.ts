@@ -7,7 +7,7 @@ export const legalTermsSummary = {
   company: 'Pinturas Tonner y Cia Ltda.',
   nit: '800.171.079-6',
   location: 'Soacha-Cundinamarca',
-  contact: 'marketing@pinturastonner.com',
+  contact: 'tonnerapp@pinturastonner.com',
   effectiveDate: '25/05/2026',
 }
 
@@ -17,7 +17,7 @@ export const legalTermSections: LegalTermSection[] = [
     body: [
       'PINTURAS TONNER Y CIA LTDA. - NIT. 800.171.079-6.',
       'Fecha de entrada en vigencia: 25/05/2026.',
-      'Razón social: Pinturas Tonner y Cia Ltda. Domicilio: Soacha-Cundinamarca. Correo de contacto y canal para datos personales: marketing@pinturastonner.com.',
+      'Razón social: Pinturas Tonner y Cia Ltda. Domicilio: Soacha-Cundinamarca. Correo de contacto y canal para datos personales: tonnerapp@pinturastonner.com.',
     ],
   },
   {
@@ -178,7 +178,7 @@ export const legalTermSections: LegalTermSection[] = [
     title: '21. Responsable del tratamiento',
     body: [
       'Para efectos de la normativa colombiana de protección de datos personales, el responsable del tratamiento será PINTURAS TONNER Y CIA LTDA., identificada con NIT 800.171.079-6, con domicilio en Soacha-Cundinamarca.',
-      'Canal de atención para datos personales: marketing@pinturastonner.com.',
+      'Canal de atención para datos personales: tonnerapp@pinturastonner.com.',
     ],
   },
   {
@@ -217,7 +217,7 @@ export const legalTermSections: LegalTermSection[] = [
   {
     title: '27. Procedimiento para consultas y reclamos',
     body: [
-      'El titular podrá ejercer sus derechos enviando una solicitud al correo marketing@pinturastonner.com.',
+      'El titular podrá ejercer sus derechos enviando una solicitud al correo tonnerapp@pinturastonner.com.',
       'La solicitud deberá incluir nombre completo, documento de identificación, datos de contacto, descripción clara de la solicitud y soportes aplicables.',
       'Las consultas y reclamos serán atendidos dentro de los términos establecidos por la normativa colombiana.',
       'Si la solicitud está incompleta, Pinturas Tonner podrá requerir información adicional para tramitarla adecuadamente.',
@@ -296,7 +296,7 @@ export const legalTermSections: LegalTermSection[] = [
   {
     title: '35. Contacto oficial',
     body: [
-      'Para asuntos relacionados con la Aplicación, productos, soporte, garantías, datos personales o comunicaciones legales, el usuario podrá contactar a Pinturas Tonner por los siguientes canales: marketing@pinturastonner.com.',
+      'Para asuntos relacionados con la Aplicación, productos, soporte, garantías, datos personales o comunicaciones legales, el usuario podrá contactar a Pinturas Tonner por los siguientes canales: tonnerapp@pinturastonner.com.',
     ],
   },
   {

@@ -23,9 +23,6 @@ const LoginScreen = lazy(() => import('./modules/auth/AuthScreens').then((module
 const ForgotPasswordScreen = lazy(() =>
   import('./modules/auth/AuthScreens').then((module) => ({ default: module.ForgotPasswordScreen })),
 )
-const ParticipantTypeScreen = lazy(() =>
-  import('./modules/auth/AuthScreens').then((module) => ({ default: module.ParticipantTypeScreen })),
-)
 const PendingApprovalScreen = lazy(() =>
   import('./modules/auth/AuthScreens').then((module) => ({ default: module.PendingApprovalScreen })),
 )
@@ -106,6 +103,7 @@ const pathToActiveGlobalKey = (pathname: string): GlobalNavKey | null => {
   if (pathname === '/work') return 'work'
   if (pathname === '/favorites') return 'favorites'
   if (pathname === '/calculator') return 'calculator'
+  if (pathname === '/paint') return 'calculator'
   if (pathname === '/profile') return 'profile'
   return null
 }
@@ -150,6 +148,47 @@ function RouteFallback() {
   return <div className="tonner-route-fallback" aria-hidden="true" />
 }
 
+function GlobalTopBar({
+  notificationsOpen,
+  onBack,
+  onToggleNotifications,
+}: {
+  notificationsOpen: boolean
+  onBack: () => void
+  onToggleNotifications: () => void
+}) {
+  return (
+    <header className="hub-header tonner-global-topbar">
+      <button type="button" className="hub-header__back" aria-label="Regresar" onClick={onBack}>
+        <img src="/icons/boton regreso.png" alt="" />
+      </button>
+      <img
+        src={getOptimizedImageSrc('/brand/logo.webp')}
+        alt="Pinturas Tonner"
+        className="hub-header__logo"
+        decoding="async"
+      />
+      <button
+        type="button"
+        className="hub-header__bell"
+        aria-label="Notificaciones"
+        aria-expanded={notificationsOpen}
+        onClick={onToggleNotifications}
+      >
+        <img src="/shared/campana-icon.png" alt="" className="hub-header__bell-icon" />
+      </button>
+      {notificationsOpen ? (
+        <aside className="hub-notifications" aria-label="Notificaciones">
+          <strong>Notificaciones</strong>
+          <span>Nuevo producto publicado en Portafolio.</span>
+          <span>Stock disponible para un favorito.</span>
+          <span>Puntaje actualizado en Pollamundialista.</span>
+        </aside>
+      ) : null}
+    </header>
+  )
+}
+
 function HubRoute({ view }: { view: HubView }) {
   const navigate = useNavigate()
 
@@ -180,8 +219,6 @@ function CatalogRoute({
   onToggleFavorite: (product: Product) => void
   onToggleStoreFavorite: (distributor: Distributor) => void
 }) {
-  const navigate = useNavigate()
-
   return (
     <CatalogModule
       key={`${view}-map`}
@@ -191,7 +228,6 @@ function CatalogRoute({
       favoriteStoreIds={favoriteStoreIds}
       onToggleFavorite={onToggleFavorite}
       onToggleStoreFavorite={onToggleStoreFavorite}
-      onHome={() => navigate('/')}
     />
   )
 }
@@ -201,6 +237,7 @@ export default function AppShell() {
   const navigate = useNavigate()
   const [showSplash, setShowSplash] = useState(true)
   const [favoriteIds, setFavoriteIds] = useState(() => loadFavoriteIds())
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -254,13 +291,30 @@ export default function AppShell() {
     '/login',
     '/forgot-password',
     '/reset-password',
-    '/register-type',
     '/register',
     '/pending-approval',
     '/access-denied',
     '/internal',
   ].some((path) => location.pathname.startsWith(path))
-  const hideGlobalNav = location.pathname.startsWith('/paint') || isAuthRoute
+  const hideGlobalBottomNav = isAuthRoute
+
+  const handleGlobalBack = () => {
+    setNotificationsOpen(false)
+
+    if (location.pathname.startsWith('/cup') && location.pathname !== '/cup' && location.pathname !== '/cup/') {
+      navigate('/cup')
+      return
+    }
+
+    if (location.pathname !== '/') {
+      navigate('/')
+      return
+    }
+
+    if (window.history.length > 1) {
+      navigate(-1)
+    }
+  }
 
   if (showSplash) {
     return <Splash />
@@ -277,7 +331,6 @@ export default function AppShell() {
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
           <Route path="/reset-password" element={<ResetPasswordScreen />} />
-          <Route path="/register-type" element={<ParticipantTypeScreen />} />
           <Route path="/register" element={<RegisterScreen />} />
           <Route path="/pending-approval" element={<PendingApprovalScreen />} />
           <Route path="/access-denied" element={<AccessDeniedScreen />} />
@@ -340,21 +393,32 @@ export default function AppShell() {
         </Routes>
       </Suspense>
 
-      {hideGlobalNav ? null : (
-        <nav className="hub-bottom-nav tonner-global-nav" aria-label="Navegación principal">
-          {globalNavItems.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={`hub-bottom-nav__item ${activeGlobalKey === item.key ? 'is-active' : ''}`}
-              aria-label={item.label}
-              aria-pressed={activeGlobalKey === item.key}
-              onClick={() => navigate(item.to)}
-            >
-              <img src={item.icon} alt="" className="hub-bottom-nav__icon" />
-            </button>
-          ))}
-        </nav>
+      <GlobalTopBar
+        notificationsOpen={notificationsOpen}
+        onBack={handleGlobalBack}
+        onToggleNotifications={() => setNotificationsOpen((open) => !open)}
+      />
+
+      {hideGlobalBottomNav ? null : (
+        <>
+          <nav className="hub-bottom-nav tonner-global-nav" aria-label="Navegación principal">
+            {globalNavItems.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className={`hub-bottom-nav__item ${activeGlobalKey === item.key ? 'is-active' : ''}`}
+                aria-label={item.label}
+                aria-pressed={activeGlobalKey === item.key}
+                onClick={() => {
+                  setNotificationsOpen(false)
+                  navigate(item.to)
+                }}
+              >
+                <img src={item.icon} alt="" className="hub-bottom-nav__icon" />
+              </button>
+            ))}
+          </nav>
+        </>
       )}
     </>
   )

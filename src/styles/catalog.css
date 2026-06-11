@@ -15,6 +15,7 @@
   background: #fff;
   color: #2d59c7;
   overflow-x: hidden;
+  padding-top: 3.45rem;
   box-shadow: 0 0 0 4px #202020;
 }
 
@@ -22,56 +23,4 @@
 .catalog-app .catalog-detail,
 .catalog-app .catalog-stores {
   padding-bottom: calc(4.85rem + env(safe-area-inset-bottom));
-}
-
-.catalog-top {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  display: flex;
-  height: 5.2rem;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.28);
-}
-
-.catalog-top img {
-  width: min(38vw, 9.6rem);
-  height: auto;
-  object-fit: contain;
-}
-
-.catalog-top button {
-  position: absolute;
-  display: grid;
-  top: 50%;
-  width: 2.7rem;
-  height: 2.7rem;
-  place-items: center;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: var(--catalog-blue);
-  transform: translateY(-50%);
-}
-
-.catalog-top__back {
-  left: 1.45rem;
-}
-
-.catalog-top__back img {
-  width: 3.45rem;
-  height: 1.9rem;
-  object-fit: contain;
-}
-
-.catalog-top__bell {
-  right: 1.9rem;
-}
-
-.catalog-top__bell img {
-  width: 2.1rem;
-  height: 2.1rem;
-  object-fit: contain;
 }

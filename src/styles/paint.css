@@ -22,47 +22,9 @@
   min-height: 100dvh;
   margin: 0 auto;
   overflow-x: hidden;
+  padding: 3.45rem 0 calc(3.45rem + env(safe-area-inset-bottom));
   background: #fff;
   box-shadow: 0 0 0 4px #202020;
-}
-
-.paint-top {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  height: 5.2rem;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.28);
-}
-
-.paint-top img {
-  width: min(38vw, 9.6rem);
-  height: auto;
-  object-fit: contain;
-}
-
-.paint-top button {
-  position: absolute;
-  left: 1.45rem;
-  top: 50%;
-  display: grid;
-  width: 2.7rem;
-  height: 2.7rem;
-  place-items: center;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: var(--blue);
-  transform: translateY(-50%);
-}
-
-.paint-top button img {
-  width: 3.45rem;
-  height: 1.9rem;
-  object-fit: contain;
 }
 
 .paint-hero {
@@ -152,7 +114,7 @@
 
 .paint-coming-soon {
   display: grid;
-  min-height: calc(100dvh - 5.2rem);
+  min-height: calc(100dvh - 3.45rem);
   place-items: center;
   padding: 2rem 1.5rem calc(5.25rem + env(safe-area-inset-bottom));
   background:
@@ -406,33 +368,6 @@
   opacity: 0.48;
 }
 
-.paint-bottom-nav {
-  position: fixed;
-  left: 50%;
-  bottom: 0;
-  z-index: 30;
-  display: grid;
-  width: min(100%, 430px);
-  height: calc(3.45rem + env(safe-area-inset-bottom));
-  grid-template-columns: repeat(5, 1fr);
-  align-items: center;
-  border-top: 1px solid rgba(226, 232, 240, 0.9);
-  padding: 0 0 max(0rem, env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 -10px 24px rgba(15, 23, 42, 0.08);
-  backdrop-filter: blur(14px);
-  transform: translateX(-50%);
-}
-
-.paint-bottom-nav button {
-  display: grid;
-  min-width: 0;
-  height: 100%;
-  place-items: center;
-  border: 0;
-  background: transparent;
-}
-
 .paint-preview {
   position: relative;
   width: calc(100% - 24px);
@@ -460,12 +395,6 @@
   100% {
     transform: translateY(72dvh);
   }
-}
-
-.paint-bottom-nav img {
-  width: 2.35rem;
-  height: 2.35rem;
-  object-fit: contain;
 }
 
 .flash-overlay {

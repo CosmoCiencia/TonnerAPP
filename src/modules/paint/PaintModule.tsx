@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { DEFAULT_PAINT_COLOR, getPaintPaletteForMaterial } from './colors'
 import { useAppContent } from '../../services/appContent'
@@ -11,7 +10,6 @@ const materialOrder = ['pared', 'vehiculo', 'metal', 'plastico', 'madera']
 const PAINT_COMING_SOON = true
 
 export default function PaintModule() {
-  const navigate = useNavigate()
   const appContent = useAppContent()
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -129,13 +127,6 @@ export default function PaintModule() {
     return (
       <main className="paint-page">
         <div className="paint-app">
-          <header className="paint-top">
-            <img src={getOptimizedImageSrc('/brand/logo.webp')} alt="Pinturas Tonner" decoding="async" />
-            <button type="button" aria-label="Volver al inicio" onClick={() => navigate('/')}>
-              <img src="/icons/boton regreso.png" alt="" />
-            </button>
-          </header>
-
           <section className="paint-coming-soon" aria-label="TonnerPaint muy pronto disponible">
             <div className="paint-coming-soon__card">
               <img src={getOptimizedImageSrc('/hub/tonner-paint.webp')} alt="" decoding="async" />
@@ -148,23 +139,6 @@ export default function PaintModule() {
             </div>
           </section>
 
-          <nav className="paint-bottom-nav" aria-label="Navegacion principal">
-            <button type="button" aria-label="Inicio" onClick={() => navigate('/')}>
-              <img src="/icons/INICIO.png" alt="" />
-            </button>
-            <button type="button" aria-label="Trabajo" onClick={() => navigate('/work')}>
-              <img src="/icons/TRABAJO.png" alt="" />
-            </button>
-            <button type="button" aria-label="Favoritos" onClick={() => navigate('/favorites')}>
-              <img src="/icons/FAVORITOS.png" alt="" />
-            </button>
-            <button type="button" className="is-active" aria-label="Pintar">
-              <img src="/icons/CALCULADORA.png" alt="" />
-            </button>
-            <button type="button" aria-label="Perfil" onClick={() => navigate('/profile')}>
-              <img src="/icons/PERFIL.png" alt="" />
-            </button>
-          </nav>
         </div>
       </main>
     )
@@ -173,13 +147,6 @@ export default function PaintModule() {
   return (
     <main className="paint-page">
       <div className="paint-app">
-        <header className="paint-top">
-          <img src={getOptimizedImageSrc('/brand/logo.webp')} alt="Pinturas Tonner" decoding="async" />
-          <button type="button" aria-label="Volver al inicio" onClick={() => navigate('/')}>
-            <img src="/icons/boton regreso.png" alt="" />
-          </button>
-        </header>
-
         <section className="paint-hero">
           <p>Que material vas a pintar hoy?</p>
           <div className="paint-materials">
@@ -273,23 +240,6 @@ export default function PaintModule() {
           </section>
         </section>
 
-        <nav className="paint-bottom-nav" aria-label="Navegacion principal">
-          <button type="button" aria-label="Inicio" onClick={() => navigate('/')}>
-            <img src="/icons/INICIO.png" alt="" />
-          </button>
-          <button type="button" aria-label="Trabajo" onClick={() => navigate('/work')}>
-            <img src="/icons/TRABAJO.png" alt="" />
-          </button>
-          <button type="button" aria-label="Favoritos" onClick={() => navigate('/favorites')}>
-            <img src="/icons/FAVORITOS.png" alt="" />
-          </button>
-          <button type="button" className="is-active" aria-label="Pintar">
-            <img src="/icons/CALCULADORA.png" alt="" />
-          </button>
-          <button type="button" aria-label="Perfil" onClick={() => navigate('/profile')}>
-            <img src="/icons/PERFIL.png" alt="" />
-          </button>
-        </nav>
       </div>
 
       <div id="camera-flash" className={`flash-overlay ${flashActive ? 'flash-active' : ''}`} />

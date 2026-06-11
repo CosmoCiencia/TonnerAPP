@@ -6,26 +6,16 @@ import RankingTable from '../components/RankingTable';
 import SectionIntro from '../components/SectionIntro';
 import type { ReturnTypeCupData } from './types';
 import { useUserId } from '../hooks/useUserId';
-import { useAuth } from '../../../auth/useAuth';
-
-const cupUserTypeLabels = {
-  public: 'Público',
-  internal: 'Internos',
-  distributor: 'Distribuidores',
-} as const;
 
 function RankingPage() {
   const cupData = useOutletContext<ReturnTypeCupData>();
   const userId = useUserId();
-  const auth = useAuth();
-  const cupUserType = auth.user?.cupUserType ?? cupData.ranking[0]?.cup_user_type ?? 'public';
-  const rankingLabel = cupUserTypeLabels[cupUserType];
 
   return (
     <section>
       <SectionIntro
         eyebrow="Ranking"
-        title={`Ranking ${rankingLabel}`}
+        title="Ranking general"
         description="La clasificación se ordena por puntos totales y desempata por aciertos de ganador o empate."
       />
 

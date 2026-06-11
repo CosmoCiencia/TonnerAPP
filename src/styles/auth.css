@@ -10,92 +10,10 @@
 .auth-device {
   width: min(100%, 430px);
   min-height: 100dvh;
-  padding: max(2.1rem, env(safe-area-inset-top)) 1.25rem max(2rem, env(safe-area-inset-bottom));
+  padding: calc(3.45rem + 1.25rem) 1.25rem max(2rem, env(safe-area-inset-bottom));
   background:
     linear-gradient(90deg, rgba(0, 0, 0, 0.18), transparent 9%, transparent 91%, rgba(0, 0, 0, 0.18)),
     linear-gradient(180deg, #0c3da1 0%, #073389 50%, #041c50 100%);
-}
-
-.auth-device--with-topbar {
-  padding-top: 0;
-}
-
-.auth-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  height: 5.2rem;
-  align-items: center;
-  justify-content: center;
-  margin: 0 -1.25rem 1.45rem;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.22);
-  background: #ffffff;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.28);
-}
-
-.auth-topbar button {
-  position: absolute;
-  top: 50%;
-  display: grid;
-  width: 2.7rem;
-  height: 2.7rem;
-  place-items: center;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  transform: translateY(-50%);
-}
-
-.auth-topbar__back {
-  left: 1.45rem;
-}
-
-.auth-topbar__back img {
-  width: 3.45rem;
-  height: 1.9rem;
-  object-fit: contain;
-}
-
-.auth-topbar__logo {
-  width: min(38vw, 9.6rem);
-  height: auto;
-  object-fit: contain;
-}
-
-.auth-topbar__bell {
-  right: 1.9rem;
-}
-
-.auth-topbar__bell img {
-  width: 2.1rem;
-  height: 2.1rem;
-  object-fit: contain;
-}
-
-.auth-topbar__notifications {
-  position: absolute;
-  top: calc(100% + 0.65rem);
-  right: 1.05rem;
-  display: grid;
-  width: min(18rem, calc(100vw - 2.1rem));
-  gap: 0.45rem;
-  border-radius: 0.75rem;
-  padding: 0.85rem;
-  background: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 18px 36px rgba(2, 8, 23, 0.22);
-}
-
-.auth-topbar__notifications strong {
-  font-size: 0.82rem;
-  font-weight: 900;
-}
-
-.auth-topbar__notifications span {
-  color: #48618f;
-  font-size: 0.78rem;
-  line-height: 1.35;
 }
 
 .auth-header {
@@ -327,66 +245,14 @@
   min-height: 100dvh;
   margin: 0 auto;
   overflow-x: hidden;
-  padding: 0;
+  padding: 3.45rem 0 0;
   background: #dce6ef;
   box-shadow: 0 0 60px rgba(2, 8, 23, 0.38);
 }
 
-.auth-profile-top {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  height: 5.2rem;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.22);
-  background: #ffffff;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.28);
-}
-
 .auth-profile-body {
-  min-height: calc(100dvh - 5.2rem);
+  min-height: calc(100dvh - 3.45rem);
   padding: 1.45rem 1.45rem calc(5.55rem + env(safe-area-inset-bottom));
-}
-
-.auth-profile-top button {
-  position: absolute;
-  display: grid;
-  top: 50%;
-  width: 2.7rem;
-  height: 2.7rem;
-  place-items: center;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  transform: translateY(-50%);
-}
-
-.auth-profile-top__back {
-  left: 1.45rem;
-}
-
-.auth-profile-top__back img {
-  width: 3.45rem;
-  height: 1.9rem;
-  object-fit: contain;
-}
-
-.auth-profile-top__logo {
-  width: min(38vw, 9.6rem);
-  height: auto;
-  object-fit: contain;
-}
-
-.auth-profile-top__bell {
-  right: 1.9rem;
-}
-
-.auth-profile-top__bell img {
-  width: 2.1rem;
-  height: 2.1rem;
-  object-fit: contain;
 }
 
 .auth-profile-hero-card {

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 
 import { useAppContent } from '../../../services/appContent';
 import { getOptimizedImageSrc } from '../../../services/imageAssets';
-import CupTopBar from '../components/CupTopBar';
 
 const items = [
   {
@@ -32,8 +31,6 @@ function DashboardPage() {
 
   return (
     <section className="cup-launch" aria-label="Polla Mundialista Tonner">
-      <CupTopBar />
-
       <div className="cup-launch-hero">
         <img src={getOptimizedImageSrc(launch.backgroundImage)} alt="" className="cup-launch-bg" decoding="async" />
         <div className="cup-launch-copy cup-launch-copy-top">

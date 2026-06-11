@@ -4,7 +4,6 @@ import { getProducts } from '../catalog/services'
 import type { Product } from '../catalog/types'
 import { useAuth } from '../../auth/useAuth'
 import HubCards from './HubCards'
-import HubHeader from './HubHeader'
 import HubProfile from './HubProfile'
 import HubSearch from './HubSearch'
 import { favoriteCards, hubCards, navItems } from './hubData'
@@ -73,7 +72,6 @@ export function HubModule({
   const auth = useAuth()
   const [internalActiveView, setInternalActiveView] = useState<HubView>(() => getInitialView())
   const activeView = controlledActiveView ?? internalActiveView
-  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profilePanel, setProfilePanel] = useState<ProfilePanel | null>(null)
   const [profileFeedback, setProfileFeedback] = useState('')
   const [hubProfile, setHubProfile] = useState<HubProfileDraft>(() =>
@@ -150,7 +148,6 @@ export function HubModule({
   }
 
   const selectView = (view: HubView) => {
-    setNotificationsOpen(false)
     setProfilePanel(null)
     setProfileFeedback('')
     if (onViewChange) {
@@ -161,25 +158,6 @@ export function HubModule({
 
     const nextUrl = view === 'home' ? window.location.pathname : `${window.location.pathname}?view=${view}`
     window.history.replaceState(null, '', nextUrl)
-  }
-
-  const handleBack = () => {
-    setNotificationsOpen(false)
-
-    if (profilePanel) {
-      setProfilePanel(null)
-      setProfileFeedback('')
-      return
-    }
-
-    if (activeView !== 'home') {
-      selectView('home')
-      return
-    }
-
-    if (window.history.length > 1) {
-      window.history.back()
-    }
   }
 
   const handleProfileSubmit = (message: string) => (event: FormEvent<HTMLFormElement>) => {
@@ -297,12 +275,6 @@ export function HubModule({
 
   return (
     <main className="hub-shell">
-      <HubHeader
-        notificationsOpen={notificationsOpen}
-        onBack={handleBack}
-        onToggleNotifications={() => setNotificationsOpen((open) => !open)}
-      />
-
       <section
         className={`hub-content ${activeView === 'profile' ? 'hub-content--profile' : ''}`}
         aria-label="TonnerHub"

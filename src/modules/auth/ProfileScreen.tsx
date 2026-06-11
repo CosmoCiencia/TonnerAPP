@@ -1,10 +1,9 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import LegalTermsContent from '../../components/LegalTermsContent'
 import { useAuth } from '../../auth/useAuth'
 import { updateProfileFullName } from '../../auth/auth.service'
-import { getOptimizedImageSrc } from '../../services/imageAssets'
 import { AuthShell } from './authScreenUtils'
 
 type EditableProfile = {
@@ -52,7 +51,6 @@ const loadEditableProfile = (userId: string | undefined, fullName: string | unde
 
 export default function ProfileScreen() {
   const auth = useAuth()
-  const navigate = useNavigate()
   const [profilePanel, setProfilePanel] = useState<ProfilePanel | null>(null)
   const [profileFeedback, setProfileFeedback] = useState('')
   const [editableProfile, setEditableProfile] = useState<EditableProfile>(() =>
@@ -198,11 +196,10 @@ export default function ProfileScreen() {
         <section className="auth-profile-panel" aria-label="Atención al cliente">
           <h1>Atención al Cliente</h1>
           <div className="auth-profile-panel-card auth-profile-support">
-            <a href="mailto:marketing@pinturastonner.com">Enviar correo</a>
-            <a href="tel:+573000000000">Llamar a Tonner</a>
-            <a href="https://wa.me/573000000000">WhatsApp</a>
+            <a href="mailto:tonnerapp@pinturastonner.com">Enviar correo</a>
+            <a href="https://wa.me/573224164646">WhatsApp</a>
             <a
-              href={`mailto:marketing@pinturastonner.com?subject=${encodeURIComponent('Solicitud de eliminación de cuenta TonnerApp')}&body=${encodeURIComponent(
+              href={`mailto:tonnerapp@pinturastonner.com?subject=${encodeURIComponent('Solicitud de eliminación de cuenta TonnerApp')}&body=${encodeURIComponent(
                 `Hola, solicito la eliminación de mi cuenta TonnerApp y los datos personales asociados.\n\nCorreo de la cuenta: ${auth.user?.email ?? ''}\nNombre: ${auth.user?.fullName ?? ''}`,
               )}`}
             >
@@ -229,7 +226,6 @@ export default function ProfileScreen() {
         eyebrow="Perfil"
         title="Modo invitado"
         description="Puedes ver catálogo, mapa y paint sin cuenta. Inicia sesión para TonnerCup y funciones personalizadas."
-        showTopBar
         showHeaderLogo={false}
       >
         <section className="auth-card auth-status-card auth-status-card--guest-login">
@@ -247,33 +243,6 @@ export default function ProfileScreen() {
   return (
     <main className="auth-screen auth-screen--profile">
       <section className="auth-profile-device">
-        <header className="auth-profile-top">
-          <button
-            type="button"
-            className="auth-profile-top__back"
-            aria-label="Regresar"
-            onClick={() => {
-              if (profilePanel) {
-                setProfilePanel(null)
-                return
-              }
-
-              navigate('/')
-            }}
-          >
-            <img src="/icons/boton regreso.png" alt="" />
-          </button>
-          <img
-            src={getOptimizedImageSrc('/brand/logo.webp')}
-            alt="Pinturas Tonner"
-            className="auth-profile-top__logo"
-            decoding="async"
-          />
-          <button type="button" className="auth-profile-top__bell" aria-label="Notificaciones">
-            <img src="/shared/campana-icon.png" alt="" />
-          </button>
-        </header>
-
         <div className="auth-profile-body">
           {profilePanel ? (
             renderProfilePanel()

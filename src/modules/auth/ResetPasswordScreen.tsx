@@ -48,7 +48,6 @@ export default function ResetPasswordScreen() {
         eyebrow="Cuenta Tonner"
         title="Validando enlace"
         description="Estamos revisando el enlace de recuperación antes de permitir el cambio."
-        showTopBar
         showHeaderLogo={false}
       >
         <p className="auth-card auth-muted-message">Un momento...</p>
@@ -62,7 +61,6 @@ export default function ResetPasswordScreen() {
         eyebrow="Cuenta Tonner"
         title="Enlace requerido"
         description="Para cambiar la contraseña necesitas abrir el enlace de recuperación enviado a tu correo."
-        showTopBar
         showHeaderLogo={false}
       >
         <footer className="auth-footer">
@@ -78,7 +76,6 @@ export default function ResetPasswordScreen() {
       eyebrow="Cuenta Tonner"
       title="Nueva contraseña"
       description="Crea una contraseña nueva para volver a entrar a tu cuenta."
-      showTopBar
       showHeaderLogo={false}
     >
       <form className="auth-card" onSubmit={handleSubmit}>

@@ -32,7 +32,6 @@ export default function ForgotPasswordScreen() {
       eyebrow="Cuenta Tonner"
       title="Recuperar contraseña"
       description="Escribe tu correo y te enviaremos un enlace seguro para crear una contraseña nueva."
-      showTopBar
       showHeaderLogo={false}
     >
       <form className="auth-card" onSubmit={handleSubmit}>
