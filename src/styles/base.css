@@ -362,10 +362,6 @@
     filter 0.18s ease;
 }
 
-.hub-card--cup {
-  height: clamp(9.25rem, 38vw, 10.45rem);
-}
-
 .hub-card:active {
   transform: scale(0.985);
 }
@@ -386,10 +382,7 @@
 }
 
 .hub-card--cup .hub-card__image {
-  height: 118%;
-  object-fit: cover;
-  object-position: center 58%;
-  transform: translateY(-6%);
+  object-fit: fill;
 }
 
 .hub-card__title {
