@@ -135,19 +135,21 @@
 
 .catalog-tabs button {
   height: 24px;
-  border: 1px solid #dce6f7;
+  border: 1px solid #17459f;
   border-radius: 5px 5px 0 0;
-  background: #fff;
-  color: #c0cbe5;
+  background: #2f5cc7;
+  color: #ffffff;
   font-size: 8px;
-  font-weight: 500;
+  font-weight: 800;
   text-transform: uppercase;
+  box-shadow: inset 0 -2px 0 rgba(2, 11, 29, 0.16);
 }
 
 .catalog-tabs button.is-active {
-  background: var(--catalog-blue);
-  color: #aebce2;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  border-color: #020b1d;
+  background: #020b1d;
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24), 0 8px 18px rgba(2, 11, 29, 0.22);
 }
 
 .catalog-grid {

@@ -12,22 +12,81 @@ const cupUserTypeLabels = {
   distributor: 'Distribuidor',
 } as const;
 
+function getScrollableTarget(element: HTMLElement) {
+  let parent = element.parentElement;
+
+  while (parent && parent !== document.body) {
+    const styles = window.getComputedStyle(parent);
+    const canScroll = parent.scrollHeight - parent.clientHeight > 8;
+    const allowsScroll = styles.overflowY === 'auto' || styles.overflowY === 'scroll';
+
+    if (canScroll && allowsScroll) {
+      return parent;
+    }
+
+    parent = parent.parentElement;
+  }
+
+  return window;
+}
+
+function centerRankingRow(row: HTMLElement) {
+  const target = getScrollableTarget(row);
+  const rowRect = row.getBoundingClientRect();
+
+  if (!(target instanceof HTMLElement)) {
+    const centeredTop =
+      window.scrollY +
+      rowRect.top -
+      (window.innerHeight - rowRect.height) / 2;
+
+    window.scrollTo({
+      top: Math.max(0, centeredTop),
+      behavior: 'auto',
+    });
+    return;
+  }
+
+  const targetRect = target.getBoundingClientRect();
+  const centeredTop =
+    target.scrollTop +
+    rowRect.top -
+    targetRect.top -
+    (target.clientHeight - rowRect.height) / 2;
+
+  target.scrollTo({
+    top: Math.max(0, centeredTop),
+    behavior: 'auto',
+  });
+}
+
 function RankingTable({ ranking, currentUserId }: Props) {
   const currentUserRowRef = useRef<HTMLDivElement | null>(null);
+  const didAutoScrollRef = useRef(false);
 
   useEffect(() => {
-    if (!currentUserId || !currentUserRowRef.current) return;
+    didAutoScrollRef.current = false;
+  }, [currentUserId]);
 
-    const frameId = window.requestAnimationFrame(() => {
-      currentUserRowRef.current?.scrollIntoView({
-        block: 'center',
-        inline: 'nearest',
-        behavior: 'auto',
-      });
-    });
+  useEffect(() => {
+    const currentRow = currentUserRowRef.current;
 
-    return () => window.cancelAnimationFrame(frameId);
-  }, [currentUserId, ranking]);
+    if (!currentUserId || !currentRow || didAutoScrollRef.current) return;
+
+    const timers = [0, 120, 360].map((delay, index) =>
+      window.setTimeout(() => {
+        window.requestAnimationFrame(() => {
+          centerRankingRow(currentRow);
+
+          if (index === 2) {
+            didAutoScrollRef.current = true;
+          }
+        });
+      }, delay),
+    );
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [currentUserId, ranking.length]);
 
   return (
     <div className="cup-card overflow-hidden">
@@ -72,7 +131,7 @@ function RankingTable({ ranking, currentUserId }: Props) {
                     </p>
                   </div>
                 </div>
-                <div className="grid w-full min-w-0 grid-cols-3 gap-1.5 sm:w-auto sm:min-w-[21rem] sm:gap-3">
+                <div className="grid w-full min-w-0 grid-cols-2 gap-1.5 sm:w-auto sm:min-w-[14rem] sm:gap-3">
                   <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-2 text-center sm:rounded-2xl sm:px-4 sm:py-3">
                     <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:text-[11px] sm:tracking-[0.18em]">Puntos</p>
                     <p className="mt-1 text-xl font-black leading-none text-tonner-slate sm:text-2xl">{row.total_points}</p>
@@ -80,10 +139,6 @@ function RankingTable({ ranking, currentUserId }: Props) {
                   <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-2 text-center sm:rounded-2xl sm:px-4 sm:py-3">
                     <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:text-[11px] sm:tracking-[0.18em]">Aciertos</p>
                     <p className="mt-1 text-xl font-black leading-none text-tonner-slate sm:text-2xl">{row.exact_hits}</p>
-                  </div>
-                  <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-2 text-center sm:rounded-2xl sm:px-4 sm:py-3">
-                    <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:text-[11px] sm:tracking-[0.18em]">Predicciones</p>
-                    <p className="mt-1 text-xl font-black leading-none text-tonner-slate sm:text-2xl">{row.prediction_count}</p>
                   </div>
                 </div>
               </div>

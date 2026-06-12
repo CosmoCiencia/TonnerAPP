@@ -1,4 +1,4 @@
-import { Heart, Target, Trophy } from 'lucide-react';
+import { Gift, Heart, Target, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useAppContent } from '../../../services/appContent';
@@ -22,6 +22,12 @@ const items = [
     description: 'Ranking de jugadores',
     to: '/cup/ranking',
     icon: Heart,
+  },
+  {
+    title: 'Premios y condiciones',
+    description: 'Reglas de puntuación',
+    to: '/cup/rules',
+    icon: Gift,
   },
 ];
 

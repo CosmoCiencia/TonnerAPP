@@ -11,6 +11,23 @@ type ProfileRow = {
   cup_user_type: CupUserType | null
 }
 
+async function saveCustomerProfile(fullName: string, participantType: CupUserType, accessCode?: string) {
+  const supabase = requireSupabase()
+  const { data, error } = await supabase
+    .rpc('upsert_own_customer_profile', {
+      profile_full_name: fullName,
+      access_code: accessCode?.trim() || null,
+      requested_cup_user_type: participantType,
+    })
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return data as ProfileRow & { full_name: string | null }
+}
+
 function normalizeCupUserType(value: string | null | undefined): CupUserType {
   if (value === 'internal' || value === 'distributor') return value
   return 'public'
@@ -29,7 +46,18 @@ async function toCustomerUser(session: Session | null): Promise<AuthUser | null>
     .select('full_name,role,cup_user_type')
     .eq('id', user.id)
     .maybeSingle()
-  const profile = data as ProfileRow | null
+  let profile = data as ProfileRow | null
+
+  if (!profile) {
+    try {
+      profile = await saveCustomerProfile(
+        user.user_metadata?.full_name || user.email,
+        'public',
+      )
+    } catch (error) {
+      console.error('[Auth] Missing profile repair failed:', error)
+    }
+  }
 
   return {
     id: user.id,
@@ -43,22 +71,15 @@ async function toCustomerUser(session: Session | null): Promise<AuthUser | null>
 }
 
 async function createCustomerProfile(user: AuthUser, participantType: CupUserType, accessCode?: string) {
-  const supabase = requireSupabase()
-  const { data, error } = await supabase
-    .rpc('upsert_own_customer_profile', {
-      profile_full_name: user.fullName,
-      access_code: accessCode?.trim() || null,
-      requested_cup_user_type: participantType,
-    })
-    .single()
+  let profile: ProfileRow & { full_name: string | null }
 
-  if (error) {
+  try {
+    profile = await saveCustomerProfile(user.fullName, participantType, accessCode)
+  } catch (error) {
     throw new Error(
-      `El usuario fue creado, pero no se pudo crear el perfil. Detalle: ${error.message}`,
+      `El usuario fue creado, pero no se pudo crear el perfil. Detalle: ${error instanceof Error ? error.message : 'Error desconocido.'}`,
     )
   }
-
-  const profile = data as ProfileRow & { full_name: string | null }
 
   return {
     ...user,

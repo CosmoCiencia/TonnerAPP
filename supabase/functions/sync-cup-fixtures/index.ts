@@ -434,7 +434,11 @@ function isTargetFixture(fixture: ApiFootballFixture, league: number, season: nu
 }
 
 function isGoalEvent(event: ApiFootballEvent): boolean {
-  return event.type === 'Goal' && event.detail !== 'Missed Penalty';
+  return event.type === 'Goal' && event.detail !== 'Missed Penalty' && event.detail !== 'Own Goal';
+}
+
+function shouldFetchGoalEvents(row: CupMatchUpsert): boolean {
+  return (row.score_home ?? 0) + (row.score_away ?? 0) > 0;
 }
 
 async function attachGoalEvents(
@@ -442,8 +446,15 @@ async function attachGoalEvents(
   apiFootballKey: string,
 ): Promise<{ rows: CupMatchUpsert[]; eventRequests: number }> {
   const enrichedRows: CupMatchUpsert[] = [];
+  let eventRequests = 0;
 
   for (const row of rows) {
+    if (!shouldFetchGoalEvents(row)) {
+      enrichedRows.push(row);
+      continue;
+    }
+
+    eventRequests += 1;
     const events = await fetchApiFootballEvents(row.api_fixture_id, apiFootballKey);
     enrichedRows.push({
       ...row,
@@ -456,7 +467,7 @@ async function attachGoalEvents(
 
   return {
     rows: enrichedRows,
-    eventRequests: rows.length,
+    eventRequests,
   };
 }
 
@@ -737,7 +748,8 @@ Deno.serve(async (request) => {
       }
     }
 
-    const dedupedRows = await upsertCupMatches(supabase, rows);
+    const withEvents = await attachGoalEvents(rows, apiFootballKey);
+    const dedupedRows = await upsertCupMatches(supabase, withEvents.rows);
 
     const { error: logError } = await supabase.from('cup_sync_logs').insert({
       source: 'api-football',
@@ -748,6 +760,7 @@ Deno.serve(async (request) => {
         targets: receivedByTarget,
         refreshed_existing: refreshedExisting,
         api_requests: receivedByTarget.length + refreshedExisting.length,
+        event_requests: withEvents.eventRequests,
         upserted: dedupedRows.length,
       },
     });

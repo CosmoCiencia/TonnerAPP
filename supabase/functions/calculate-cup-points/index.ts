@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.87.1';
 
 type CupMatch = {
   id: string;
+  api_fixture_id: number | null;
   score_home: number | null;
   score_away: number | null;
   raw: unknown;
@@ -30,6 +31,7 @@ const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
 const POINTS_FOR_RESULT_HIT = 3;
 const POINTS_FOR_EXACT_HIT = 5;
 const POINTS_FOR_SCORER_HIT = 2;
+const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -61,6 +63,10 @@ function requireEnv(name: string): string {
   return value;
 }
 
+function getOptionalEnv(name: string): string | null {
+  return Deno.env.get(name)?.trim() || null;
+}
+
 function authorizeInternalRequest(request: Request): Response | null {
   const expectedSecret = requireEnv('SYNC_CUP_SECRET');
   const receivedSecret = request.headers.get('x-tonner-sync-secret')?.trim();
@@ -75,11 +81,30 @@ function authorizeInternalRequest(request: Request): Response | null {
 type MatchResult = 'home' | 'draw' | 'away';
 
 type RawGoalEvent = {
+  time?: {
+    elapsed?: number | null;
+    extra?: number | null;
+  } | null;
+  team?: {
+    id?: number | null;
+    name?: string | null;
+  } | null;
   type?: string | null;
   detail?: string | null;
   player?: {
     id?: number | null;
+    name?: string | null;
   } | null;
+  assist?: {
+    id?: number | null;
+    name?: string | null;
+  } | null;
+  comments?: string | null;
+};
+
+type ApiFootballEventsResponse = {
+  errors?: unknown;
+  response?: RawGoalEvent[];
 };
 
 function getScoreResult(home: number, away: number): MatchResult {
@@ -110,6 +135,100 @@ function getRawGoalEvents(raw: unknown): RawGoalEvent[] {
   });
 }
 
+async function fetchApiFootballGoalEvents(
+  apiFixtureId: number,
+  apiFootballKey: string,
+): Promise<RawGoalEvent[]> {
+  const url = new URL('/fixtures/events', API_FOOTBALL_BASE_URL);
+  url.searchParams.set('fixture', String(apiFixtureId));
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'x-apisports-key': apiFootballKey,
+      },
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      console.error(`[calculate-cup-points] fixture events HTTP ${response.status}: ${body}`);
+      return [];
+    }
+
+    const payload = (await response.json()) as ApiFootballEventsResponse;
+    const apiErrors = payload.errors;
+
+    if (
+      apiErrors &&
+      ((Array.isArray(apiErrors) && apiErrors.length > 0) ||
+        (!Array.isArray(apiErrors) && Object.keys(apiErrors as Record<string, unknown>).length > 0))
+    ) {
+      console.error(`[calculate-cup-points] fixture events returned errors: ${JSON.stringify(apiErrors)}`);
+      return [];
+    }
+
+    return (payload.response ?? []).filter((event) => event.type === 'Goal'
+      && event.detail !== 'Missed Penalty'
+      && event.detail !== 'Own Goal');
+  } catch (error) {
+    console.error('[calculate-cup-points] fixture events fetch failed:', error);
+    return [];
+  }
+}
+
+function matchHasGoals(match: CupMatch): boolean {
+  return (match.score_home ?? 0) + (match.score_away ?? 0) > 0;
+}
+
+function shouldRefreshGoalEvents(match: CupMatch, predictions: CupPrediction[]): boolean {
+  return Boolean(
+    match.api_fixture_id &&
+    matchHasGoals(match) &&
+    getRawGoalEvents(match.raw).length === 0 &&
+    predictions.some((prediction) => (
+      prediction.match_id === match.id && prediction.predicted_scorer_player_id
+    )),
+  );
+}
+
+async function refreshMissingGoalEvents(
+  supabase: ReturnType<typeof createClient>,
+  matches: CupMatch[],
+  predictions: CupPrediction[],
+  apiFootballKey: string | null,
+): Promise<{ matches: CupMatch[]; eventRequests: number }> {
+  if (!apiFootballKey) {
+    return { matches, eventRequests: 0 };
+  }
+
+  const refreshedMatches: CupMatch[] = [];
+  let eventRequests = 0;
+
+  for (const match of matches) {
+    if (!shouldRefreshGoalEvents(match, predictions)) {
+      refreshedMatches.push(match);
+      continue;
+    }
+
+    eventRequests += 1;
+    const events = await fetchApiFootballGoalEvents(match.api_fixture_id as number, apiFootballKey);
+    const raw = isRecord(match.raw) ? { ...match.raw, events } : { events };
+    const refreshedMatch = { ...match, raw };
+    refreshedMatches.push(refreshedMatch);
+
+    const { error } = await supabase
+      .from('cup_matches')
+      .update({ raw })
+      .eq('id', match.id);
+
+    if (error) {
+      console.error(`[calculate-cup-points] could not persist goal events for match ${match.id}:`, error);
+    }
+  }
+
+  return { matches: refreshedMatches, eventRequests };
+}
+
 function getScorerHit(match: CupMatch, prediction: CupPrediction): boolean {
   if (!prediction.predicted_scorer_player_id) return false;
 
@@ -137,7 +256,7 @@ Deno.serve(async (request) => {
 
     const { data: matchesData, error: matchesError } = await supabase
       .from('cup_matches')
-      .select('id,score_home,score_away,raw')
+      .select('id,api_fixture_id,score_home,score_away,raw')
       .in('status_short', FINISHED_STATUSES)
       .not('score_home', 'is', null)
       .not('score_away', 'is', null);
@@ -167,8 +286,14 @@ Deno.serve(async (request) => {
       throw predictionsError;
     }
 
-    const matchesById = new Map(matches.map((match) => [match.id, match]));
     const predictions = (predictionsData ?? []) as CupPrediction[];
+    const goalEventRefresh = await refreshMissingGoalEvents(
+      supabase,
+      matches,
+      predictions,
+      getOptionalEnv('API_FOOTBALL_KEY'),
+    );
+    const matchesById = new Map(goalEventRefresh.matches.map((match) => [match.id, match]));
     const calculatedAt = new Date().toISOString();
 
     const rows: CupPointUpsert[] = predictions.flatMap((prediction) => {
@@ -215,6 +340,7 @@ Deno.serve(async (request) => {
         predictions_scored: predictions.length,
         points_upserted: rows.length,
         scorer_hits: rows.filter((row) => row.scorer_hit).length,
+        event_requests: goalEventRefresh.eventRequests,
       },
     });
 
@@ -228,6 +354,7 @@ Deno.serve(async (request) => {
       predictions_scored: predictions.length,
       points_upserted: rows.length,
       scorer_hits: rows.filter((row) => row.scorer_hit).length,
+      event_requests: goalEventRefresh.eventRequests,
     });
   } catch (error) {
     const message = getErrorMessage(error);
