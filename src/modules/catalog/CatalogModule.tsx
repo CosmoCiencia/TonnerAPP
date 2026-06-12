@@ -213,7 +213,7 @@ export default function CatalogModule({
                 id="catalog-store-location"
                 type="search"
                 value={storeSearch}
-                placeholder="Escribe tu ciudad o zona"
+                placeholder="Escribe tu ciudad"
                 autoComplete="off"
                 onChange={(event) => {
                   setStoreSearch(event.target.value);
