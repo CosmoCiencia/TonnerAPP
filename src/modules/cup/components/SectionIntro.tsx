@@ -11,7 +11,7 @@ function SectionIntro({ eyebrow, title, description }: Props) {
         <p className="text-xs uppercase tracking-[0.28em] text-white/65">{eyebrow}</p>
       ) : null}
       <h2 className={`${eyebrow ? 'mt-3' : ''} font-display text-3xl font-bold text-white`}>{title}</h2>
-      <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-white/80">{description}</p>
+      <p className="mx-auto mt-3 max-w-2xl whitespace-pre-line text-sm leading-6 text-white/80">{description}</p>
     </div>
   );
 }
