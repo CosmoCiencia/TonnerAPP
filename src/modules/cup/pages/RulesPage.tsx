@@ -13,37 +13,41 @@ const scoringRules = [
   {
     title: 'Resultado acertado',
     points: '+3',
-    description: 'Ganas puntos cuando aciertas si el partido termina con victoria local, empate o victoria visitante.',
+    description:
+      'Obtienes puntos cuando aciertas el resultado general del partido: victoria del equipo local, empate o victoria del equipo visitante.',
     icon: CheckCircle2,
   },
   {
     title: 'Marcador exacto',
     points: '+5',
-    description: 'Se suma cuando el marcador que guardaste coincide exactamente con el resultado final.',
+    description:
+      'Obtienes puntos adicionales cuando el marcador pronosticado coincide exactamente con el resultado final del partido.',
     icon: Trophy,
   },
   {
     title: 'Goleador acertado',
     points: '+2',
-    description: 'Se suma si el jugador que elegiste marca gol oficial en el partido.',
+    description: 'Obtienes puntos si el jugador seleccionado anota al menos un gol válido durante el partido.',
     icon: Goal,
   },
 ];
 
 const conditions = [
-  'Cada predicción se puede guardar o editar solo antes del inicio del partido.',
-  'Los puntos se calculan cuando el partido queda finalizado en la base oficial.',
-  'Los goles en propia puerta y penales fallados no cuentan como acierto de goleador.',
-  'El ranking solo muestra participantes que hayan guardado mínimo una predicción.',
-  'El ranking desempata por puntos totales, aciertos y cantidad de predicciones guardadas.',
+  'Cada predicción podrá guardarse o modificarse únicamente antes del inicio del partido.',
+  'Los puntos serán asignados una vez el partido haya finalizado y el resultado sea confirmado en la base de datos oficial.',
+  'Los goles en propia puerta y los penales fallados no serán considerados para la puntuación de la categoría "Goleador acertado".',
+  'El ranking mostrará únicamente a los participantes que hayan registrado al menos una predicción.',
+  'En caso de empate en el ranking, se tendrá en cuenta el siguiente orden de desempate: mayor cantidad de puntos acumulados y mayor número de aciertos.',
 ];
+
+const prizeNote = 'Los premios de la Pollamundialista Tonner serán otorgados exclusivamente a los empleados de Pinturas Tonner.';
 
 function RulesPage() {
   return (
     <section className="min-w-0 space-y-4">
       <SectionIntro
         eyebrow=""
-        title="¿Cómo se calculan los puntos?"
+        title="Sistema de Puntuación"
         description={'Consulta las reglas de puntuación\ny los premios de TonnerCup.'}
       />
 
@@ -54,7 +58,7 @@ function RulesPage() {
           </div>
           <div>
             <h3 className="text-lg font-black text-tonner-slate">Premios</h3>
-            <p className="text-sm font-bold text-slate-500">Los mejores puntajes del ranking ganan.</p>
+            <p className="text-sm font-bold text-slate-500">{prizeNote}</p>
           </div>
         </div>
 
