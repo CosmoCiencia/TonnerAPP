@@ -32,6 +32,7 @@ const POINTS_FOR_RESULT_HIT = 3;
 const POINTS_FOR_EXACT_HIT = 5;
 const POINTS_FOR_SCORER_HIT = 2;
 const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
+const PAGE_SIZE = 1000;
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -237,6 +238,80 @@ function getScorerHit(match: CupMatch, prediction: CupPrediction): boolean {
   );
 }
 
+async function fetchFinishedMatches(
+  supabase: ReturnType<typeof createClient>,
+): Promise<CupMatch[]> {
+  const rows: CupMatch[] = [];
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from('cup_matches')
+      .select('id,api_fixture_id,score_home,score_away,raw')
+      .in('status_short', FINISHED_STATUSES)
+      .not('score_home', 'is', null)
+      .not('score_away', 'is', null)
+      .order('id', { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      throw error;
+    }
+
+    const page = (data ?? []) as CupMatch[];
+    rows.push(...page);
+
+    if (page.length < PAGE_SIZE) {
+      return rows;
+    }
+  }
+}
+
+async function fetchPredictionsForMatches(
+  supabase: ReturnType<typeof createClient>,
+  matchIds: string[],
+): Promise<CupPrediction[]> {
+  const rows: CupPrediction[] = [];
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from('cup_predictions')
+      .select('user_id,match_id,prediction_result,predicted_home,predicted_away,predicted_scorer_player_id')
+      .in('match_id', matchIds)
+      .order('match_id', { ascending: true })
+      .order('user_id', { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      throw error;
+    }
+
+    const page = (data ?? []) as CupPrediction[];
+    rows.push(...page);
+
+    if (page.length < PAGE_SIZE) {
+      return rows;
+    }
+  }
+}
+
+async function upsertPointRows(
+  supabase: ReturnType<typeof createClient>,
+  rows: CupPointUpsert[],
+): Promise<void> {
+  for (let index = 0; index < rows.length; index += PAGE_SIZE) {
+    const batch = rows.slice(index, index + PAGE_SIZE);
+    const { error } = await supabase
+      .from('cup_points')
+      .upsert(batch, { onConflict: 'user_id,match_id' });
+
+    if (error) {
+      throw error;
+    }
+  }
+}
+
 Deno.serve(async (request) => {
   try {
     if (request.method !== 'POST') {
@@ -254,18 +329,7 @@ Deno.serve(async (request) => {
       auth: { persistSession: false },
     });
 
-    const { data: matchesData, error: matchesError } = await supabase
-      .from('cup_matches')
-      .select('id,api_fixture_id,score_home,score_away,raw')
-      .in('status_short', FINISHED_STATUSES)
-      .not('score_home', 'is', null)
-      .not('score_away', 'is', null);
-
-    if (matchesError) {
-      throw matchesError;
-    }
-
-    const matches = (matchesData ?? []) as CupMatch[];
+    const matches = await fetchFinishedMatches(supabase);
     const matchIds = matches.map((match) => match.id);
 
     if (matchIds.length === 0) {
@@ -277,16 +341,7 @@ Deno.serve(async (request) => {
       });
     }
 
-    const { data: predictionsData, error: predictionsError } = await supabase
-      .from('cup_predictions')
-      .select('user_id,match_id,prediction_result,predicted_home,predicted_away,predicted_scorer_player_id')
-      .in('match_id', matchIds);
-
-    if (predictionsError) {
-      throw predictionsError;
-    }
-
-    const predictions = (predictionsData ?? []) as CupPrediction[];
+    const predictions = await fetchPredictionsForMatches(supabase, matchIds);
     const goalEventRefresh = await refreshMissingGoalEvents(
       supabase,
       matches,
@@ -322,13 +377,7 @@ Deno.serve(async (request) => {
     });
 
     if (rows.length > 0) {
-      const { error: pointsError } = await supabase
-        .from('cup_points')
-        .upsert(rows, { onConflict: 'user_id,match_id' });
-
-      if (pointsError) {
-        throw pointsError;
-      }
+      await upsertPointRows(supabase, rows);
     }
 
     const { error: logError } = await supabase.from('cup_sync_logs').insert({
