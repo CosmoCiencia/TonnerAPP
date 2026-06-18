@@ -5,6 +5,10 @@ import type { AuthUser, CupUserType, LoginInput, RegisterInput } from './auth.ty
 
 type AuthStateChangeCallback = (event: AuthChangeEvent, user: AuthUser | null) => void
 
+export const PASSWORD_RECOVERY_LINK_EVENT = 'tonnerapp-password-recovery-link'
+
+const FALLBACK_PASSWORD_RECOVERY_REDIRECT_URL = 'https://tonner-app.vercel.app/reset-password'
+
 type ProfileRow = {
   full_name: string | null
   role: AuthUser['role'] | null
@@ -188,9 +192,57 @@ export async function signOut() {
   }
 }
 
+function getPasswordRecoveryRedirectUrl() {
+  const configuredUrl = import.meta.env.VITE_PASSWORD_RECOVERY_REDIRECT_URL?.trim()
+
+  if (configuredUrl) {
+    return configuredUrl
+  }
+
+  if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+    return `${window.location.origin}/reset-password`
+  }
+
+  return FALLBACK_PASSWORD_RECOVERY_REDIRECT_URL
+}
+
+function readAuthParamsFromUrl(urlString: string) {
+  const url = new URL(urlString)
+  const params = new URLSearchParams(url.search)
+  const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''))
+
+  hashParams.forEach((value, key) => {
+    params.set(key, value)
+  })
+
+  return params
+}
+
+export async function establishPasswordRecoverySessionFromUrl(urlString: string) {
+  const supabase = requireSupabase()
+  const params = readAuthParamsFromUrl(urlString)
+  const accessToken = params.get('access_token')
+  const refreshToken = params.get('refresh_token')
+
+  if (!accessToken || !refreshToken) {
+    return false
+  }
+
+  const { error } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return params.get('type') === 'recovery'
+}
+
 export async function sendPasswordRecoveryEmail(email: string) {
   const supabase = requireSupabase()
-  const redirectTo = `${window.location.origin}/reset-password`
+  const redirectTo = getPasswordRecoveryRedirectUrl()
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
     redirectTo,
   })

@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
+import { App as CapacitorApp } from '@capacitor/app'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 
 import type { CatalogView } from './modules/catalog/CatalogModule'
@@ -7,6 +8,7 @@ import type { Product } from './modules/catalog/types'
 import type { Distributor } from './modules/distributors/types'
 import { RequireAuth, RequireRole } from './auth/auth.guards'
 import { privateRoles } from './auth/roleAccess'
+import { PASSWORD_RECOVERY_LINK_EVENT, establishPasswordRecoverySessionFromUrl } from './auth/auth.service'
 import { getOptimizedImageSrc } from './services/imageAssets'
 
 const HubModule = lazy(() => import('./modules/hub').then((module) => ({ default: module.HubModule })))
@@ -48,6 +50,8 @@ const globalNavItems: Array<{ key: GlobalNavKey; label: string; icon: string; to
 
 const FAVORITES_STORAGE_KEY = 'tonnerapp-favorites-v1'
 const LEGACY_PRODUCT_FAVORITES_KEY = 'tonnerapp-favorite-products'
+const APP_LINK_HOST = 'tonner-app.vercel.app'
+const CUSTOM_URL_SCHEME = 'com.tonner.tonnerapp:'
 
 type StoredFavorites = {
   catalogProducts: string[]
@@ -91,6 +95,25 @@ const persistFavoriteIds = (catalogProducts: Set<string>, stores: Set<string>) =
       stores: Array.from(stores),
     } satisfies StoredFavorites),
   )
+}
+
+const getAppPathFromUrl = (urlString: string) => {
+  try {
+    const url = new URL(urlString)
+
+    if ((url.protocol === 'https:' || url.protocol === 'http:') && url.host === APP_LINK_HOST) {
+      return `${url.pathname}${url.search}${url.hash}`
+    }
+
+    if (url.protocol === CUSTOM_URL_SCHEME) {
+      const customPath = url.hostname ? `/${url.hostname}${url.pathname}` : url.pathname
+      return `${customPath || '/'}${url.search}${url.hash}`
+    }
+  } catch (error) {
+    console.error('[App links] No se pudo leer el enlace entrante:', error)
+  }
+
+  return null
 }
 
 const routeToHubView = (view: HubView) => {
@@ -246,6 +269,45 @@ export default function AppShell() {
 
     return () => window.clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    let isActive = true
+    let removeListener: (() => void) | undefined
+
+    void CapacitorApp.addListener('appUrlOpen', (event) => {
+      const nextPath = getAppPathFromUrl(event.url)
+
+      if (!nextPath) {
+        return
+      }
+
+      void establishPasswordRecoverySessionFromUrl(event.url)
+        .then((isRecoveryLink) => {
+          if (isRecoveryLink) {
+            window.dispatchEvent(new Event(PASSWORD_RECOVERY_LINK_EVENT))
+          }
+        })
+        .catch((error) => {
+          console.error('[Auth] No se pudo procesar el enlace de recuperación:', error)
+        })
+
+      navigate(nextPath, { replace: true })
+    }).then((listener) => {
+      if (!isActive) {
+        void listener.remove()
+        return
+      }
+
+      removeListener = () => {
+        void listener.remove()
+      }
+    })
+
+    return () => {
+      isActive = false
+      removeListener?.()
+    }
+  }, [navigate])
 
   const handleToggleFavorite = (product: Product) => {
     setFavoriteIds((currentFavorites) => {

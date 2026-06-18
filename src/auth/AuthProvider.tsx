@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 
-import { getSession, onAuthStateChange, signIn, signOut, signUp, updatePassword } from './auth.service'
+import {
+  PASSWORD_RECOVERY_LINK_EVENT,
+  getSession,
+  onAuthStateChange,
+  signIn,
+  signOut,
+  signUp,
+  updatePassword,
+} from './auth.service'
 import { AuthContext, type AuthContextValue } from './auth.context'
 import type { AuthState, AuthUser } from './auth.types'
 
@@ -28,6 +36,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true
 
+    const handlePasswordRecoveryLink = () => {
+      if (isMounted) {
+        setPasswordRecovery(true)
+      }
+    }
+
+    window.addEventListener(PASSWORD_RECOVERY_LINK_EVENT, handlePasswordRecoveryLink)
+
     getSession()
       .then((sessionUser) => {
         if (!isMounted) return
@@ -52,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       isMounted = false
+      window.removeEventListener(PASSWORD_RECOVERY_LINK_EVENT, handlePasswordRecoveryLink)
       unsubscribe()
     }
   }, [])
