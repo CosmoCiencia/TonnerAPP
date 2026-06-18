@@ -1,5 +1,7 @@
 import type { Product } from '../types';
 
+const DATASHEET_BASE = '/datasheets/automotriz';
+
 export const AUTOMOTRIZ_PRODUCTS: Product[] = [
   {
     id: 'automotiva',
@@ -45,6 +47,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/automativa.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 05. LACAS NITROCELULÓSICAS DE ACABADO.pdf`,
   },
 
   {
@@ -102,6 +105,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/automotiva-industrial.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 06. LACAS AUTOMOTIVAS INDUSTRIALES.pdf`,
   },
   {
     id: 'fondo-nitro',
@@ -188,6 +192,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/fondo-nitro-industrial.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 02. FONDOS INDUSTRIALES NITROCELULOSICOS.pdf`,
   },
   {
     id: 'masilla-nitro',
@@ -386,6 +391,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/laca-acrilica.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 10. LACAS ACRÍLICAS.pdf`,
   },
   {
     id: 'fondo-acrilico',
@@ -510,6 +516,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/poliuretano.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 14. POLIURETANO LÍNEA  700.pdf`,
   },
   {
     id: 'fondo-poliuretano-2k',
@@ -550,6 +557,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/fondo-poliuretano-2k.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 12. FONDO POLIURETANO 2K.pdf`,
   },
   {
     id: 'primer-monocomponente',
@@ -591,6 +599,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/primer-monocomponente.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 11. PRIMER MONOCOMPONENTE AUTOMOTRIZ.pdf`,
   },
   {
     id: 'monocomponente-acrilico',
@@ -628,6 +637,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/mono-componente-acrilico.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT19. PRIMER ACRILICOMONOCOMPONENTE BLANCO.pdf`,
   },
   {
     id: 'masilla-rapida',
@@ -665,6 +675,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/masilla-rapida.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 16. MASILLAS RÁPIDAS.pdf`,
   },
   {
     id: 'endurecedor-poliuretano',
@@ -698,6 +709,7 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/endurecedor-poliuretano.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 13. ENDURECEDOR POLIURETANO.pdf`,
   },
   {
     id: 'poliester',
@@ -753,5 +765,6 @@ export const AUTOMOTRIZ_PRODUCTS: Product[] = [
     ],
 
     image: '/products/polieston.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 15. POLIESTER AUTOMOTRIZ.pdf`,
   },
 ];

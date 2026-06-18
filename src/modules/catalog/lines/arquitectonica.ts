@@ -1,5 +1,7 @@
 import type { Product } from '../types';
 
+const DATASHEET_BASE = '/datasheets/arquitectonica';
+
 export const ARQUITECTONICA_PRODUCTS: Product[] = [
   {
     id: 'tonertex',
@@ -60,6 +62,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/tonertex.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 02. TONERTEX TIPO 1.pdf`,
   },
   {
     id: 'vinilton',
@@ -107,6 +110,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/vinilton.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 03. VINILTON TIPO 2.pdf`,
   },
   {
     id: 'tonerama',
@@ -139,6 +143,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     colors: [{ name: 'Blanco tipo 3', code: 'VI-301', hex: '#ffffff' }],
 
     image: '/products/tonerama.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 04. TONERAMA TIPO 3.pdf`,
   },
   {
     id: 'ultrarmor',
@@ -175,6 +180,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/ultra-armor.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 01. ACRÍLICO PARA EXTERIORES.pdf`,
   },
   {
     id: 'permakrill',
@@ -202,6 +208,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/permakill.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 13.  IMPERMEABILIZANTE ACRILICO V2.pdf`,
   },
   {
     id: 'pintura-para-canchas',
@@ -247,6 +254,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/pintura-para-canchas.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 14. PINTURA PARA CANCHAS.pdf`,
   },
   {
     id: 'banos-y-cocinas',
@@ -276,6 +284,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     colors: [{ name: 'Blanco', code: 'BC-101', hex: '#ffffff' }],
 
     image: '/products/banos-y-cocinas.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 15.BC-101 BAÑOS Y COCINA.pdf`,
   },
   {
     id: 'esmalte-acrilico',
@@ -315,6 +324,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     colors: [{ name: 'Blanco', code: 'AE-651', hex: '#ffffff' }],
 
     image: '/products/esmalte-acrilico.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT.16 ESMALTE ACRILICO BLANCO SEMIBRILLANTE.pdf`,
   },
   {
     id: 'esmalton',
@@ -360,6 +370,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/esmalton.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 08. ESMALTON .pdf`,
   },
   {
     id: 'special-xxi',
@@ -401,6 +412,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/especial-xxi.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 11. SPECIAL XXI.pdf`,
   },
   {
     id: 'secado-flash-arquitectonica',
@@ -496,6 +508,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/esmalton-3-en-1.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 10. ESMALTON 3 EN 1.pdf`,
   },
   {
     id: 'pantonner',
@@ -540,6 +553,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/pantonner.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 12. ESMALTE SINTETICO PANTONNER.pdf`,
   },
   {
     id: 'anticorrosivo-base-mate',
@@ -586,6 +600,7 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/anticorrosivo-base-mate.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 05. ANTICORROSIVO V5.pdf`,
   },
   {
     id: 'anticorrosivo-2-en-1-satinado',
@@ -630,5 +645,6 @@ export const ARQUITECTONICA_PRODUCTS: Product[] = [
     ],
 
     image: '/products/2-en-1-anticorrosivo-satinado.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 06. ANTICORROSIVO SATINADO V4.pdf`,
   },
 ];

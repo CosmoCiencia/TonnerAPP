@@ -1,5 +1,7 @@
 import type { Product } from '../types';
 
+const DATASHEET_BASE = '/datasheets/industrial';
+
 export const INDUSTRIAL_PRODUCTS: Product[] = [
   {
     id: 'epoxico',
@@ -48,6 +50,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
     ],
 
     image: '/products/esmalte-epoxico.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 02. ESMALTE EPÓXICO - CATALIZADOR.pdf`,
   },
   {
     id: 'secado-flash',
@@ -97,6 +100,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
     ],
 
     image: '/products/secado-flash.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 04. ESMALTE SECADO FLASH.pdf`,
   },
   {
     id: 'esmalton-3en1',
@@ -176,6 +180,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
     ],
 
     image: '/products/trafico-pesado.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 05. PINTURA TRÁFICO VS3.pdf`,
   },
   {
     id: 'primer-epoxico',
@@ -210,6 +215,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
     colors: [{ name: 'Gris', code: 'EP-227', hex: '#bfbfbf' }],
 
     image: '/products/primer-epoxico.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 03. PRIMER EPÓXICO.pdf`,
   },
   {
     id: 'wash-primer',
@@ -243,6 +249,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
     colors: [{ name: 'Verde', code: 'WP-401', hex: '#4f7c3a' }],
 
     image: '/products/wash-primer.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 07. WASH PRIMER COMPONENTE A Y B.pdf`,
   },
   {
     id: 'primer-cromato-zinc',
@@ -276,6 +283,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
     colors: [{ name: 'Verde zinc', code: 'CZ-450', hex: '#6f8f55' }],
 
     image: '/products/primer-cromato-de-zinc.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 06. PRIMER CROMATO DE ZINC.pdf`,
   },
   {
     id: 'primer-fosfato-zinc',
@@ -309,6 +317,7 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
     colors: [{ name: 'Gris', code: 'FZ-460', hex: '#9c9c9c' }],
 
     image: '/products/primer-fosfato-de-zinc.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 10. PRIMER FOSFATO DE ZINC V3.pdf`,
   },
   {
     id: 'primer-plasticos',
@@ -341,5 +350,6 @@ export const INDUSTRIAL_PRODUCTS: Product[] = [
     colors: [{ name: 'Transparente', code: 'PP-470' }],
 
     image: '/products/primer-para-plasticos.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 08. PRIMER PARA PLÁSTICOS.pdf`,
   },
 ];

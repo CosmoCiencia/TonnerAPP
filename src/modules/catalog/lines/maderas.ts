@@ -1,5 +1,7 @@
 import type { Product } from '../types';
 
+const DATASHEET_BASE = '/datasheets/maderas';
+
 export const MADERAS_PRODUCTS: Product[] = [
   {
     id: 'PU-740',
@@ -39,6 +41,7 @@ export const MADERAS_PRODUCTS: Product[] = [
     ],
 
     image: '/products/uretablex.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 01. SELLADOR - BARNIZ POLIURETANO - ENDURECEDOR.pdf`,
   },
   {
     id: 'LM-700',
@@ -71,6 +74,7 @@ export const MADERAS_PRODUCTS: Product[] = [
     ],
 
     image: '/products/laca-transparante-brillante.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 03. LACA TRANSPARENTE BRILLANTE.pdf`,
   },
   {
     id: 'LM-770',
@@ -100,6 +104,7 @@ export const MADERAS_PRODUCTS: Product[] = [
     colors: [{ name: 'Transparente Mate', code: 'LM-770' }],
 
     image: '/products/laca-transparente-mate.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 04. LACA TRANSPARENTE MATE.pdf`,
   },
   {
     id: 'LM-730',
@@ -138,6 +143,7 @@ export const MADERAS_PRODUCTS: Product[] = [
     ],
 
     image: '/products/sellador-nitro.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 05. SELLADORES NITRO.pdf`,
   },
   {
     id: 'LC-750',
@@ -179,6 +185,7 @@ export const MADERAS_PRODUCTS: Product[] = [
     ],
 
     image: '/products/laca-catalizada.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 07. LACA CATALIZADA BRILLANTE.pdf`,
   },
   {
     id: 'LC-759',
@@ -219,6 +226,7 @@ export const MADERAS_PRODUCTS: Product[] = [
     ],
 
     image: '/products/laca-latalizada-industrial.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 11. LACA CATALIZADA INDUSTRIAL COLORES.pdf`,
   },
   {
     id: 'LC-735',
@@ -266,6 +274,7 @@ export const MADERAS_PRODUCTS: Product[] = [
     ],
 
     image: '/products/sellador-catalizado.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 09. SELLADOR CATALIZADO.pdf`,
   },
   {
     id: 'LC-700',
@@ -295,6 +304,7 @@ export const MADERAS_PRODUCTS: Product[] = [
     colors: [{ name: 'Catalizador', code: 'LC-700' }],
 
     image: '/products/catalizador.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 14. CATALIZADOR LC-700.pdf`,
   },
   {
     id: 'TM-703',
@@ -342,6 +352,7 @@ export const MADERAS_PRODUCTS: Product[] = [
     ],
 
     image: '/products/tintes-para-madera.webp',
+    datasheet_url: `${DATASHEET_BASE}/FT 15. TINTES PARA MADERA.pdf`,
   },
   {
     id: 'MA-028',
