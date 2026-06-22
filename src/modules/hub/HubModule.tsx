@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 
 import { getProducts } from '../catalog/services'
 import type { Product } from '../catalog/types'
@@ -166,20 +166,6 @@ export function HubModule({
     setProfileFeedback(message)
   }
 
-  const handleHubAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    const reader = new FileReader()
-    reader.addEventListener('load', () => {
-      setHubProfile((current) => ({
-        ...current,
-        avatar: typeof reader.result === 'string' ? reader.result : '',
-      }))
-    })
-    reader.readAsDataURL(file)
-  }
-
   const renderComingSoon = ({
     title,
     icon,
@@ -260,7 +246,6 @@ export function HubModule({
         hubProfile={hubProfile}
         profileFeedback={profileFeedback}
         profilePanel={profilePanel}
-        onAvatarChange={handleHubAvatarChange}
         onProfileChange={setHubProfile}
         onProfileSubmit={handleProfileSubmit}
         onSelectPanel={(panel) => {

@@ -205,7 +205,7 @@ function GlobalTopBar({
           <strong>Notificaciones</strong>
           <span>Nuevo producto publicado en Portafolio.</span>
           <span>Stock disponible para un favorito.</span>
-          <span>Puntaje actualizado en Pollamundialista.</span>
+          <span>Puntaje actualizado en Polla Tonner.</span>
         </aside>
       ) : null}
     </header>

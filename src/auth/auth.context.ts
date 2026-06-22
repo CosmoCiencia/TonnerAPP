@@ -6,6 +6,7 @@ export type AuthContextValue = AuthState & {
   login: (input: LoginInput) => Promise<AuthUser>
   registerCustomer: (input: RegisterInput) => Promise<AuthUser>
   completePasswordRecovery: (password: string) => Promise<void>
+  deleteAccount: () => Promise<void>
   logout: () => Promise<void>
 }
 

@@ -6,7 +6,7 @@ type Props = {
   size?: 'xs' | 'sm' | 'md' | 'lg';
 };
 
-function TeamBadge({ name, logo, size = 'md' }: Props) {
+function TeamBadge({ name, size = 'md' }: Props) {
   const sizeClass =
     size === 'xs'
       ? 'h-6 w-6 text-sm'
@@ -21,17 +21,7 @@ function TeamBadge({ name, logo, size = 'md' }: Props) {
       className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white ${sizeClass}`}
       aria-hidden="true"
     >
-      {logo ? (
-        <img
-          src={logo}
-          alt=""
-          className="h-[78%] w-[78%] object-contain"
-          loading="lazy"
-          decoding="async"
-        />
-      ) : (
-        getTeamFlag(name)
-      )}
+      {getTeamFlag(name)}
     </span>
   );
 }

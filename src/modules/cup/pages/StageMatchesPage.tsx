@@ -104,7 +104,7 @@ function StageMatchesPage() {
             <div className="overflow-hidden rounded-lg bg-white shadow-[0_12px_28px_rgba(15,23,42,0.14)]">
               <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
                 <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
-                  {stage.slug === 'todos' ? 'Mundial 2026' : formatRoundLabel(selectedRound)}
+                  {stage.slug === 'todos' ? 'Torneo 2026' : formatRoundLabel(selectedRound)}
                 </p>
                 <span className="text-[10px] font-bold text-slate-400">
                   {dayMatches.length} {dayMatches.length === 1 ? 'partido' : 'partidos'}

@@ -9,7 +9,7 @@ export const hubCards: HubCard[] = [
   },
   {
     key: 'cup',
-    title: 'POLLAMUNDIALISTA',
+    title: 'POLLA TONNER',
     image: '/cup/fondo-pollatonner-grupos.webp',
     variant: 'cup',
   },

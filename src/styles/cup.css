@@ -95,11 +95,11 @@
   bottom: 1.85rem;
 }
 
-.cup-launch-trophy {
+.cup-launch-symbol {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: clamp(3.95rem, 20vw, 5.45rem);
+  width: clamp(7rem, 32vw, 9.5rem);
   height: auto;
   transform: translate(-50%, -50%);
   filter: drop-shadow(0 18px 22px rgba(63, 43, 10, 0.32));

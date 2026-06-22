@@ -1,4 +1,4 @@
-import type { ChangeEvent, FormEvent } from 'react'
+import type { FormEvent } from 'react'
 
 import LegalTermsContent from '../../components/LegalTermsContent'
 import { profileOptions } from './hubData'
@@ -8,7 +8,6 @@ type HubProfileProps = {
   hubProfile: HubProfileDraft
   profileFeedback: string
   profilePanel: ProfilePanel | null
-  onAvatarChange: (event: ChangeEvent<HTMLInputElement>) => void
   onProfileChange: (updater: (current: HubProfileDraft) => HubProfileDraft) => void
   onProfileSubmit: (message: string) => (event: FormEvent<HTMLFormElement>) => void
   onSelectPanel: (panel: ProfilePanel) => void
@@ -17,7 +16,6 @@ type HubProfileProps = {
 function HubProfilePanel({
   hubProfile,
   profilePanel,
-  onAvatarChange,
   onProfileChange,
   onProfileSubmit,
 }: Omit<HubProfileProps, 'profileFeedback' | 'onSelectPanel'>) {
@@ -51,10 +49,6 @@ function HubProfilePanel({
             <div className="hub-profile-avatar hub-profile-avatar--small">
               {hubProfile.avatar ? <img src={hubProfile.avatar} alt="" /> : null}
             </div>
-            <label className="hub-profile-photo-button">
-              <span>Cambiar foto</span>
-              <input type="file" accept="image/*" onChange={onAvatarChange} />
-            </label>
           </div>
           <label>
             <span>Nombre</span>
@@ -97,7 +91,7 @@ function HubProfilePanel({
       <section className="hub-profile-detail" aria-label="Preferencias">
         <h1>Preferencias</h1>
         <div className="hub-preference-list">
-          {['Notificaciones de productos', 'Alertas de stock', 'Actualizaciones Pollamundialista'].map((item) => (
+          {['Notificaciones de productos', 'Alertas de stock', 'Actualizaciones Polla Tonner'].map((item) => (
             <label key={item} className="hub-preference-toggle">
               <span>{item}</span>
               <input type="checkbox" defaultChecked />
@@ -134,7 +128,6 @@ export default function HubProfile({
   hubProfile,
   profileFeedback,
   profilePanel,
-  onAvatarChange,
   onProfileChange,
   onProfileSubmit,
   onSelectPanel,
@@ -145,7 +138,6 @@ export default function HubProfile({
         <HubProfilePanel
           hubProfile={hubProfile}
           profilePanel={profilePanel}
-          onAvatarChange={onAvatarChange}
           onProfileChange={onProfileChange}
           onProfileSubmit={onProfileSubmit}
         />

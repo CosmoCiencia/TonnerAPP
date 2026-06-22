@@ -36,7 +36,7 @@ function DashboardPage() {
   const launch = appContent.cup.launch;
 
   return (
-    <section className="cup-launch" aria-label="Polla Mundialista Tonner">
+    <section className="cup-launch" aria-label="Polla Tonner">
       <div className="cup-launch-hero">
         <img src={getOptimizedImageSrc(launch.backgroundImage)} alt="" className="cup-launch-bg" decoding="async" />
         <div className="cup-launch-copy cup-launch-copy-top">
@@ -45,8 +45,8 @@ function DashboardPage() {
         </div>
         <img
           src={getOptimizedImageSrc(launch.trophyImage)}
-          alt="Copa Mundial"
-          className="cup-launch-trophy"
+          alt="Balón Polla Tonner"
+          className="cup-launch-symbol"
           decoding="async"
         />
         <div className="cup-launch-copy cup-launch-copy-bottom">

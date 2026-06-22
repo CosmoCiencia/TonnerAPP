@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 
 import {
   PASSWORD_RECOVERY_LINK_EVENT,
+  deleteOwnAccount,
   getSession,
   onAuthStateChange,
   signIn,
@@ -13,6 +14,16 @@ import { AuthContext, type AuthContextValue } from './auth.context'
 import type { AuthState, AuthUser } from './auth.types'
 
 const PASSWORD_RECOVERY_STORAGE_KEY = 'tonnerapp-password-recovery'
+const HUB_PROFILE_STORAGE_KEY = 'tonnerapp-hub-profile'
+const FAVORITES_STORAGE_KEY = 'tonnerapp-favorites-v1'
+const LEGACY_FAVORITES_STORAGE_KEY = 'tonnerapp-favorite-products'
+
+function clearLocalUserData(userId: string) {
+  window.localStorage.removeItem(`tonnerapp-profile-${userId}`)
+  window.localStorage.removeItem(HUB_PROFILE_STORAGE_KEY)
+  window.localStorage.removeItem(FAVORITES_STORAGE_KEY)
+  window.localStorage.removeItem(LEGACY_FAVORITES_STORAGE_KEY)
+}
 
 function loadPasswordRecoveryState() {
   return window.sessionStorage.getItem(PASSWORD_RECOVERY_STORAGE_KEY) === 'true'
@@ -120,6 +131,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         await updatePassword(password)
         setPasswordRecovery(false)
+      },
+      async deleteAccount() {
+        if (!user?.id) {
+          throw new Error('Debes iniciar sesión para eliminar tu cuenta.')
+        }
+
+        const deletedUserId = user.id
+        await deleteOwnAccount()
+        clearLocalUserData(deletedUserId)
+        setPasswordRecovery(false)
+        setUser(null)
+        setStatus('guest')
       },
       async logout() {
         await signOut()

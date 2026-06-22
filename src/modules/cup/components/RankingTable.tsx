@@ -127,7 +127,7 @@ function RankingTable({ ranking, currentUserId }: Props) {
                       ) : null}
                     </div>
                     <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                      {row.cup_user_type ? cupUserTypeLabels[row.cup_user_type] : 'Competidor mundialista'}
+                      {row.cup_user_type ? cupUserTypeLabels[row.cup_user_type] : 'Competidor Tonner'}
                     </p>
                   </div>
                 </div>

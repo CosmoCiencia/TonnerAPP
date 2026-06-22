@@ -192,6 +192,28 @@ export async function signOut() {
   }
 }
 
+export async function deleteOwnAccount() {
+  const supabase = requireSupabase()
+  const { data, error } = await supabase.functions.invoke<{ ok?: boolean; error?: string }>('delete-account', {
+    method: 'POST',
+    body: {},
+  })
+
+  if (error) {
+    throw new Error('No se pudo eliminar la cuenta. Verifica tu conexión e intenta nuevamente.')
+  }
+
+  if (!data?.ok) {
+    throw new Error(data?.error || 'No se pudo eliminar la cuenta.')
+  }
+
+  const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' })
+
+  if (signOutError) {
+    console.error('[Auth] La cuenta fue eliminada, pero no se pudo limpiar la sesión local:', signOutError)
+  }
+}
+
 function getPasswordRecoveryRedirectUrl() {
   const configuredUrl = import.meta.env.VITE_PASSWORD_RECOVERY_REDIRECT_URL?.trim()
 

@@ -9,7 +9,7 @@ export const cupStages = [
   {
     slug: 'fase-de-grupos',
     title: 'Fase de grupos',
-    description: 'Calendario mundialista Tonner.',
+    description: 'Calendario de la Polla Tonner.',
   },
   {
     slug: 'dieciseisavos',

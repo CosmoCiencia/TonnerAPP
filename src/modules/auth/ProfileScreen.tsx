@@ -1,4 +1,5 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
+import { UserRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import LegalTermsContent from '../../components/LegalTermsContent'
@@ -13,7 +14,7 @@ type EditableProfile = {
   avatar: string
 }
 
-type ProfilePanel = 'data' | 'distributor' | 'preferences' | 'terms' | 'support'
+type ProfilePanel = 'data' | 'distributor' | 'preferences' | 'terms' | 'support' | 'delete'
 
 const getProfileStorageKey = (userId: string) => `tonnerapp-profile-${userId}`
 const HUB_PROFILE_STORAGE_KEY = 'tonnerapp-hub-profile'
@@ -53,6 +54,9 @@ export default function ProfileScreen() {
   const auth = useAuth()
   const [profilePanel, setProfilePanel] = useState<ProfilePanel | null>(null)
   const [profileFeedback, setProfileFeedback] = useState('')
+  const [deleteStep, setDeleteStep] = useState<'warning' | 'confirm'>('warning')
+  const [deleteError, setDeleteError] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
   const [editableProfile, setEditableProfile] = useState<EditableProfile>(() =>
     loadEditableProfile(auth.user?.id, auth.user?.fullName),
   )
@@ -83,22 +87,22 @@ export default function ProfileScreen() {
     setProfileFeedback('Datos actualizados en este dispositivo.')
   }
 
-  const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    const reader = new FileReader()
-    reader.addEventListener('load', () => {
-      setEditableProfile((current) => ({
-        ...current,
-        avatar: typeof reader.result === 'string' ? reader.result : '',
-      }))
-    })
-    reader.readAsDataURL(file)
-  }
-
   const profileName = editableProfile.fullName || auth.user?.fullName || 'Usuario Tonner'
   const profileTypeLabel = cupUserTypeLabels[auth.user?.cupUserType ?? 'public']
+
+  const handleDeleteAccount = async () => {
+    if (isDeleting) return
+
+    setIsDeleting(true)
+    setDeleteError('')
+
+    try {
+      await auth.deleteAccount()
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'No se pudo eliminar la cuenta.')
+      setIsDeleting(false)
+    }
+  }
 
   const renderProfilePanel = () => {
     if (profilePanel === 'data') {
@@ -108,12 +112,8 @@ export default function ProfileScreen() {
           <form className="auth-profile-editor" onSubmit={handleProfileSubmit}>
             <div className="auth-profile-editor__hero">
               <div className="auth-profile-editor__avatar">
-                {editableProfile.avatar ? <img src={editableProfile.avatar} alt="" /> : <span />}
+                <UserRound aria-hidden="true" />
               </div>
-              <label className="auth-profile-editor__photo">
-                <span>Cambiar foto</span>
-                <input type="file" accept="image/*" onChange={handleAvatarChange} />
-              </label>
             </div>
 
             <label>
@@ -180,7 +180,7 @@ export default function ProfileScreen() {
         <section className="auth-profile-panel" aria-label="Preferencias">
           <h1>Preferencias</h1>
           <div className="auth-profile-panel-card">
-            {['Notificaciones de productos', 'Alertas de favoritos', 'Actualizaciones Pollamundialista'].map((item) => (
+            {['Notificaciones de productos', 'Alertas de favoritos', 'Actualizaciones Polla Tonner'].map((item) => (
               <label key={item} className="auth-profile-toggle">
                 <span>{item}</span>
                 <input type="checkbox" defaultChecked />
@@ -198,13 +198,52 @@ export default function ProfileScreen() {
           <div className="auth-profile-panel-card auth-profile-support">
             <a href="mailto:tonnerapp@pinturastonner.com">Enviar correo</a>
             <a href="https://wa.me/573224164646">WhatsApp</a>
-            <a
-              href={`mailto:tonnerapp@pinturastonner.com?subject=${encodeURIComponent('Solicitud de eliminación de cuenta TonnerApp')}&body=${encodeURIComponent(
-                `Hola, solicito la eliminación de mi cuenta TonnerApp y los datos personales asociados.\n\nCorreo de la cuenta: ${auth.user?.email ?? ''}\nNombre: ${auth.user?.fullName ?? ''}`,
-              )}`}
-            >
-              Solicitar eliminación de cuenta
-            </a>
+          </div>
+        </section>
+      )
+    }
+
+    if (profilePanel === 'delete') {
+      return (
+        <section className="auth-profile-panel" aria-label="Eliminar cuenta">
+          <h1>Eliminar cuenta</h1>
+          <div className="auth-profile-panel-card auth-delete-account">
+            {deleteStep === 'warning' ? (
+              <>
+                <strong>Esta acción es permanente</strong>
+                <p>
+                  Se eliminarán tu cuenta, perfil, predicciones y puntajes. No podrás recuperar esta información.
+                </p>
+                <button type="button" className="auth-delete-account__continue" onClick={() => setDeleteStep('confirm')}>
+                  Continuar
+                </button>
+                <button type="button" className="auth-delete-account__cancel" onClick={() => setProfilePanel(null)}>
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <>
+                <strong>¿Eliminar tu cuenta definitivamente?</strong>
+                <p>Esta es la confirmación final. La eliminación comenzará inmediatamente.</p>
+                <button
+                  type="button"
+                  className="auth-delete-account__confirm"
+                  disabled={isDeleting}
+                  onClick={handleDeleteAccount}
+                >
+                  {isDeleting ? 'Eliminando cuenta…' : 'Eliminar cuenta definitivamente'}
+                </button>
+                <button
+                  type="button"
+                  className="auth-delete-account__cancel"
+                  disabled={isDeleting}
+                  onClick={() => setDeleteStep('warning')}
+                >
+                  Volver
+                </button>
+              </>
+            )}
+            {deleteError ? <p className="auth-delete-account__error" role="alert">{deleteError}</p> : null}
           </div>
         </section>
       )
@@ -250,7 +289,7 @@ export default function ProfileScreen() {
             <>
               <section className="auth-profile-hero-card">
                 <div className="auth-profile-hero-card__avatar">
-                  {editableProfile.avatar ? <img src={editableProfile.avatar} alt="" /> : null}
+                  <UserRound aria-hidden="true" />
                 </div>
                 <div className="auth-profile-hero-card__identity">
                   <strong>{profileName}</strong>
@@ -272,6 +311,17 @@ export default function ProfileScreen() {
                 </button>
                 <button type="button" onClick={() => setProfilePanel('support')}>
                   Atención al Cliente
+                </button>
+                <button
+                  type="button"
+                  className="auth-profile-menu__delete"
+                  onClick={() => {
+                    setDeleteStep('warning')
+                    setDeleteError('')
+                    setProfilePanel('delete')
+                  }}
+                >
+                  Eliminar cuenta
                 </button>
                 <button type="button" onClick={auth.logout}>
                   Cerrar sesión

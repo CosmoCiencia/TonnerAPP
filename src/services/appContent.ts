@@ -66,10 +66,10 @@ export const DEFAULT_APP_CONTENT: TonnerAppContent = {
   cup: {
     launch: {
       backgroundImage: '/cup/tonnercup-fondo.png',
-      trophyImage: '/cup/tonnercup-copa.webp',
-      topLine: 'Vive la fiebre del',
-      title: 'Mundial',
-      bottomLine: 'Pollamundialista',
+      trophyImage: '/cup/tonnercup-balon-original.png',
+      topLine: 'Vive la emoción del',
+      title: 'Torneo 2026',
+      bottomLine: 'Polla Tonner',
       brand: 'Tonner',
     },
   },

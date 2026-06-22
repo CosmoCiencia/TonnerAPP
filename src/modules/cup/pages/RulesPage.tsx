@@ -40,7 +40,7 @@ const conditions = [
   'En caso de empate en el ranking, se tendrá en cuenta el siguiente orden de desempate: mayor cantidad de puntos acumulados y mayor número de aciertos.',
 ];
 
-const prizeNote = 'Los premios de la Pollamundialista Tonner serán otorgados exclusivamente a los empleados de Pinturas Tonner.';
+const prizeNote = 'Los premios de la Polla Tonner serán otorgados exclusivamente a los empleados de Pinturas Tonner.';
 
 function RulesPage() {
   return (
