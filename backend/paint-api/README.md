@@ -66,10 +66,10 @@ Frontend y backend:
 npm run dev:full
 ```
 
-El frontend usa `VITE_TONNER_PAINT_API_URL`. Para el pod directo actual:
+El frontend usa `VITE_TONNER_PAINT_API_URL`. Para el endpoint actual:
 
 ```bash
-VITE_TONNER_PAINT_API_URL=https://c1tdhry48vmfr9-8000.proxy.runpod.net
+VITE_TONNER_PAINT_API_URL=https://drizzle-eligible-harsh.ngrok-free.dev
 ```
 
 ## Startup en RunPod pod directo

@@ -2,12 +2,10 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 
 import { DEFAULT_PAINT_COLOR, getPaintPaletteForMaterial } from './colors'
 import { useAppContent } from '../../services/appContent'
-import { getOptimizedImageSrc } from '../../services/imageAssets'
 
 const PAINT_API_URL = (import.meta.env.VITE_TONNER_PAINT_API_URL?.trim() ?? '').replace(/\/+$/, '')
 const PAINT_TIMEOUT_MS = 120_000
 const materialOrder = ['pared', 'vehiculo', 'metal', 'plastico', 'madera']
-const PAINT_COMING_SOON = true
 
 export default function PaintModule() {
   const appContent = useAppContent()
@@ -121,26 +119,6 @@ export default function PaintModule() {
       window.clearTimeout(timeoutId)
       setIsPainting(false)
     }
-  }
-
-  if (PAINT_COMING_SOON) {
-    return (
-      <main className="paint-page">
-        <div className="paint-app">
-          <section className="paint-coming-soon" aria-label="TonnerPaint muy pronto disponible">
-            <div className="paint-coming-soon__card">
-              <img src={getOptimizedImageSrc('/hub/tonner-paint.webp')} alt="" decoding="async" />
-              <span>TonnerPaint</span>
-              <h1>Muy pronto disponible</h1>
-              <p>
-                Estamos preparando la experiencia de pintura con IA para que funcione estable en celulares. Pronto
-                podrás tomar una foto, elegir color y visualizar el resultado desde la app.
-              </p>
-            </div>
-          </section>
-        </div>
-      </main>
-    )
   }
 
   return (
