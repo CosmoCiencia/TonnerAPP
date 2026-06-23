@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { getTeamFlag } from '../services/teamMeta';
 
 type Props = {
@@ -6,7 +8,8 @@ type Props = {
   size?: 'xs' | 'sm' | 'md' | 'lg';
 };
 
-function TeamBadge({ name, size = 'md' }: Props) {
+function TeamBadge({ name, logo, size = 'md' }: Props) {
+  const [failedLogo, setFailedLogo] = useState<string | null>(null);
   const sizeClass =
     size === 'xs'
       ? 'h-6 w-6 text-sm'
@@ -16,12 +19,27 @@ function TeamBadge({ name, size = 'md' }: Props) {
         ? 'h-14 w-14 text-3xl'
         : 'h-12 w-12 text-2xl';
 
+  const shouldShowLogo = Boolean(logo && failedLogo !== logo);
+
   return (
     <span
       className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white ${sizeClass}`}
       aria-hidden="true"
     >
-      {getTeamFlag(name)}
+      {shouldShowLogo ? (
+        <img
+          src={logo ?? undefined}
+          alt=""
+          className="h-full w-full object-contain p-0.5"
+          loading="lazy"
+          decoding="async"
+          onError={() => {
+            setFailedLogo(logo);
+          }}
+        />
+      ) : (
+        getTeamFlag(name)
+      )}
     </span>
   );
 }
