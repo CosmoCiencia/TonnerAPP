@@ -3,6 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.87.1';
 type CupMatch = {
   id: string;
   api_fixture_id: number | null;
+  stage: string | null;
+  round: string | null;
   score_home: number | null;
   score_away: number | null;
   raw: unknown;
@@ -28,9 +30,16 @@ type CupPointUpsert = {
 };
 
 const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
-const POINTS_FOR_RESULT_HIT = 3;
-const POINTS_FOR_EXACT_HIT = 5;
-const POINTS_FOR_SCORER_HIT = 2;
+const GROUP_STAGE_POINTS = {
+  resultHit: 3,
+  exactHit: 5,
+  scorerHit: 2,
+} as const;
+const KNOCKOUT_STAGE_POINTS = {
+  resultHit: 4,
+  exactHit: 6,
+  scorerHit: 3,
+} as const;
 const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
 const PAGE_SIZE = 1000;
 
@@ -119,6 +128,27 @@ function getActualResult(match: CupMatch): MatchResult {
   const away = match.score_away ?? 0;
 
   return getScoreResult(home, away);
+}
+
+function getPointsRule(match: CupMatch) {
+  const phase = `${match.stage ?? ''} ${match.round ?? ''}`.toLowerCase();
+
+  if (phase.includes('group') || phase.includes('fase de grupos')) {
+    return GROUP_STAGE_POINTS;
+  }
+
+  const isKnockoutStage = [
+    'round of',
+    'knockout',
+    'dieciseisavos',
+    'octavos',
+    'quarter',
+    'cuartos',
+    'semi',
+    'final',
+  ].some((stageName) => phase.includes(stageName));
+
+  return isKnockoutStage ? KNOCKOUT_STAGE_POINTS : GROUP_STAGE_POINTS;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -247,7 +277,7 @@ async function fetchFinishedMatches(
     const to = from + PAGE_SIZE - 1;
     const { data, error } = await supabase
       .from('cup_matches')
-      .select('id,api_fixture_id,score_home,score_away,raw')
+      .select('id,api_fixture_id,stage,round,score_home,score_away,raw')
       .in('status_short', FINISHED_STATUSES)
       .not('score_home', 'is', null)
       .not('score_away', 'is', null)
@@ -359,9 +389,10 @@ Deno.serve(async (request) => {
       const exactHit = prediction.predicted_home === match.score_home
         && prediction.predicted_away === match.score_away;
       const scorerHit = getScorerHit(match, prediction);
-      const pointsAwarded = (resultHit ? POINTS_FOR_RESULT_HIT : 0)
-        + (exactHit ? POINTS_FOR_EXACT_HIT : 0)
-        + (scorerHit ? POINTS_FOR_SCORER_HIT : 0);
+      const pointsRule = getPointsRule(match);
+      const pointsAwarded = (resultHit ? pointsRule.resultHit : 0)
+        + (exactHit ? pointsRule.exactHit : 0)
+        + (scorerHit ? pointsRule.scorerHit : 0);
 
       return [
         {

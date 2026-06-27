@@ -12,21 +12,24 @@ const prizes = [
 const scoringRules = [
   {
     title: 'Resultado acertado',
-    points: '+3',
+    groupPoints: '+3',
+    knockoutPoints: '+4',
     description:
       'Obtienes puntos cuando aciertas el resultado general del partido: victoria del equipo local, empate o victoria del equipo visitante.',
     icon: CheckCircle2,
   },
   {
     title: 'Marcador exacto',
-    points: '+5',
+    groupPoints: '+5',
+    knockoutPoints: '+6',
     description:
       'Obtienes puntos adicionales cuando el marcador pronosticado coincide exactamente con el resultado final del partido.',
     icon: Trophy,
   },
   {
     title: 'Goleador acertado',
-    points: '+2',
+    groupPoints: '+2',
+    knockoutPoints: '+3',
     description: 'Obtienes puntos si el jugador seleccionado anota al menos un gol válido durante el partido.',
     icon: Goal,
   },
@@ -34,6 +37,7 @@ const scoringRules = [
 
 const conditions = [
   'Cada predicción podrá guardarse o modificarse únicamente antes del inicio del partido.',
+  'Desde los dieciseisavos de final, cada acierto otorga un punto adicional frente a la fase de grupos.',
   'Los puntos serán asignados una vez el partido haya finalizado y el resultado sea confirmado en la base de datos oficial.',
   'Los goles en propia puerta y los penales fallados no serán considerados para la puntuación de la categoría "Goleador acertado".',
   'El ranking mostrará únicamente a los participantes que hayan registrado al menos una predicción.',
@@ -95,18 +99,25 @@ function RulesPage() {
       </article>
 
       <div className="grid gap-3">
-        {scoringRules.map(({ title, points, description, icon: Icon }) => (
+        {scoringRules.map(({ title, groupPoints, knockoutPoints, description, icon: Icon }) => (
           <article key={title} className="cup-card">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-tonner-blue text-white">
                 <Icon size={22} strokeWidth={2.8} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-3">
+                <div>
                   <h3 className="text-base font-black text-tonner-slate">{title}</h3>
-                  <span className="shrink-0 rounded-xl bg-orange-50 px-3 py-1 text-sm font-black text-tonner-orange">
-                    {points}
-                  </span>
+                  <div className="mt-2 grid w-full max-w-60 grid-cols-2 overflow-hidden rounded-lg border border-orange-100 text-center">
+                    <div className="bg-slate-50 px-2 py-1">
+                      <span className="block text-[9px] font-black uppercase text-slate-500">Grupos</span>
+                      <span className="block text-sm font-black text-tonner-slate">{groupPoints}</span>
+                    </div>
+                    <div className="bg-orange-50 px-2 py-1">
+                      <span className="block text-[9px] font-black uppercase text-tonner-orange">Eliminación</span>
+                      <span className="block text-sm font-black text-tonner-orange">{knockoutPoints}</span>
+                    </div>
+                  </div>
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
               </div>
