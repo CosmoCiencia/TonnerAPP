@@ -4,6 +4,8 @@ import type { CupTeamPlayer, MatchWithPrediction } from '../services/types';
 import {
   getPredictionOutcome,
   getScoreOutcome,
+  isKnockoutMatch,
+  type PredictedQualifier,
   type PredictionOutcome,
 } from '../services/predictionOutcome';
 import TeamBadge from './TeamBadge';
@@ -17,7 +19,8 @@ type Props = {
     predictedHome: number,
     predictedAway: number,
     predictedScorerPlayerId?: number | null,
-    predictedScorerName?: string | null
+    predictedScorerName?: string | null,
+    predictedQualifier?: PredictedQualifier | null,
   ) => void;
 };
 
@@ -52,9 +55,13 @@ function getPlayerLabel(player: CupTeamPlayer) {
 
 function PredictionEditorCard({ item, saving, onSave }: Props) {
   const { match, prediction, players } = item;
+  const isKnockout = isKnockoutMatch(match);
   const savedOutcome = getPredictionOutcome(prediction);
+  const savedQualifier = prediction?.predicted_qualifier
+    ?? (isKnockout && (savedOutcome === 'home' || savedOutcome === 'away') ? savedOutcome : null);
   const [expanded, setExpanded] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<PredictionOutcome | null>(savedOutcome);
+  const [selectedQualifier, setSelectedQualifier] = useState<PredictedQualifier | null>(savedQualifier);
   const [selectedHome, setSelectedHome] = useState(
     prediction ? String(prediction.predicted_home) : ''
   );
@@ -87,11 +94,17 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
     predictedAway <= MAX_PREDICTED_SCORE;
   const scoreOutcome = hasValidScore ? getScoreOutcome(predictedHome, predictedAway) : null;
   const scoreMatchesOutcome = Boolean(selectedOutcome && scoreOutcome === selectedOutcome);
+  const effectiveQualifier = scoreOutcome === 'home' || scoreOutcome === 'away'
+    ? scoreOutcome
+    : selectedQualifier;
+  const hasCompletePrediction = isKnockout
+    ? Boolean(hasValidScore && effectiveQualifier)
+    : Boolean(hasValidScore && selectedOutcome && scoreMatchesOutcome);
   const selectedScorerPlayerId = selectedScorerId ? Number(selectedScorerId) : null;
   const selectedIsSaved = Boolean(
     prediction &&
-    hasValidScore &&
-    selectedOutcome === savedOutcome &&
+    hasCompletePrediction &&
+    (isKnockout ? effectiveQualifier === savedQualifier : selectedOutcome === savedOutcome) &&
     predictedHome === prediction.predicted_home &&
     predictedAway === prediction.predicted_away &&
     selectedScorerPlayerId === prediction.predicted_scorer_player_id
@@ -112,14 +125,15 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
         : formatMatchTime(match.date);
 
   const savePrediction = () => {
-    if (!selectedOutcome || !hasValidScore || !scoreMatchesOutcome) return;
+    if (!hasValidScore || !scoreOutcome || !hasCompletePrediction) return;
     onSave(
       match.id,
-      selectedOutcome,
+      scoreOutcome,
       predictedHome,
       predictedAway,
       selectedScorer?.player_id ?? null,
-      selectedScorer?.player_name ?? null
+      selectedScorer?.player_name ?? null,
+      isKnockout ? effectiveQualifier : null,
     );
   };
 
@@ -133,6 +147,26 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
         aria-pressed={selected}
         onClick={() => setSelectedOutcome(outcome)}
         className={`min-w-0 rounded-md border px-1.5 py-2 text-[10px] font-black leading-tight transition ${
+          selected
+            ? 'border-tonner-blue bg-tonner-blue text-white'
+            : 'border-slate-200 bg-white text-tonner-blue'
+        }`}
+      >
+        <span className="block truncate">{label}</span>
+      </button>
+    );
+  };
+
+  const renderQualifierButton = (qualifier: PredictedQualifier, label: string) => {
+    const selected = selectedQualifier === qualifier;
+
+    return (
+      <button
+        type="button"
+        disabled={isLocked || saving}
+        aria-pressed={selected}
+        onClick={() => setSelectedQualifier(qualifier)}
+        className={`min-w-0 rounded-md border px-2 py-2 text-[10px] font-black leading-tight transition ${
           selected
             ? 'border-tonner-blue bg-tonner-blue text-white'
             : 'border-slate-200 bg-white text-tonner-blue'
@@ -203,11 +237,17 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
 
       {expanded ? (
         <div className="border-t border-slate-100 bg-slate-50/70 px-3 pb-3 pt-3">
-          <div className="grid grid-cols-3 gap-1.5">
-            {renderOutcomeButton('home', `Gana ${match.team_home}`)}
-            {renderOutcomeButton('draw', 'Empate')}
-            {renderOutcomeButton('away', `Gana ${match.team_away}`)}
-          </div>
+          {!isKnockout ? (
+            <div className="grid grid-cols-3 gap-1.5">
+              {renderOutcomeButton('home', `Gana ${match.team_home}`)}
+              {renderOutcomeButton('draw', 'Empate')}
+              {renderOutcomeButton('away', `Gana ${match.team_away}`)}
+            </div>
+          ) : (
+            <p className="text-center text-[10px] font-black uppercase text-slate-500">
+              Marcador final sin penales
+            </p>
+          )}
 
           <div className="mt-3 flex items-center justify-center gap-3">
             <label className="text-center">
@@ -243,17 +283,40 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
             </label>
           </div>
 
-          <p
-            className={`mt-2 text-center text-[10px] font-semibold ${
-              hasValidScore && selectedOutcome && !scoreMatchesOutcome
-                ? 'text-red-600'
-                : 'text-slate-500'
-            }`}
-          >
-            {hasValidScore && selectedOutcome && !scoreMatchesOutcome
-              ? 'El marcador debe coincidir con tu elección.'
-              : ''}
-          </p>
+          {!isKnockout ? (
+            <p
+              className={`mt-2 text-center text-[10px] font-semibold ${
+                hasValidScore && selectedOutcome && !scoreMatchesOutcome
+                  ? 'text-red-600'
+                  : 'text-slate-500'
+              }`}
+            >
+              {hasValidScore && selectedOutcome && !scoreMatchesOutcome
+                ? 'El marcador debe coincidir con tu elección.'
+                : ''}
+            </p>
+          ) : scoreOutcome === 'draw' ? (
+            <div className="mt-3">
+              <p className="mb-2 text-center text-[10px] font-black uppercase text-slate-500">
+                ¿Quién gana por penales?
+              </p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {renderQualifierButton('home', match.team_home)}
+                {renderQualifierButton('away', match.team_away)}
+              </div>
+              {!selectedQualifier ? (
+                <p className={`mt-2 text-center text-[10px] font-bold ${isLocked ? 'text-slate-500' : 'text-tonner-orange'}`}>
+                  {isLocked
+                    ? 'Pronóstico anterior conservado.'
+                    : 'Completa tu pronóstico: elige qué equipo clasifica.'}
+                </p>
+              ) : null}
+            </div>
+          ) : effectiveQualifier ? (
+            <p className="mt-2 text-center text-[10px] font-bold text-emerald-700">
+              Clasifica {effectiveQualifier === 'home' ? match.team_home : match.team_away}
+            </p>
+          ) : null}
 
           <div className="mt-3">
             <label className="block text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">
@@ -298,7 +361,7 @@ function PredictionEditorCard({ item, saving, onSave }: Props) {
           <button
             type="button"
             disabled={
-              isLocked || saving || !selectedOutcome || !hasValidScore || !scoreMatchesOutcome
+              isLocked || saving || !hasCompletePrediction
             }
             onClick={savePrediction}
             className={`mt-3 flex h-9 w-full items-center justify-center rounded-md px-3 text-xs font-black text-white transition disabled:opacity-50 ${

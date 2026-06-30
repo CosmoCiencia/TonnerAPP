@@ -15,7 +15,7 @@ const scoringRules = [
     groupPoints: '+3',
     knockoutPoints: '+4',
     description:
-      'Obtienes puntos cuando aciertas el resultado general del partido: victoria del equipo local, empate o victoria del equipo visitante.',
+      'En grupos cuenta la victoria o el empate. En eliminatorias cuenta el equipo que clasifica, incluyendo una posible tanda de penales.',
     icon: CheckCircle2,
   },
   {
@@ -23,23 +23,26 @@ const scoringRules = [
     groupPoints: '+5',
     knockoutPoints: '+6',
     description:
-      'Obtienes puntos adicionales cuando el marcador pronosticado coincide exactamente con el resultado final del partido.',
+      'El marcador debe coincidir con el resultado al finalizar el tiempo reglamentario o la prórroga. La tanda de penales no se suma.',
     icon: Trophy,
   },
   {
     title: 'Goleador acertado',
     groupPoints: '+2',
     knockoutPoints: '+3',
-    description: 'Obtienes puntos si el jugador seleccionado anota al menos un gol válido durante el partido.',
+    description: 'Obtienes puntos si el jugador seleccionado anota un gol válido durante el tiempo reglamentario o la prórroga.',
     icon: Goal,
   },
 ];
 
 const conditions = [
   'Cada predicción podrá guardarse o modificarse únicamente antes del inicio del partido.',
-  'Desde los dieciseisavos de final, cada acierto otorga un punto adicional frente a la fase de grupos.',
+  'En la fase de grupos se otorgan 3 puntos por resultado, 5 por marcador exacto y 2 por goleador.',
+  'Desde los dieciseisavos se otorgan 4 puntos por clasificado, 6 por marcador exacto y 3 por goleador.',
+  'Si el marcador pronosticado para una eliminatoria es empate, también debe elegirse el equipo que ganará por penales.',
+  'Los cobros de una tanda de penales no modifican el marcador exacto ni cuentan como goles de jugadores.',
   'Los puntos serán asignados una vez el partido haya finalizado y el resultado sea confirmado en la base de datos oficial.',
-  'Los goles en propia puerta y los penales fallados no serán considerados para la puntuación de la categoría "Goleador acertado".',
+  'Los goles en propia puerta y los penales fallados no se consideran para la categoría "Goleador acertado".',
   'El ranking mostrará únicamente a los participantes que hayan registrado al menos una predicción.',
   'En caso de empate en el ranking, se tendrá en cuenta el siguiente orden de desempate: mayor cantidad de puntos acumulados y mayor número de aciertos.',
 ];

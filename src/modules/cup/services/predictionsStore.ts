@@ -1,5 +1,5 @@
 import { requireSupabase } from '../../../lib/supabase';
-import { getScoreOutcome, type PredictionOutcome } from './predictionOutcome';
+import { getScoreOutcome, type PredictedQualifier, type PredictionOutcome } from './predictionOutcome';
 import type { CupTeamPlayer, Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from './types';
 
 type PredictionRow = {
@@ -7,6 +7,7 @@ type PredictionRow = {
   user_id: string;
   match_id: string;
   prediction_result?: PredictionOutcome | null;
+  predicted_qualifier?: PredictedQualifier | null;
   predicted_home: number;
   predicted_away: number;
   predicted_scorer_player_id?: number | null;
@@ -33,6 +34,7 @@ function toPrediction(row: PredictionRow): Prediction {
       row.prediction_result ?? (
         row.predicted_home > row.predicted_away ? 'home' : row.predicted_home < row.predicted_away ? 'away' : 'draw'
       ),
+    predicted_qualifier: row.predicted_qualifier ?? null,
     predicted_home: row.predicted_home,
     predicted_away: row.predicted_away,
     predicted_scorer_player_id: row.predicted_scorer_player_id ?? null,
@@ -53,7 +55,7 @@ export async function fetchPredictions(userId: string): Promise<Prediction[]> {
   const supabase = requireSupabase();
   const { data, error } = await supabase
     .from('cup_predictions')
-    .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away,predicted_scorer_player_id,predicted_scorer_name')
+    .select('id,user_id,match_id,prediction_result,predicted_qualifier,predicted_home,predicted_away,predicted_scorer_player_id,predicted_scorer_name')
     .eq('user_id', userId);
 
   if (error) {
@@ -123,6 +125,7 @@ export async function upsertPrediction(
   predicted_away: number,
   predicted_scorer_player_id?: number | null,
   predicted_scorer_name?: string | null,
+  predicted_qualifier?: PredictedQualifier | null,
 ): Promise<Prediction> {
   if (
     !Number.isInteger(predicted_home)
@@ -152,6 +155,7 @@ export async function upsertPrediction(
         user_id,
         match_id,
         prediction_result,
+        predicted_qualifier: predicted_qualifier ?? null,
         predicted_home,
         predicted_away,
         predicted_scorer_player_id: normalizedScorerPlayerId,
@@ -159,7 +163,7 @@ export async function upsertPrediction(
       },
       { onConflict: 'user_id,match_id' },
     )
-    .select('id,user_id,match_id,prediction_result,predicted_home,predicted_away,predicted_scorer_player_id,predicted_scorer_name')
+    .select('id,user_id,match_id,prediction_result,predicted_qualifier,predicted_home,predicted_away,predicted_scorer_player_id,predicted_scorer_name')
     .single();
 
   if (error) {

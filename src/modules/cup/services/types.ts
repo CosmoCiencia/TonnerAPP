@@ -48,6 +48,7 @@ export type Prediction = {
   user_id: string;
   match_id: string;
   prediction_result: 'home' | 'draw' | 'away';
+  predicted_qualifier: 'home' | 'away' | null;
   predicted_home: number;
   predicted_away: number;
   predicted_scorer_player_id: number | null;

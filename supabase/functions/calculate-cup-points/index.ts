@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.87.1';
 type CupMatch = {
   id: string;
   api_fixture_id: number | null;
+  status_short: string;
   stage: string | null;
   round: string | null;
   score_home: number | null;
@@ -14,6 +15,7 @@ type CupPrediction = {
   user_id: string;
   match_id: string;
   prediction_result: MatchResult;
+  predicted_qualifier: 'home' | 'away' | null;
   predicted_home: number;
   predicted_away: number;
   predicted_scorer_player_id: number | null;
@@ -123,7 +125,37 @@ function getScoreResult(home: number, away: number): MatchResult {
   return 'draw';
 }
 
+function getPenaltyWinnerResult(match: CupMatch): MatchResult | null {
+  if (match.status_short !== 'PEN' || !isRecord(match.raw)) return null;
+
+  const teams = match.raw.teams;
+  if (isRecord(teams)) {
+    const home = teams.home;
+    const away = teams.away;
+
+    if (isRecord(home) && home.winner === true) return 'home';
+    if (isRecord(away) && away.winner === true) return 'away';
+  }
+
+  const score = match.raw.score;
+  const penalty = isRecord(score) ? score.penalty : null;
+
+  if (isRecord(penalty)) {
+    const home = penalty.home;
+    const away = penalty.away;
+
+    if (typeof home === 'number' && typeof away === 'number' && home !== away) {
+      return getScoreResult(home, away);
+    }
+  }
+
+  return null;
+}
+
 function getActualResult(match: CupMatch): MatchResult {
+  const penaltyWinner = getPenaltyWinnerResult(match);
+  if (penaltyWinner) return penaltyWinner;
+
   const home = match.score_home ?? 0;
   const away = match.score_away ?? 0;
 
@@ -149,6 +181,13 @@ function getPointsRule(match: CupMatch) {
   ].some((stageName) => phase.includes(stageName));
 
   return isKnockoutStage ? KNOCKOUT_STAGE_POINTS : GROUP_STAGE_POINTS;
+}
+
+function getPredictedResult(match: CupMatch, prediction: CupPrediction): MatchResult {
+  const isKnockoutStage = getPointsRule(match) === KNOCKOUT_STAGE_POINTS;
+  return isKnockoutStage
+    ? prediction.predicted_qualifier ?? prediction.prediction_result
+    : prediction.prediction_result;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -277,7 +316,7 @@ async function fetchFinishedMatches(
     const to = from + PAGE_SIZE - 1;
     const { data, error } = await supabase
       .from('cup_matches')
-      .select('id,api_fixture_id,stage,round,score_home,score_away,raw')
+      .select('id,api_fixture_id,status_short,stage,round,score_home,score_away,raw')
       .in('status_short', FINISHED_STATUSES)
       .not('score_home', 'is', null)
       .not('score_away', 'is', null)
@@ -307,7 +346,7 @@ async function fetchPredictionsForMatches(
     const to = from + PAGE_SIZE - 1;
     const { data, error } = await supabase
       .from('cup_predictions')
-      .select('user_id,match_id,prediction_result,predicted_home,predicted_away,predicted_scorer_player_id')
+      .select('user_id,match_id,prediction_result,predicted_qualifier,predicted_home,predicted_away,predicted_scorer_player_id')
       .in('match_id', matchIds)
       .order('match_id', { ascending: true })
       .order('user_id', { ascending: true })
@@ -385,7 +424,7 @@ Deno.serve(async (request) => {
       const match = matchesById.get(prediction.match_id);
       if (!match) return [];
 
-      const resultHit = prediction.prediction_result === getActualResult(match);
+      const resultHit = getPredictedResult(match, prediction) === getActualResult(match);
       const exactHit = prediction.predicted_home === match.score_home
         && prediction.predicted_away === match.score_away;
       const scorerHit = getScorerHit(match, prediction);

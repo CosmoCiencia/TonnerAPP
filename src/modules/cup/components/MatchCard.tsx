@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getOutcomeLabel, getPredictionOutcome } from '../services/predictionOutcome';
+import { getPredictionLabel } from '../services/predictionOutcome';
 import type { MatchWithPrediction } from '../services/types';
 import GoalEventsList from './GoalEventsList';
 import TeamBadge from './TeamBadge';
@@ -107,7 +107,7 @@ function MatchCard({
             }`}
           >
             {prediction
-              ? `Tu predicción: ${prediction.predicted_home} - ${prediction.predicted_away} · ${getOutcomeLabel(match, getPredictionOutcome(prediction))}${prediction.predicted_scorer_name ? ` · Gol: ${prediction.predicted_scorer_name}` : ''}`
+              ? `Tu predicción: ${prediction.predicted_home} - ${prediction.predicted_away} · ${getPredictionLabel(match, prediction)}${prediction.predicted_scorer_name ? ` · Gol: ${prediction.predicted_scorer_name}` : ''}`
               : 'Sin predicción'}
           </p>
         ) : null}

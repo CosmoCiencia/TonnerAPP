@@ -8,7 +8,7 @@ import {
   upsertPrediction,
 } from '../services/predictionsStore';
 import { fetchTeamPlayers } from '../services/teamPlayersStore';
-import type { PredictionOutcome } from '../services/predictionOutcome';
+import type { PredictedQualifier, PredictionOutcome } from '../services/predictionOutcome';
 import type { CupTeamPlayer, Match, MatchWithPrediction, PointEntry, Prediction, RankingRow } from '../services/types';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -148,6 +148,7 @@ export function useCupData(userId: string | null) {
     predictedAway: number,
     predictedScorerPlayerId?: number | null,
     predictedScorerName?: string | null,
+    predictedQualifier?: PredictedQualifier | null,
   ) {
     if (!isValidUserId(userId)) {
       setToast('Inicia sesión para guardar tu pronóstico.');
@@ -164,6 +165,7 @@ export function useCupData(userId: string | null) {
         predictedAway,
         predictedScorerPlayerId,
         predictedScorerName,
+        predictedQualifier,
       );
       setPredictions((current) => {
         const exists = current.find((prediction) => prediction.id === nextPrediction.id);
