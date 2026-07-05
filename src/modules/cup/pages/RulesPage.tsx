@@ -13,7 +13,8 @@ const scoringRules = [
   {
     title: 'Resultado acertado',
     groupPoints: '+3',
-    knockoutPoints: '+4',
+    knockout16Points: '+4',
+    octavosPoints: '+6',
     description:
       'En grupos cuenta la victoria o el empate. En eliminatorias cuenta el equipo que clasifica, incluyendo una posible tanda de penales.',
     icon: CheckCircle2,
@@ -21,7 +22,8 @@ const scoringRules = [
   {
     title: 'Marcador exacto',
     groupPoints: '+5',
-    knockoutPoints: '+6',
+    knockout16Points: '+6',
+    octavosPoints: '+8',
     description:
       'El marcador debe coincidir con el resultado al finalizar el tiempo reglamentario o la prórroga. La tanda de penales no se suma.',
     icon: Trophy,
@@ -29,7 +31,8 @@ const scoringRules = [
   {
     title: 'Goleador acertado',
     groupPoints: '+2',
-    knockoutPoints: '+3',
+    knockout16Points: '+3',
+    octavosPoints: '+4',
     description: 'Obtienes puntos si el jugador seleccionado anota un gol válido durante el tiempo reglamentario o la prórroga.',
     icon: Goal,
   },
@@ -38,7 +41,8 @@ const scoringRules = [
 const conditions = [
   'Cada predicción podrá guardarse o modificarse únicamente antes del inicio del partido.',
   'En la fase de grupos se otorgan 3 puntos por resultado, 5 por marcador exacto y 2 por goleador.',
-  'Desde los dieciseisavos se otorgan 4 puntos por clasificado, 6 por marcador exacto y 3 por goleador.',
+  'En los dieciseisavos se otorgan 4 puntos por clasificado, 6 por marcador exacto y 3 por goleador.',
+  'Desde los octavos se otorgan 6 puntos por clasificado, 8 por marcador exacto y 4 por goleador.',
   'Si el marcador pronosticado para una eliminatoria es empate, también debe elegirse el equipo que ganará por penales.',
   'Los cobros de una tanda de penales no modifican el marcador exacto ni cuentan como goles de jugadores.',
   'Los puntos serán asignados una vez el partido haya finalizado y el resultado sea confirmado en la base de datos oficial.',
@@ -102,7 +106,7 @@ function RulesPage() {
       </article>
 
       <div className="grid gap-3">
-        {scoringRules.map(({ title, groupPoints, knockoutPoints, description, icon: Icon }) => (
+        {scoringRules.map(({ title, groupPoints, knockout16Points, octavosPoints, description, icon: Icon }) => (
           <article key={title} className="cup-card">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-tonner-blue text-white">
@@ -111,14 +115,18 @@ function RulesPage() {
               <div className="min-w-0 flex-1">
                 <div>
                   <h3 className="text-base font-black text-tonner-slate">{title}</h3>
-                  <div className="mt-2 grid w-full max-w-60 grid-cols-2 overflow-hidden rounded-lg border border-orange-100 text-center">
+                  <div className="mt-2 grid w-full max-w-xs grid-cols-3 overflow-hidden rounded-lg border border-orange-100 text-center">
                     <div className="bg-slate-50 px-2 py-1">
                       <span className="block text-[9px] font-black uppercase text-slate-500">Grupos</span>
                       <span className="block text-sm font-black text-tonner-slate">{groupPoints}</span>
                     </div>
+                    <div className="bg-slate-100 px-2 py-1 border-x border-orange-100">
+                      <span className="block text-[9px] font-black uppercase text-slate-600">16avos</span>
+                      <span className="block text-sm font-black text-slate-600">{knockout16Points}</span>
+                    </div>
                     <div className="bg-orange-50 px-2 py-1">
-                      <span className="block text-[9px] font-black uppercase text-tonner-orange">Eliminación</span>
-                      <span className="block text-sm font-black text-tonner-orange">{knockoutPoints}</span>
+                      <span className="block text-[9px] font-black uppercase text-tonner-orange">Octavos</span>
+                      <span className="block text-sm font-black text-tonner-orange">{octavosPoints}</span>
                     </div>
                   </div>
                 </div>

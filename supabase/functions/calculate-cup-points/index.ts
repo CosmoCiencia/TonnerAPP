@@ -42,6 +42,11 @@ const KNOCKOUT_STAGE_POINTS = {
   exactHit: 6,
   scorerHit: 3,
 } as const;
+const OCTAVOS_STAGE_POINTS = {
+  resultHit: 6,
+  exactHit: 8,
+  scorerHit: 4,
+} as const;
 const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
 const PAGE_SIZE = 1000;
 
@@ -169,11 +174,14 @@ function getPointsRule(match: CupMatch) {
     return GROUP_STAGE_POINTS;
   }
 
+  if (phase.includes('octavos') || phase.includes('round of 16')) {
+    return OCTAVOS_STAGE_POINTS;
+  }
+
   const isKnockoutStage = [
     'round of',
     'knockout',
     'dieciseisavos',
-    'octavos',
     'quarter',
     'cuartos',
     'semi',
@@ -184,7 +192,7 @@ function getPointsRule(match: CupMatch) {
 }
 
 function getPredictedResult(match: CupMatch, prediction: CupPrediction): MatchResult {
-  const isKnockoutStage = getPointsRule(match) === KNOCKOUT_STAGE_POINTS;
+  const isKnockoutStage = getPointsRule(match) !== GROUP_STAGE_POINTS;
   return isKnockoutStage
     ? prediction.predicted_qualifier ?? prediction.prediction_result
     : prediction.prediction_result;
