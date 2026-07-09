@@ -317,6 +317,12 @@ function normalizeStage(round: string | null): string | null {
   if (lowerRound.includes('round of 16')) return 'Octavos';
   if (lowerRound.includes('quarter')) return 'Cuartos';
   if (lowerRound.includes('semi')) return 'Semifinal';
+  if (
+    lowerRound.includes('third place')
+    || lowerRound.includes('third-place')
+    || lowerRound.includes('3rd place')
+    || lowerRound.includes('3rd-place')
+  ) return 'Puestos 3 y 4';
   if (lowerRound.includes('final')) return 'Final';
 
   return round;

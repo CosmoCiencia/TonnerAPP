@@ -32,6 +32,11 @@ export const cupStages = [
     description: 'Esta fase aparecerá cuando API-Football publique esos fixtures.',
   },
   {
+    slug: 'puestos-3-y-4',
+    title: 'Puestos 3 y 4',
+    description: 'Esta fase aparecerá cuando API-Football publique ese fixture.',
+  },
+  {
     slug: 'final',
     title: 'Final',
     description: 'Esta fase aparecerá cuando API-Football publique esos fixtures.',

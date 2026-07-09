@@ -12,27 +12,45 @@ const prizes = [
 const scoringRules = [
   {
     title: 'Resultado acertado',
-    groupPoints: '+3',
-    knockout16Points: '+4',
-    octavosPoints: '+6',
+    points: [
+      { label: 'Grupos', value: '+3' },
+      { label: '16avos', value: '+4' },
+      { label: 'Octavos', value: '+6' },
+      { label: 'Cuartos', value: '+8' },
+      { label: 'Semifinal', value: '+12' },
+      { label: 'Final', value: '+16' },
+      { label: '3° y 4°', value: '+12' },
+    ],
     description:
       'En grupos cuenta la victoria o el empate. En eliminatorias cuenta el equipo que clasifica, incluyendo una posible tanda de penales.',
     icon: CheckCircle2,
   },
   {
     title: 'Marcador exacto',
-    groupPoints: '+5',
-    knockout16Points: '+6',
-    octavosPoints: '+8',
+    points: [
+      { label: 'Grupos', value: '+5' },
+      { label: '16avos', value: '+6' },
+      { label: 'Octavos', value: '+8' },
+      { label: 'Cuartos', value: '+10' },
+      { label: 'Semifinal', value: '+15' },
+      { label: 'Final', value: '+20' },
+      { label: '3° y 4°', value: '+15' },
+    ],
     description:
       'El marcador debe coincidir con el resultado al finalizar el tiempo reglamentario o la prórroga. La tanda de penales no se suma.',
     icon: Trophy,
   },
   {
     title: 'Goleador acertado',
-    groupPoints: '+2',
-    knockout16Points: '+3',
-    octavosPoints: '+4',
+    points: [
+      { label: 'Grupos', value: '+2' },
+      { label: '16avos', value: '+3' },
+      { label: 'Octavos', value: '+4' },
+      { label: 'Cuartos', value: '+5' },
+      { label: 'Semifinal', value: '+10' },
+      { label: 'Final', value: '+12' },
+      { label: '3° y 4°', value: '+10' },
+    ],
     description: 'Obtienes puntos si el jugador seleccionado anota un gol válido durante el tiempo reglamentario o la prórroga.',
     icon: Goal,
   },
@@ -42,7 +60,11 @@ const conditions = [
   'Cada predicción podrá guardarse o modificarse únicamente antes del inicio del partido.',
   'En la fase de grupos se otorgan 3 puntos por resultado, 5 por marcador exacto y 2 por goleador.',
   'En los dieciseisavos se otorgan 4 puntos por clasificado, 6 por marcador exacto y 3 por goleador.',
-  'Desde los octavos se otorgan 6 puntos por clasificado, 8 por marcador exacto y 4 por goleador.',
+  'En octavos se otorgan 6 puntos por clasificado, 8 por marcador exacto y 4 por goleador.',
+  'En cuartos se otorgan 8 puntos por clasificado, 10 por marcador exacto y 5 por goleador.',
+  'En semifinales se otorgan 12 puntos por clasificado, 15 por marcador exacto y 10 por goleador.',
+  'En la final se otorgan 16 puntos por clasificado, 20 por marcador exacto y 12 por goleador.',
+  'En el partido por puestos 3 y 4 se otorgan 12 puntos por clasificado, 15 por marcador exacto y 10 por goleador.',
   'Si el marcador pronosticado para una eliminatoria es empate, también debe elegirse el equipo que ganará por penales.',
   'Los cobros de una tanda de penales no modifican el marcador exacto ni cuentan como goles de jugadores.',
   'Los puntos serán asignados una vez el partido haya finalizado y el resultado sea confirmado en la base de datos oficial.',
@@ -106,7 +128,7 @@ function RulesPage() {
       </article>
 
       <div className="grid gap-3">
-        {scoringRules.map(({ title, groupPoints, knockout16Points, octavosPoints, description, icon: Icon }) => (
+        {scoringRules.map(({ title, points, description, icon: Icon }) => (
           <article key={title} className="cup-card">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-tonner-blue text-white">
@@ -115,19 +137,13 @@ function RulesPage() {
               <div className="min-w-0 flex-1">
                 <div>
                   <h3 className="text-base font-black text-tonner-slate">{title}</h3>
-                  <div className="mt-2 grid w-full max-w-xs grid-cols-3 overflow-hidden rounded-lg border border-orange-100 text-center">
-                    <div className="bg-slate-50 px-2 py-1">
-                      <span className="block text-[9px] font-black uppercase text-slate-500">Grupos</span>
-                      <span className="block text-sm font-black text-tonner-slate">{groupPoints}</span>
-                    </div>
-                    <div className="bg-slate-100 px-2 py-1 border-x border-orange-100">
-                      <span className="block text-[9px] font-black uppercase text-slate-600">16avos</span>
-                      <span className="block text-sm font-black text-slate-600">{knockout16Points}</span>
-                    </div>
-                    <div className="bg-orange-50 px-2 py-1">
-                      <span className="block text-[9px] font-black uppercase text-tonner-orange">Octavos</span>
-                      <span className="block text-sm font-black text-tonner-orange">{octavosPoints}</span>
-                    </div>
+                  <div className="mt-2 grid w-full grid-cols-2 overflow-hidden rounded-lg border border-orange-100 text-center sm:grid-cols-4">
+                    {points.map((point) => (
+                      <div key={`${title}-${point.label}`} className="border-b border-r border-orange-100 bg-slate-50 px-2 py-1 last:border-r-0">
+                        <span className="block text-[9px] font-black uppercase text-slate-500">{point.label}</span>
+                        <span className="block text-sm font-black text-tonner-slate">{point.value}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>

@@ -47,6 +47,26 @@ const OCTAVOS_STAGE_POINTS = {
   exactHit: 8,
   scorerHit: 4,
 } as const;
+const QUARTER_FINAL_STAGE_POINTS = {
+  resultHit: 8,
+  exactHit: 10,
+  scorerHit: 5,
+} as const;
+const SEMI_FINAL_STAGE_POINTS = {
+  resultHit: 12,
+  exactHit: 15,
+  scorerHit: 10,
+} as const;
+const FINAL_STAGE_POINTS = {
+  resultHit: 16,
+  exactHit: 20,
+  scorerHit: 12,
+} as const;
+const THIRD_PLACE_STAGE_POINTS = {
+  resultHit: 12,
+  exactHit: 15,
+  scorerHit: 10,
+} as const;
 const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
 const PAGE_SIZE = 1000;
 
@@ -174,6 +194,31 @@ function getPointsRule(match: CupMatch) {
     return GROUP_STAGE_POINTS;
   }
 
+  const isThirdPlaceMatch = [
+    'third place',
+    '3rd place',
+    'tercer puesto',
+    'tercero',
+    'puestos 3 y 4',
+    'puesto 3',
+  ].some((stageName) => phase.includes(stageName));
+
+  if (isThirdPlaceMatch) {
+    return THIRD_PLACE_STAGE_POINTS;
+  }
+
+  if (phase.includes('semi')) {
+    return SEMI_FINAL_STAGE_POINTS;
+  }
+
+  if (phase.includes('final')) {
+    return FINAL_STAGE_POINTS;
+  }
+
+  if (phase.includes('quarter') || phase.includes('cuartos')) {
+    return QUARTER_FINAL_STAGE_POINTS;
+  }
+
   if (phase.includes('octavos') || phase.includes('round of 16')) {
     return OCTAVOS_STAGE_POINTS;
   }
@@ -182,10 +227,6 @@ function getPointsRule(match: CupMatch) {
     'round of',
     'knockout',
     'dieciseisavos',
-    'quarter',
-    'cuartos',
-    'semi',
-    'final',
   ].some((stageName) => phase.includes(stageName));
 
   return isKnockoutStage ? KNOCKOUT_STAGE_POINTS : GROUP_STAGE_POINTS;
