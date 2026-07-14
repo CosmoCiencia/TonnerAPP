@@ -211,12 +211,12 @@ function getPointsRule(match: CupMatch) {
     return SEMI_FINAL_STAGE_POINTS;
   }
 
-  if (phase.includes('final')) {
-    return FINAL_STAGE_POINTS;
-  }
-
   if (phase.includes('quarter') || phase.includes('cuartos')) {
     return QUARTER_FINAL_STAGE_POINTS;
+  }
+
+  if (phase.includes('final')) {
+    return FINAL_STAGE_POINTS;
   }
 
   if (phase.includes('octavos') || phase.includes('round of 16')) {
