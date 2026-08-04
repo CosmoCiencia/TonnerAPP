@@ -36,7 +36,7 @@ export const navItems = [
 }>
 
 export const profileOptions: Array<{ label: string; panel: ProfilePanel }> = [
-  { label: 'Actualizar datos y foto', panel: 'data' },
+  { label: 'Actualizar datos', panel: 'data' },
   { label: 'Términos y Condiciones', panel: 'terms' },
   { label: 'Preferencias', panel: 'preferences' },
   { label: 'Atención al Cliente', panel: 'support' },

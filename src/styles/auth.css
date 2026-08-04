@@ -644,52 +644,11 @@
   box-shadow: 0 10px 24px rgba(2, 8, 23, 0.18);
 }
 
-.auth-profile-editor__avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .auth-profile-editor__avatar svg {
   width: 54%;
   height: 54%;
   color: #ffffff;
   stroke-width: 1.8;
-}
-
-.auth-profile-editor__avatar span {
-  width: 100%;
-  height: 100%;
-}
-
-.auth-profile-editor__photo {
-  display: inline-flex;
-  width: fit-content;
-  min-height: 2.45rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.55rem;
-  padding: 0 0.9rem;
-  background: #2d59c7;
-  color: #ffffff !important;
-  font-size: 0.78rem;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.auth-profile-editor__photo span {
-  color: #ffffff !important;
-  font-size: inherit;
-}
-
-.auth-profile-editor__photo input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .auth-profile-feedback {

@@ -155,6 +155,7 @@ export default function PaintModule() {
             type="button"
             id="preview"
             className={`paint-preview ${isPainting ? 'scanning' : ''}`}
+            aria-label="Seleccionar imagen para TonnerPaint"
             onClick={() => imageInputRef.current?.click()}
           >
             <input

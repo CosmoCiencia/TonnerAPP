@@ -25,11 +25,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>TonnerApp usa la cámara para actualizar tu foto de perfil y tomar imágenes para TonnerPaint.</string>
+	<string>TonnerPaint usa la cámara para tomar imágenes y probar colores en tus superficies.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>TonnerApp usa tus fotos para actualizar tu foto de perfil y trabajar con imágenes en TonnerPaint.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>TonnerApp necesita permiso para guardar imágenes que solicites conservar en tu biblioteca.</string>
+	<string>TonnerApp usa tus fotos para trabajar con imágenes en TonnerPaint.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
