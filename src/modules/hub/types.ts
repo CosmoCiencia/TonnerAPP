@@ -14,5 +14,5 @@ export type HubCard = {
   key: string
   title: string
   image: string
-  variant: 'portfolio' | 'paint' | 'stores' | 'cup'
+  variant: 'portfolio' | 'paint' | 'stores'
 }

@@ -6,6 +6,7 @@ import type { CatalogView } from './modules/catalog/CatalogModule'
 import type { HubView } from './modules/hub'
 import type { Product } from './modules/catalog/types'
 import type { Distributor } from './modules/distributors/types'
+import PaintCalculator from './modules/calculator/PaintCalculator'
 import { RequireAuth, RequireRole } from './auth/auth.guards'
 import { privateRoles } from './auth/roleAccess'
 import { PASSWORD_RECOVERY_LINK_EVENT, establishPasswordRecoverySessionFromUrl } from './auth/auth.service'
@@ -13,7 +14,6 @@ import { getOptimizedImageSrc } from './services/imageAssets'
 
 const HubModule = lazy(() => import('./modules/hub').then((module) => ({ default: module.HubModule })))
 const CatalogModule = lazy(() => import('./modules/catalog/CatalogModule'))
-const CupModule = lazy(() => import('./modules/cup/CupModule'))
 const PaintModule = lazy(() => import('./modules/paint/PaintModule'))
 const AccessDeniedScreen = lazy(() =>
   import('./modules/auth/AuthScreens').then((module) => ({ default: module.AccessDeniedScreen })),
@@ -42,7 +42,7 @@ type GlobalNavKey = 'home' | 'work' | 'favorites' | 'calculator' | 'profile'
 
 const globalNavItems: Array<{ key: GlobalNavKey; label: string; icon: string; to: string }> = [
   { key: 'home', label: 'Inicio', icon: '/icons/INICIO.png', to: '/' },
-  { key: 'work', label: 'Trabajo', icon: '/icons/TRABAJO.png', to: '/work' },
+  { key: 'work', label: 'Portafolio', icon: '/icons/TRABAJO.png', to: '/catalog' },
   { key: 'favorites', label: 'Favoritos', icon: '/icons/FAVORITOS.png', to: '/favorites' },
   { key: 'calculator', label: 'Calculadora', icon: '/icons/CALCULADORA.png', to: '/calculator' },
   { key: 'profile', label: 'Perfil', icon: '/icons/PERFIL.png', to: '/profile' },
@@ -123,10 +123,9 @@ const routeToHubView = (view: HubView) => {
 
 const pathToActiveGlobalKey = (pathname: string): GlobalNavKey | null => {
   if (pathname === '/') return 'home'
-  if (pathname === '/work') return 'work'
+  if (pathname === '/work' || pathname === '/catalog') return 'work'
   if (pathname === '/favorites') return 'favorites'
   if (pathname === '/calculator') return 'calculator'
-  if (pathname === '/paint') return 'calculator'
   if (pathname === '/profile') return 'profile'
   return null
 }
@@ -205,7 +204,7 @@ function GlobalTopBar({
           <strong>Notificaciones</strong>
           <span>Nuevo producto publicado en Portafolio.</span>
           <span>Stock disponible para un favorito.</span>
-          <span>Puntaje actualizado en Polla Tonner.</span>
+          <span>Nuevas herramientas disponibles en Tonner Paint.</span>
         </aside>
       ) : null}
     </header>
@@ -222,7 +221,6 @@ function HubRoute({ view }: { view: HubView }) {
       showBottomNav={false}
       onViewChange={(nextView) => navigate(routeToHubView(nextView))}
       onOpenCatalog={() => navigate('/catalog')}
-      onOpenCup={() => navigate('/cup')}
       onOpenPaint={() => navigate('/paint')}
       onOpenStores={() => navigate('/stores')}
     />
@@ -363,11 +361,6 @@ export default function AppShell() {
   const handleGlobalBack = () => {
     setNotificationsOpen(false)
 
-    if (location.pathname.startsWith('/cup') && location.pathname !== '/cup' && location.pathname !== '/cup/') {
-      navigate('/cup')
-      return
-    }
-
     if (location.pathname !== '/') {
       navigate('/')
       return
@@ -388,7 +381,7 @@ export default function AppShell() {
         <Routes>
           <Route path="/" element={<HubRoute view="home" />} />
           <Route path="/work" element={<HubRoute view="work" />} />
-          <Route path="/calculator" element={<HubRoute view="calculator" />} />
+          <Route path="/calculator" element={<PaintCalculator />} />
           <Route path="/profile" element={<ProfileScreen />} />
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
@@ -405,14 +398,6 @@ export default function AppShell() {
             }
           />
           <Route path="/paint" element={<PaintModule />} />
-          <Route
-            path="/cup/*"
-            element={
-              <RequireAuth>
-                <CupModule />
-              </RequireAuth>
-            }
-          />
           <Route
             path="/catalog"
             element={

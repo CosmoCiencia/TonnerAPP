@@ -35,7 +35,7 @@ export default function LoginScreen() {
     <AuthShell
       eyebrow="Acceso Tonner"
       title="Iniciar sesión"
-      description="Entra para usar TonnerCup, ranking y funciones personalizadas."
+      description="Inicia sesión para guardar favoritos y usar funciones personalizadas."
       showHeaderLogo={false}
     >
       <form className="auth-card" onSubmit={handleSubmit}>

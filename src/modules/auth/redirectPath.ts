@@ -6,5 +6,5 @@ type LocationState = {
 
 export function getRedirectPath(state: unknown) {
   const locationState = state as LocationState | null
-  return locationState?.from?.pathname ?? '/cup'
+  return locationState?.from?.pathname ?? '/'
 }

@@ -8,12 +8,6 @@ export const hubCards: HubCard[] = [
     variant: 'portfolio',
   },
   {
-    key: 'cup',
-    title: 'POLLA TONNER',
-    image: '/cup/fondo-pollatonner-grupos.webp',
-    variant: 'cup',
-  },
-  {
     key: 'stores',
     title: 'PUNTOS DE VENTA',
     image: '/hub/puntos-de-venta.webp',

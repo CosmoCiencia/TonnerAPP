@@ -19,16 +19,6 @@ export type TonnerAppContent = {
   catalog: {
     lineBanners: Record<TonnerLineKey, CatalogLineBanner>
   }
-  cup: {
-    launch: {
-      backgroundImage: string
-      trophyImage: string
-      topLine: string
-      title: string
-      bottomLine: string
-      brand: string
-    }
-  }
   paint: {
     materials: PaintMaterialAsset[]
   }
@@ -63,16 +53,6 @@ export const DEFAULT_APP_CONTENT: TonnerAppContent = {
       },
     },
   },
-  cup: {
-    launch: {
-      backgroundImage: '/cup/tonnercup-fondo.png',
-      trophyImage: '/cup/tonnercup-balon-original.png',
-      topLine: 'Vive la emoción del',
-      title: 'Torneo 2026',
-      bottomLine: 'Polla Tonner',
-      brand: 'Tonner',
-    },
-  },
   paint: {
     materials: [
       { key: 'pared', label: 'PARED', icon: '/paint-materials/pared.png' },
@@ -95,8 +75,6 @@ function mergeContent(value: unknown): TonnerAppContent {
   if (!isObject(value)) return DEFAULT_APP_CONTENT
 
   const catalog = isObject(value.catalog) ? value.catalog : {}
-  const cup = isObject(value.cup) ? value.cup : {}
-  const launch = isObject(cup.launch) ? cup.launch : {}
   const paint = isObject(value.paint) ? value.paint : {}
   const remoteLineBanners = isObject(catalog.lineBanners) ? catalog.lineBanners : {}
   const remoteMaterials = Array.isArray(paint.materials) ? paint.materials : DEFAULT_APP_CONTENT.paint.materials
@@ -120,12 +98,6 @@ function mergeContent(value: unknown): TonnerAppContent {
           ...DEFAULT_APP_CONTENT.catalog.lineBanners.maderas,
           ...(isObject(remoteLineBanners.maderas) ? remoteLineBanners.maderas : {}),
         },
-      },
-    },
-    cup: {
-      launch: {
-        ...DEFAULT_APP_CONTENT.cup.launch,
-        ...launch,
       },
     },
     paint: {

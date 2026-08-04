@@ -11,7 +11,6 @@ import type { HubProfileDraft, HubView, ProfilePanel } from './types'
 
 type HubModuleProps = {
   onOpenCatalog?: () => void
-  onOpenCup?: () => void
   onOpenPaint?: () => void
   onOpenStores?: () => void
   activeView?: HubView
@@ -62,7 +61,6 @@ const loadHubProfile = (userId?: string, fullName?: string, email?: string): Hub
 
 export function HubModule({
   onOpenCatalog,
-  onOpenCup,
   onOpenPaint,
   onOpenStores,
   activeView: controlledActiveView,
@@ -194,7 +192,6 @@ export function HubModule({
         <HubCards
           cards={hubCards}
           onOpenCatalog={onOpenCatalog}
-          onOpenCup={onOpenCup}
           onOpenPaint={onOpenPaint}
           onOpenStores={onOpenStores}
           showSocialLinks
@@ -221,10 +218,9 @@ export function HubModule({
             <span>Los favoritos se administran desde Portafolio para consultar fichas, colores y características con más rapidez.</span>
           </div>
           <HubCards
-            cards={favoriteCards}
-            onOpenCatalog={onOpenCatalog}
-            onOpenCup={onOpenCup}
-            onOpenPaint={onOpenPaint}
+          cards={favoriteCards}
+          onOpenCatalog={onOpenCatalog}
+          onOpenPaint={onOpenPaint}
             onOpenStores={onOpenStores}
           />
         </section>

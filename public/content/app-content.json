@@ -27,16 +27,6 @@
       }
     }
   },
-  "cup": {
-    "launch": {
-      "backgroundImage": "/cup/tonnercup-fondo.png",
-      "trophyImage": "/cup/tonnercup-balon-original.png",
-      "topLine": "Vive la emoción del",
-      "title": "Torneo 2026",
-      "bottomLine": "Polla Tonner",
-      "brand": "Tonner"
-    }
-  },
   "paint": {
     "materials": [
       {

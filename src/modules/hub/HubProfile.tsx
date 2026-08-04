@@ -91,7 +91,7 @@ function HubProfilePanel({
       <section className="hub-profile-detail" aria-label="Preferencias">
         <h1>Preferencias</h1>
         <div className="hub-preference-list">
-          {['Notificaciones de productos', 'Alertas de stock', 'Actualizaciones Polla Tonner'].map((item) => (
+          {['Notificaciones de productos', 'Alertas de stock', 'Novedades de Tonner Paint'].map((item) => (
             <label key={item} className="hub-preference-toggle">
               <span>{item}</span>
               <input type="checkbox" defaultChecked />

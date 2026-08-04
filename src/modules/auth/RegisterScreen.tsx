@@ -46,7 +46,7 @@ export default function RegisterScreen() {
     <AuthShell
       eyebrow="Registro cliente"
       title="Crear cuenta"
-      description="Crea tu cuenta cliente para usar TonnerCup, ranking y funciones personalizadas."
+      description="Crea tu cuenta cliente para guardar favoritos y usar funciones personalizadas."
     >
       <form className="auth-card" onSubmit={handleSubmit}>
         <label>

@@ -11,7 +11,6 @@ type EditableProfile = {
   fullName: string
   phone: string
   city: string
-  avatar: string
 }
 
 type ProfilePanel = 'data' | 'distributor' | 'preferences' | 'terms' | 'support' | 'delete'
@@ -30,7 +29,6 @@ const loadEditableProfile = (userId: string | undefined, fullName: string | unde
     fullName: fullName ?? '',
     phone: '',
     city: '',
-    avatar: '',
   }
 
   if (!userId) return fallbackProfile
@@ -43,7 +41,6 @@ const loadEditableProfile = (userId: string | undefined, fullName: string | unde
       fullName: parsedProfile?.fullName ?? fallbackProfile.fullName,
       phone: parsedProfile?.phone ?? '',
       city: parsedProfile?.city ?? '',
-      avatar: parsedProfile?.avatar ?? '',
     }
   } catch {
     return fallbackProfile
@@ -61,18 +58,24 @@ export default function ProfileScreen() {
     loadEditableProfile(auth.user?.id, auth.user?.fullName),
   )
 
+  const persistLocalProfile = (profile: EditableProfile) => {
+    if (!auth.user?.id) return
+
+    window.localStorage.setItem(getProfileStorageKey(auth.user.id), JSON.stringify(profile))
+    window.localStorage.setItem(
+      HUB_PROFILE_STORAGE_KEY,
+      JSON.stringify({
+        ...profile,
+        email: auth.user.email,
+      }),
+    )
+  }
+
   const handleProfileSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (auth.user?.id) {
-      window.localStorage.setItem(getProfileStorageKey(auth.user.id), JSON.stringify(editableProfile))
-      window.localStorage.setItem(
-        HUB_PROFILE_STORAGE_KEY,
-        JSON.stringify({
-          ...editableProfile,
-          email: auth.user.email,
-        }),
-      )
+      persistLocalProfile(editableProfile)
 
       try {
         await updateProfileFullName(auth.user.id, editableProfile.fullName)
@@ -180,7 +183,7 @@ export default function ProfileScreen() {
         <section className="auth-profile-panel" aria-label="Preferencias">
           <h1>Preferencias</h1>
           <div className="auth-profile-panel-card">
-            {['Notificaciones de productos', 'Alertas de favoritos', 'Actualizaciones Polla Tonner'].map((item) => (
+            {['Notificaciones de productos', 'Alertas de favoritos', 'Novedades de Tonner Paint'].map((item) => (
               <label key={item} className="auth-profile-toggle">
                 <span>{item}</span>
                 <input type="checkbox" defaultChecked />
@@ -212,7 +215,7 @@ export default function ProfileScreen() {
               <>
                 <strong>Esta acción es permanente</strong>
                 <p>
-                  Se eliminarán tu cuenta, perfil, predicciones y puntajes. No podrás recuperar esta información.
+                  Se eliminarán tu cuenta, perfil, favoritos y datos asociados. No podrás recuperar esta información.
                 </p>
                 <button type="button" className="auth-delete-account__continue" onClick={() => setDeleteStep('confirm')}>
                   Continuar
@@ -264,7 +267,7 @@ export default function ProfileScreen() {
       <AuthShell
         eyebrow="Perfil"
         title="Modo invitado"
-        description="Puedes ver catálogo, mapa y paint sin cuenta. Inicia sesión para TonnerCup y funciones personalizadas."
+        description="Puedes ver catálogo, mapa y Tonner Paint sin cuenta. Inicia sesión para guardar favoritos y usar funciones personalizadas."
         showHeaderLogo={false}
       >
         <section className="auth-card auth-status-card auth-status-card--guest-login">

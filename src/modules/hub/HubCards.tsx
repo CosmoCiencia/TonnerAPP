@@ -5,14 +5,12 @@ import HubSocialLinks from './HubSocialLinks'
 export default function HubCards({
   cards,
   onOpenCatalog,
-  onOpenCup,
   onOpenPaint,
   onOpenStores,
   showSocialLinks = false,
 }: {
   cards: HubCard[]
   onOpenCatalog?: () => void
-  onOpenCup?: () => void
   onOpenPaint?: () => void
   onOpenStores?: () => void
   showSocialLinks?: boolean
@@ -25,11 +23,9 @@ export default function HubCards({
             ? onOpenCatalog
             : card.key === 'stores'
               ? onOpenStores
-              : card.key === 'paint'
+            : card.key === 'paint'
                 ? onOpenPaint
-                : card.key === 'cup'
-                  ? onOpenCup
-                  : null
+                : null
 
         return (
           <button

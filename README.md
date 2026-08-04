@@ -11,7 +11,7 @@ Plan de migración:
 1. Home: Hub.
 2. Portafolio y puntos de venta: migrar desde `Tonner Catalog`.
 3. Tonner Paint: migrar desde `TonnerPaint/ui`.
-4. Pollamundialista: migrar desde `Tonner Cup`.
+4. Herramientas de pintura: mantener Tonner Paint como módulo principal.
 5. Manager: decidir si queda como admin interno protegido o app separada.
 
 Comandos:
