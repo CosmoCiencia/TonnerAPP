@@ -1,6 +1,6 @@
 import type { Product } from './types';
-import { PRODUCTS } from './products';
+import { getProductsWithFallback } from '../../services/tonnerCatalog'
 
 export async function getProducts(): Promise<Product[]> {
-  return Promise.resolve(PRODUCTS);
+  return getProductsWithFallback()
 }

@@ -44,7 +44,7 @@
 
 .paint-materials {
   display: grid;
-  grid-template-columns: 18px repeat(5, 1fr) 18px;
+  grid-template-columns: 18px repeat(4, minmax(0, 1fr)) 18px;
   gap: 4px;
   align-items: center;
   margin-top: 9px;

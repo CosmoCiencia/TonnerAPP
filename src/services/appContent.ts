@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import type { TonnerLineKey } from '../modules/catalog/tonnerLines'
+import { supabase } from '../lib/supabase'
 
 export type CatalogLineBanner = {
   eyebrow: string
@@ -55,11 +56,10 @@ export const DEFAULT_APP_CONTENT: TonnerAppContent = {
   },
   paint: {
     materials: [
-      { key: 'pared', label: 'PARED', icon: '/paint-materials/pared.png' },
-      { key: 'vehiculo', label: 'VEHICULO', icon: '/paint-materials/vehiculo.png' },
-      { key: 'metal', label: 'METAL', icon: '/paint-materials/metal.png' },
-      { key: 'plastico', label: 'PLASTICO', icon: '/paint-materials/plastico.png' },
-      { key: 'madera', label: 'MADERA', icon: '/paint-materials/madera.png' },
+      { key: 'arquitectonica', label: 'ARQUITECTÓNICA', icon: '/paint-materials/pared.png' },
+      { key: 'industrial', label: 'INDUSTRIAL', icon: '/paint-materials/metal.png' },
+      { key: 'automotriz', label: 'AUTOMOTRIZ', icon: '/paint-materials/vehiculo.png' },
+      { key: 'maderas', label: 'MADERAS', icon: '/paint-materials/madera.png' },
     ],
   },
 }
@@ -77,7 +77,17 @@ function mergeContent(value: unknown): TonnerAppContent {
   const catalog = isObject(value.catalog) ? value.catalog : {}
   const paint = isObject(value.paint) ? value.paint : {}
   const remoteLineBanners = isObject(catalog.lineBanners) ? catalog.lineBanners : {}
-  const remoteMaterials = Array.isArray(paint.materials) ? paint.materials : DEFAULT_APP_CONTENT.paint.materials
+  const remoteMaterials = Array.isArray(paint.materials) ? paint.materials : []
+  const canonicalMaterialKeys = new Set(DEFAULT_APP_CONTENT.paint.materials.map((material) => material.key))
+  const normalizedRemoteMaterials = remoteMaterials
+    .filter(isObject)
+    .map((material, index) => ({
+      key: String(material.key ?? DEFAULT_APP_CONTENT.paint.materials[index]?.key ?? `material-${index}`),
+      label: String(material.label ?? DEFAULT_APP_CONTENT.paint.materials[index]?.label ?? 'MATERIAL'),
+      icon: String(material.icon ?? DEFAULT_APP_CONTENT.paint.materials[index]?.icon ?? ''),
+    }))
+    .filter((material) => canonicalMaterialKeys.has(material.key))
+    .filter((material) => material.icon)
 
   return {
     catalog: {
@@ -101,14 +111,10 @@ function mergeContent(value: unknown): TonnerAppContent {
       },
     },
     paint: {
-      materials: remoteMaterials
-        .filter(isObject)
-        .map((material, index) => ({
-          key: String(material.key ?? DEFAULT_APP_CONTENT.paint.materials[index]?.key ?? `material-${index}`),
-          label: String(material.label ?? DEFAULT_APP_CONTENT.paint.materials[index]?.label ?? 'MATERIAL'),
-          icon: String(material.icon ?? DEFAULT_APP_CONTENT.paint.materials[index]?.icon ?? ''),
-        }))
-        .filter((material) => material.icon),
+      materials:
+        normalizedRemoteMaterials.length === DEFAULT_APP_CONTENT.paint.materials.length
+          ? normalizedRemoteMaterials
+          : DEFAULT_APP_CONTENT.paint.materials,
     },
   }
 }
@@ -124,6 +130,18 @@ export async function loadAppContent(): Promise<TonnerAppContent> {
 
 async function fetchAppContent(): Promise<TonnerAppContent> {
   try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('tonner_app_content')
+        .select('payload')
+        .eq('id', 'default')
+        .maybeSingle()
+
+      if (!error && data?.payload) {
+        return mergeContent(data.payload)
+      }
+    }
+
     const response = await fetch(contentUrl, { cache: 'no-store' })
 
     if (!response.ok) {

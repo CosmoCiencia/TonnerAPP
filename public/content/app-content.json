@@ -30,28 +30,23 @@
   "paint": {
     "materials": [
       {
-        "key": "pared",
-        "label": "PARED",
+        "key": "arquitectonica",
+        "label": "ARQUITECTÓNICA",
         "icon": "/paint-materials/pared.png"
       },
       {
-        "key": "vehiculo",
-        "label": "VEHICULO",
-        "icon": "/paint-materials/vehiculo.png"
-      },
-      {
-        "key": "metal",
-        "label": "METAL",
+        "key": "industrial",
+        "label": "INDUSTRIAL",
         "icon": "/paint-materials/metal.png"
       },
       {
-        "key": "plastico",
-        "label": "PLASTICO",
-        "icon": "/paint-materials/plastico.png"
+        "key": "automotriz",
+        "label": "AUTOMOTRIZ",
+        "icon": "/paint-materials/vehiculo.png"
       },
       {
-        "key": "madera",
-        "label": "MADERA",
+        "key": "maderas",
+        "label": "MADERAS",
         "icon": "/paint-materials/madera.png"
       }
     ]

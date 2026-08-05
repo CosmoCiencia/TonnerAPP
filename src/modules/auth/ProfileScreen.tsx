@@ -113,12 +113,6 @@ export default function ProfileScreen() {
         <section className="auth-profile-panel" aria-label="Mis datos">
           <h1>Mis Datos</h1>
           <form className="auth-profile-editor" onSubmit={handleProfileSubmit}>
-            <div className="auth-profile-editor__hero">
-              <div className="auth-profile-editor__avatar">
-                <UserRound aria-hidden="true" />
-              </div>
-            </div>
-
             <label>
               <span>Nombre</span>
               <input

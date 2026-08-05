@@ -1,23 +1,37 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 
-import { DEFAULT_PAINT_COLOR, getPaintPaletteForMaterial } from './colors'
+import { DEFAULT_PAINT_COLOR, getPaintPaletteForMaterial, type PaintColor, type PaintMaterialKey } from './colors'
 import { useAppContent } from '../../services/appContent'
+import { getPaintPalettesWithFallback } from '../../services/tonnerCatalog'
 
 const PAINT_API_URL = (import.meta.env.VITE_TONNER_PAINT_API_URL?.trim() ?? '').replace(/\/+$/, '')
 const PAINT_TIMEOUT_MS = 120_000
-const materialOrder = ['pared', 'vehiculo', 'metal', 'plastico', 'madera']
+const materialOrder = ['arquitectonica', 'industrial', 'automotriz', 'maderas']
 
 export default function PaintModule() {
   const appContent = useAppContent()
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [activeMaterialKey, setActiveMaterialKey] = useState('pared')
-  const palette = useMemo(() => getPaintPaletteForMaterial(activeMaterialKey), [activeMaterialKey])
+  const [activeMaterialKey, setActiveMaterialKey] = useState('arquitectonica')
+  const [paintPalettes, setPaintPalettes] = useState<Record<PaintMaterialKey, PaintColor[]>>({
+    arquitectonica: getPaintPaletteForMaterial('arquitectonica'),
+    industrial: getPaintPaletteForMaterial('industrial'),
+    automotriz: getPaintPaletteForMaterial('automotriz'),
+    maderas: getPaintPaletteForMaterial('maderas'),
+  })
+  const palette = useMemo(
+    () => paintPalettes[activeMaterialKey as PaintMaterialKey] ?? getPaintPaletteForMaterial(activeMaterialKey),
+    [activeMaterialKey, paintPalettes],
+  )
   const [selectedColor, setSelectedColor] = useState(DEFAULT_PAINT_COLOR)
   const [isPainting, setIsPainting] = useState(false)
   const [flashActive, setFlashActive] = useState(false)
   const [paintError, setPaintError] = useState<string | null>(null)
+
+  useEffect(() => {
+    getPaintPalettesWithFallback().then(setPaintPalettes)
+  }, [])
 
   useEffect(() => {
     const colorStillExists = palette.some((color) => color.code === selectedColor.code && color.hex === selectedColor.hex)

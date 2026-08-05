@@ -6,12 +6,12 @@ import type { Product } from './types';
 import type { TonnerLineKey } from './tonnerLines';
 import ProductCard from './components/ProductCard';
 import ProductModal from './components/ProductModal';
-import { distributors } from '../distributors/distributors.data';
 import StoresMap from '../distributors/StoresMap';
 import type { Distributor } from '../distributors/types';
 import { getDistributorMapsHref, getDistributorPhoneHref } from '../distributors/contactLinks';
 import { useAppContent } from '../../services/appContent';
 import { getOptimizedImageSrc } from '../../services/imageAssets';
+import { getDistributorsWithFallback } from '../../services/tonnerCatalog';
 
 export type CatalogView = 'catalog' | 'stores' | 'favorites';
 export type StoresMode = 'map' | 'list';
@@ -53,6 +53,7 @@ export default function CatalogModule({
   const [view, setView] = useState<CatalogView>(initialView);
   const [storesMode, setStoresMode] = useState<StoresMode>(initialStoresMode);
   const [products, setProducts] = useState<Product[]>([]);
+  const [distributors, setDistributors] = useState<Distributor[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeLine, setActiveLine] = useState<TonnerLineKey>('arquitectonica');
   const [productLimit, setProductLimit] = useState(INITIAL_PRODUCT_LIMIT);
@@ -62,6 +63,7 @@ export default function CatalogModule({
 
   useEffect(() => {
     getProducts().then(setProducts);
+    getDistributorsWithFallback().then(setDistributors);
   }, []);
 
   const visibleProducts = useMemo(
@@ -78,7 +80,7 @@ export default function CatalogModule({
   );
   const favoriteStores = useMemo(
     () => distributors.filter((distributor) => favoriteStoreIds.has(String(distributor.id))),
-    [favoriteStoreIds],
+    [distributors, favoriteStoreIds],
   );
   const storeCities = useMemo(() => {
     const cityMap = new Map<string, { label: string; count: number }>();
@@ -99,7 +101,7 @@ export default function CatalogModule({
     return Array.from(cityMap.entries())
       .map(([key, city]) => ({ key, ...city }))
       .sort((a, b) => a.label.localeCompare(b.label, 'es'));
-  }, []);
+  }, [distributors]);
   const citySuggestions = useMemo(() => {
     const search = normalizeStoreSearch(storeSearch);
     if (!search || selectedStoreCity) return [];
@@ -117,7 +119,7 @@ export default function CatalogModule({
 
       return searchableText.includes(search);
     });
-  }, [selectedStoreCity, storeSearch]);
+  }, [distributors, selectedStoreCity, storeSearch]);
   const currentProducts = view === 'favorites' ? favoriteProducts : visibleProducts;
   const displayedProducts = currentProducts.slice(0, productLimit);
   const hasMoreProducts = productLimit < currentProducts.length;

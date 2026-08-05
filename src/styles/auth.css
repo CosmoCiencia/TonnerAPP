@@ -622,35 +622,6 @@
   font-weight: 900;
 }
 
-.auth-profile-editor__hero {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.auth-profile-editor__avatar {
-  display: grid;
-  width: 5.4rem;
-  height: 5.4rem;
-  flex: 0 0 auto;
-  place-items: center;
-  overflow: hidden;
-  border: 3px solid #ffffff;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 50% 38%, #ffffff 0 18%, transparent 19%),
-    radial-gradient(circle at 50% 86%, #ffffff 0 33%, transparent 34%),
-    linear-gradient(135deg, #2d59c7 0%, #041c50 100%);
-  box-shadow: 0 10px 24px rgba(2, 8, 23, 0.18);
-}
-
-.auth-profile-editor__avatar svg {
-  width: 54%;
-  height: 54%;
-  color: #ffffff;
-  stroke-width: 1.8;
-}
-
 .auth-profile-feedback {
   margin: 0;
   border-radius: 0.5rem;

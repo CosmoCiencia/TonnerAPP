@@ -1,18 +1,17 @@
 import { PRODUCTS } from '../catalog/products'
 import type { ProductTone } from '../catalog/types'
 
-export type PaintMaterialKey = 'pared' | 'vehiculo' | 'metal' | 'plastico' | 'madera'
+export type PaintMaterialKey = 'arquitectonica' | 'industrial' | 'automotriz' | 'maderas'
 
 export type PaintColor = Required<Pick<ProductTone, 'name' | 'hex'>> & {
   code: string
 }
 
 const materialLines: Record<PaintMaterialKey, string[]> = {
-  pared: ['arquitectonica'],
-  vehiculo: ['automotriz'],
-  metal: ['industrial'],
-  plastico: ['automotriz', 'industrial'],
-  madera: ['maderas'],
+  arquitectonica: ['arquitectonica'],
+  industrial: ['industrial'],
+  automotriz: ['automotriz'],
+  maderas: ['maderas'],
 }
 
 function normalizeColor(tone: ProductTone): PaintColor | null {
@@ -46,19 +45,18 @@ function getColorsForLines(lines: string[]) {
 }
 
 export const PAINT_PALETTES: Record<PaintMaterialKey, PaintColor[]> = {
-  pared: getColorsForLines(materialLines.pared),
-  vehiculo: getColorsForLines(materialLines.vehiculo),
-  metal: getColorsForLines(materialLines.metal),
-  plastico: getColorsForLines(materialLines.plastico),
-  madera: getColorsForLines(materialLines.madera),
+  arquitectonica: getColorsForLines(materialLines.arquitectonica),
+  industrial: getColorsForLines(materialLines.industrial),
+  automotriz: getColorsForLines(materialLines.automotriz),
+  maderas: getColorsForLines(materialLines.maderas),
 }
 
-export const DEFAULT_PAINT_COLOR = PAINT_PALETTES.pared[0] ?? {
+export const DEFAULT_PAINT_COLOR = PAINT_PALETTES.arquitectonica[0] ?? {
   name: 'Blanco',
   code: 'VI-101',
   hex: '#ffffff',
 }
 
 export function getPaintPaletteForMaterial(materialKey: string) {
-  return PAINT_PALETTES[materialKey as PaintMaterialKey] ?? PAINT_PALETTES.pared
+  return PAINT_PALETTES[materialKey as PaintMaterialKey] ?? PAINT_PALETTES.arquitectonica
 }
