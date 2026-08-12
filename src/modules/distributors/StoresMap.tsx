@@ -199,12 +199,20 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
     markersRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 
-      setTimeout(() => map.invalidateSize(), 0);
+    const invalidateMapSize = () => map.invalidateSize();
+    const initialFrame = window.requestAnimationFrame(invalidateMapSize);
+    const secondFrame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(invalidateMapSize);
+    });
+    window.addEventListener('resize', invalidateMapSize);
 
     map.on('click', () => setSelectedDistributor(null));
 
     return () => {
       map.off('click');
+      window.cancelAnimationFrame(initialFrame);
+      window.cancelAnimationFrame(secondFrame);
+      window.removeEventListener('resize', invalidateMapSize);
       map.remove();
       mapRef.current = null;
       markersRef.current = null;

@@ -10,7 +10,7 @@
     "setup:api": "bash backend/paint-api/scripts/bootstrap-api.sh",
     "build": "tsc -b && vite build",
     "cap:sync": "npm run build && npx cap sync",
-    "cap:sync:ios": "npm run build && npx cap sync ios",
+    "cap:sync:ios": "npm run build && npx cap sync ios && node scripts/verify-ios-web-assets.mjs",
     "cap:sync:android": "npm run build && npx cap sync android",
     "cap:open:android": "npx cap open android",
     "cap:open:ios": "npx cap open ios",

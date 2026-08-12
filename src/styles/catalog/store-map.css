@@ -1,8 +1,10 @@
 .catalog-map-view {
   position: relative;
-  height: clamp(360px, calc(100dvh - 300px), 560px);
-  min-height: 360px;
+  width: 100%;
+  height: clamp(500px, calc(100dvh - 250px), 780px);
+  min-height: 500px;
   overflow: hidden;
+  border-radius: 12px;
   background: #eef2f7;
   box-shadow: 0 22px 34px rgba(15, 23, 42, 0.12);
   touch-action: pan-y pinch-zoom;
