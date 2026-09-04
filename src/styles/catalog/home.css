@@ -1,5 +1,5 @@
 .catalog-home {
-  min-height: calc(100dvh - 3.45rem);
+  min-height: calc(100dvh - var(--tonner-topbar-height));
   padding: 18px 18px 88px;
   background: #fff;
 }

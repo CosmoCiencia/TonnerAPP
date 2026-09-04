@@ -29,6 +29,10 @@ DEFAULT_CORS_ORIGINS = (
     "http://localhost:5192",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5192",
+    "http://localhost",
+    "https://localhost",
+    "capacitor://localhost",
+    "ionic://localhost",
     "https://tonner-app.vercel.app",
 )
 

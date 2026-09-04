@@ -1,5 +1,5 @@
 .catalog-stores {
-  min-height: calc(100dvh - 43px);
+  min-height: calc(100dvh - var(--tonner-topbar-height));
   padding: 30px 38px 64px;
   background: #dce6ef;
 }

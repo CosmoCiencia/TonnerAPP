@@ -5,6 +5,8 @@ APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 API_DIR="$APP_DIR/backend/paint-api"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/tonner-paint"
 PORT="${TONNER_PAINT_PORT:-8000}"
+CHECKPOINT="${TONNER_PAINT_SAM_CHECKPOINT:-/home/cosmo/Descargas/sam_vit_b_01ec64.pth}"
+CHECKPOINT_URL="https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth"
 
 mkdir -p "$STATE_DIR"
 
@@ -40,6 +42,20 @@ fi
   log "ERROR: no existe el entorno Python en $API_DIR/.venv"
   exit 1
 }
+
+if [[ ! -f "$CHECKPOINT" ]]; then
+  log "Falta el modelo SAM; descargándolo en $CHECKPOINT..."
+  mkdir -p "$(dirname "$CHECKPOINT")"
+  curl -fL --retry 3 --retry-delay 2 -o "$CHECKPOINT" "$CHECKPOINT_URL" || {
+    log "ERROR: no se pudo descargar el modelo SAM"
+    exit 1
+  }
+fi
+
+if [[ ! -s "$CHECKPOINT" ]]; then
+  log "ERROR: el modelo SAM quedó vacío en $CHECKPOINT"
+  exit 1
+fi
 
 log "Encendiendo backend con GPU..."
 cd "$API_DIR"

@@ -15,7 +15,7 @@
   background: #fff;
   color: #2d59c7;
   overflow-x: hidden;
-  padding-top: 3.45rem;
+  padding-top: var(--tonner-topbar-height);
   box-shadow: 0 0 0 4px #202020;
 }
 

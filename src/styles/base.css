@@ -50,7 +50,6 @@
   --hub-blue: #073389;
   --hub-blue-dark: #041c50;
   --hub-icon: #1f3f78;
-  --tonner-topbar-height: 3.45rem;
   position: relative;
   width: min(100%, 430px);
   min-height: 100dvh;
@@ -71,9 +70,10 @@
   z-index: 100;
   display: flex;
   width: min(100%, 430px);
-  height: 3.45rem;
+  height: var(--tonner-topbar-height);
   align-items: center;
   justify-content: center;
+  padding-top: var(--tonner-safe-area-top);
   border-bottom: 1px solid rgba(15, 23, 42, 0.22);
   background: #fff;
   box-shadow: 0 2px 5px rgba(15, 23, 42, 0.28);
@@ -89,7 +89,7 @@
 .hub-header__back {
   position: absolute;
   left: 1.45rem;
-  top: 50%;
+  top: var(--tonner-topbar-control-center);
   display: grid;
   width: 2.25rem;
   height: 2.25rem;
@@ -111,7 +111,7 @@
 .hub-header__bell {
   position: absolute;
   right: 1.9rem;
-  top: 50%;
+  top: var(--tonner-topbar-control-center);
   display: grid;
   width: 2.25rem;
   height: 2.25rem;
@@ -163,7 +163,7 @@
 }
 
 .hub-content--profile {
-  min-height: calc(100dvh - 3.45rem);
+  min-height: calc(100dvh - var(--tonner-topbar-height));
   padding: 2rem 1.85rem 6.4rem;
   background: #dce6ef;
 }

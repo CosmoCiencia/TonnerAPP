@@ -3,7 +3,7 @@
   min-height: 100dvh;
   margin: 0 auto;
   overflow-x: hidden;
-  padding: calc(3.45rem + env(safe-area-inset-top)) 0 calc(4.55rem + env(safe-area-inset-bottom));
+  padding: var(--tonner-topbar-height) 0 calc(4.55rem + var(--tonner-safe-area-bottom));
   background: linear-gradient(135deg, #2e59bd 0%, #061638 100%);
   box-shadow: 0 0 0 4px #202020;
 }

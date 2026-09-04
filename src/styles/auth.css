@@ -10,7 +10,7 @@
 .auth-device {
   width: min(100%, 430px);
   min-height: 100dvh;
-  padding: calc(3.45rem + 1.25rem) 1.25rem max(2rem, env(safe-area-inset-bottom));
+  padding: calc(var(--tonner-topbar-height) + 1.25rem) 1.25rem max(2rem, var(--tonner-safe-area-bottom));
   background:
     linear-gradient(90deg, rgba(0, 0, 0, 0.18), transparent 9%, transparent 91%, rgba(0, 0, 0, 0.18)),
     linear-gradient(180deg, #0c3da1 0%, #073389 50%, #041c50 100%);
@@ -278,13 +278,13 @@
   min-height: 100dvh;
   margin: 0 auto;
   overflow-x: hidden;
-  padding: 3.45rem 0 0;
+  padding: var(--tonner-topbar-height) 0 0;
   background: #dce6ef;
   box-shadow: 0 0 60px rgba(2, 8, 23, 0.38);
 }
 
 .auth-profile-body {
-  min-height: calc(100dvh - 3.45rem);
+  min-height: calc(100dvh - var(--tonner-topbar-height));
   padding: 1.45rem 1.45rem calc(5.55rem + env(safe-area-inset-bottom));
 }
 
