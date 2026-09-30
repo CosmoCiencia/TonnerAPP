@@ -1,5 +1,6 @@
 import os
 import re
+from io import BytesIO
 from pathlib import Path
 
 import cv2
@@ -8,6 +9,8 @@ import torch
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
+from PIL import Image, ImageOps, UnidentifiedImageError
+from pillow_heif import register_heif_opener
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 
 try:
@@ -39,6 +42,8 @@ DEFAULT_CORS_ORIGINS = (
 if load_dotenv:
     load_dotenv(APP_DIR / ".env")
     load_dotenv(BASE_DIR / ".env", override=True)
+
+register_heif_opener()
 
 
 def resolve_checkpoint() -> Path:
@@ -120,9 +125,15 @@ def normalize_opacity(opacity: float) -> float:
 
 def decode_image(image_bytes: bytes) -> np.ndarray:
     image = cv2.imdecode(np.frombuffer(image_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
-    if image is None:
-        raise HTTPException(status_code=400, detail="No se pudo decodificar la imagen")
-    return image
+    if image is not None:
+        return image
+
+    try:
+        with Image.open(BytesIO(image_bytes)) as source_image:
+            rgb_image = ImageOps.exif_transpose(source_image).convert("RGB")
+            return cv2.cvtColor(np.asarray(rgb_image), cv2.COLOR_RGB2BGR)
+    except (OSError, UnidentifiedImageError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail="No se pudo decodificar la imagen") from exc
 
 
 def resize_image_if_needed(image: np.ndarray) -> np.ndarray:
@@ -193,6 +204,16 @@ async def paint(
         if not image_bytes:
             raise HTTPException(status_code=400, detail="La imagen esta vacia")
 
+        print(
+            "Tonner Paint request:",
+            {
+                "filename": image.filename,
+                "content_type": image.content_type,
+                "bytes": len(image_bytes),
+            },
+            flush=True,
+        )
+
         decoded_image = decode_image(image_bytes)
         result = paint_image(decoded_image, color, opacity)
         output_bytes = encode_jpeg(result)
@@ -205,5 +226,5 @@ async def paint(
     except HTTPException:
         raise
     except Exception as exc:
-        print("Tonner Paint error:", exc)
+        print("Tonner Paint error:", repr(exc), flush=True)
         return JSONResponse(status_code=500, content={"error": str(exc)})

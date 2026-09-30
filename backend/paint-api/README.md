@@ -52,6 +52,9 @@ opacity=0.6
 
 Devuelve `image/jpeg`.
 
+Las entradas JPEG, PNG, WebP y HEIC/HEIF son compatibles. Las fotos HEIC de
+iPhone se convierten internamente antes de procesarlas con SAM.
+
 ## Ejecutar
 
 Solo backend:
