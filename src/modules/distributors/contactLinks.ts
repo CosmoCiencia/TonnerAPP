@@ -1,4 +1,5 @@
 import type { Distributor } from './types';
+import { getDistributorCoordinates } from './coordinates.ts';
 
 export function getDistributorPhoneHref(phone: string) {
   const phoneNumber = phone.replace(/[^\d+]/g, '');
@@ -6,10 +7,9 @@ export function getDistributorPhoneHref(phone: string) {
 }
 
 export function getDistributorMapsHref(distributor: Distributor) {
-  const lat = Number(distributor.lat ?? distributor.coordinates?.[0]);
-  const lng = Number(distributor.lng ?? distributor.coordinates?.[1]);
-
-  if (Number.isFinite(lat) && Number.isFinite(lng)) {
+  const coordinates = getDistributorCoordinates(distributor);
+  if (coordinates) {
+    const { lat, lng } = coordinates;
     return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   }
 

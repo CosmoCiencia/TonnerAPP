@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import type { Distributor } from './types';
 import { getDistributorMapsHref, getDistributorPhoneHref } from './contactLinks';
+import { getDistributorCoordinates } from './coordinates';
 
 interface StoresMapProps {
   distributors: Distributor[];
@@ -21,6 +22,7 @@ let googleMapsLoader: Promise<void> | null = null;
 
 declare global {
   interface Window {
+    gm_authFailure?: () => void;
     google?: {
       maps: {
         Animation?: {
@@ -76,21 +78,10 @@ declare global {
   }
 }
 
-function getCoordinates(distributor: Distributor) {
-  const lat = Number(distributor.lat ?? distributor.coordinates?.[0]);
-  const lng = Number(distributor.lng ?? distributor.coordinates?.[1]);
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return null;
-  }
-
-  return { lat, lng };
-}
-
 function getDistributorPoints(distributors: Distributor[]) {
   return distributors
     .map((distributor) => {
-      const coordinates = getCoordinates(distributor);
+      const coordinates = getDistributorCoordinates(distributor);
       if (!coordinates) return null;
 
       return {
@@ -147,23 +138,31 @@ function loadGoogleMaps(apiKey: string) {
 
   googleMapsLoader = new Promise<void>((resolve, reject) => {
     const existingScript = document.querySelector<HTMLScriptElement>('script[data-tonner-google-maps]');
-
-    if (existingScript) {
-      existingScript.addEventListener('load', () => resolve(), { once: true });
-      existingScript.addEventListener('error', () => reject(new Error('No fue posible cargar Google Maps.')), {
-        once: true,
-      });
-      return;
+    const script = existingScript ?? document.createElement('script');
+    const cleanup = () => {
+      window.clearTimeout(timeout);
+      script.removeEventListener('load', onLoad);
+      script.removeEventListener('error', onError);
+    };
+    const onError = () => {
+      cleanup();
+      reject(new Error('No fue posible cargar Google Maps.'));
+    };
+    const onLoad = () => {
+      if (!window.google?.maps) return onError();
+      cleanup();
+      resolve();
+    };
+    const timeout = window.setTimeout(onError, 10000);
+    script.addEventListener('load', onLoad, { once: true });
+    script.addEventListener('error', onError, { once: true });
+    if (!existingScript) {
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&v=weekly`;
+      script.async = true;
+      script.defer = true;
+      script.dataset.tonnerGoogleMaps = 'true';
+      document.head.appendChild(script);
     }
-
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&v=weekly`;
-    script.async = true;
-    script.defer = true;
-    script.dataset.tonnerGoogleMaps = 'true';
-    script.addEventListener('load', () => resolve(), { once: true });
-    script.addEventListener('error', () => reject(new Error('No fue posible cargar Google Maps.')), { once: true });
-    document.head.appendChild(script);
   });
 
   return googleMapsLoader;
@@ -173,27 +172,31 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
-  const [selectedDistributor, setSelectedDistributor] = useState<Distributor | null>(null);
+  const [selectedId, setSelectedId] = useState<Distributor['id'] | null>(null);
 
   const points = useMemo(() => getDistributorPoints(distributors), [distributors]);
+  const selectedDistributor = points.find((point) => point.distributor.id === selectedId)?.distributor;
 
   useEffect(() => {
     if (!mapElementRef.current || mapRef.current) return;
 
     const isTouchViewport = window.matchMedia('(hover: none), (pointer: coarse)').matches;
     const map = L.map(mapElementRef.current, {
-      attributionControl: true,
+      attributionControl: false,
       dragging: !isTouchViewport,
       scrollWheelZoom: !isTouchViewport,
       touchZoom: true,
       zoomControl: true,
     }).setView(bogotaCenter, 12);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-      detectRetina: true,
-      maxNativeZoom: 20,
-      maxZoom: 20,
+    L.control.attribution({ position: 'topright', prefix: false }).addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
+      maxNativeZoom: 19,
+      maxZoom: 19,
+      // Request only visible tiles, and let the browser honour cache headers.
+      keepBuffer: 0,
+      updateWhenIdle: true,
     }).addTo(map);
 
     markersRef.current = L.layerGroup().addTo(map);
@@ -206,7 +209,7 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
     });
     window.addEventListener('resize', invalidateMapSize);
 
-    map.on('click', () => setSelectedDistributor(null));
+    map.on('click', () => setSelectedId(null));
 
     return () => {
       map.off('click');
@@ -235,8 +238,8 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
     });
 
     points.forEach(({ distributor, lat, lng }) => {
-      const marker = L.marker([lat, lng], { icon }).addTo(markers);
-      marker.on('click', () => setSelectedDistributor(distributor));
+      const marker = L.marker([lat, lng], { icon, title: distributor.name }).addTo(markers);
+      marker.on('click', () => setSelectedId(distributor.id));
     });
 
     if (points.length) {
@@ -247,11 +250,13 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
           padding: [24, 24],
         },
       );
+    } else {
+      map.setView(bogotaCenter, 12);
     }
   }, [points]);
 
   const focusSelectedDistributor = () => {
-    const coordinates = selectedDistributor ? getCoordinates(selectedDistributor) : null;
+    const coordinates = selectedDistributor ? getDistributorCoordinates(selectedDistributor) : null;
     if (!coordinates || !mapRef.current) return;
 
     mapRef.current.flyTo([coordinates.lat, coordinates.lng], 15, {
@@ -266,7 +271,7 @@ function LeafletStoresMap({ distributors }: StoresMapProps) {
         <StoreMapSelection
           distributor={selectedDistributor}
           onFocus={focusSelectedDistributor}
-          onClose={() => setSelectedDistributor(null)}
+          onClose={() => setSelectedId(null)}
         />
       ) : null}
     </>
@@ -277,11 +282,15 @@ function GoogleStoresMap({ distributors, onUnavailable }: StoresMapProps & { onU
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<InstanceType<NonNullable<Window['google']>['maps']['Map']> | null>(null);
   const markersRef = useRef<Array<InstanceType<NonNullable<Window['google']>['maps']['Marker']>>>([]);
-  const [selectedDistributor, setSelectedDistributor] = useState<Distributor | null>(null);
+  const [selectedId, setSelectedId] = useState<Distributor['id'] | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const points = useMemo(() => getDistributorPoints(distributors), [distributors]);
+  const selectedDistributor = points.find((point) => point.distributor.id === selectedId)?.distributor;
 
   useEffect(() => {
     let cancelled = false;
+    const previousAuthFailure = window.gm_authFailure;
+    window.gm_authFailure = onUnavailable;
 
     async function initializeMap() {
       if (!googleMapsApiKey || !mapElementRef.current || mapRef.current) return;
@@ -307,18 +316,20 @@ function GoogleStoresMap({ distributors, onUnavailable }: StoresMapProps & { onU
         zoomControl: true,
       });
 
-      mapRef.current.addListener('click', () => setSelectedDistributor(null));
+      mapRef.current.addListener('click', () => setSelectedId(null));
+      setMapReady(true);
     }
 
     initializeMap();
 
     return () => {
       cancelled = true;
+      window.gm_authFailure = previousAuthFailure;
     };
   }, [onUnavailable]);
 
   useEffect(() => {
-    if (!window.google?.maps || !mapRef.current) return;
+    if (!mapReady || !window.google?.maps || !mapRef.current) return;
 
     const googleMaps = window.google.maps;
     const map = mapRef.current;
@@ -345,7 +356,7 @@ function GoogleStoresMap({ distributors, onUnavailable }: StoresMapProps & { onU
       });
 
       marker.addListener('click', () => {
-        setSelectedDistributor(distributor);
+        setSelectedId(distributor.id);
       });
 
       markersRef.current.push(marker);
@@ -354,11 +365,19 @@ function GoogleStoresMap({ distributors, onUnavailable }: StoresMapProps & { onU
 
     if (points.length) {
       map.fitBounds(bounds, 42);
+    } else {
+      map.panTo({ lat: bogotaCenter[0], lng: bogotaCenter[1] });
+      map.setZoom(12);
     }
-  }, [points]);
+
+    return () => {
+      markersRef.current.forEach((marker) => marker.setMap(null));
+      markersRef.current = [];
+    };
+  }, [points, mapReady]);
 
   const focusSelectedDistributor = () => {
-    const coordinates = selectedDistributor ? getCoordinates(selectedDistributor) : null;
+    const coordinates = selectedDistributor ? getDistributorCoordinates(selectedDistributor) : null;
     if (!coordinates || !mapRef.current) return;
 
     mapRef.current.panTo({ lat: coordinates.lat, lng: coordinates.lng });
@@ -376,7 +395,7 @@ function GoogleStoresMap({ distributors, onUnavailable }: StoresMapProps & { onU
         <StoreMapSelection
           distributor={selectedDistributor}
           onFocus={focusSelectedDistributor}
-          onClose={() => setSelectedDistributor(null)}
+          onClose={() => setSelectedId(null)}
         />
       ) : null}
     </>
@@ -385,9 +404,10 @@ function GoogleStoresMap({ distributors, onUnavailable }: StoresMapProps & { onU
 
 export default function StoresMap({ distributors }: StoresMapProps) {
   const [googleUnavailable, setGoogleUnavailable] = useState(false);
+  const handleGoogleUnavailable = useCallback(() => setGoogleUnavailable(true), []);
 
   if (googleMapsApiKey && !googleUnavailable) {
-    return <GoogleStoresMap distributors={distributors} onUnavailable={() => setGoogleUnavailable(true)} />;
+    return <GoogleStoresMap distributors={distributors} onUnavailable={handleGoogleUnavailable} />;
   }
 
   return <LeafletStoresMap distributors={distributors} />;

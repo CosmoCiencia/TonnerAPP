@@ -9,6 +9,7 @@ import ProductModal from './components/ProductModal';
 import StoresMap from '../distributors/StoresMap';
 import type { Distributor } from '../distributors/types';
 import { getDistributorMapsHref, getDistributorPhoneHref } from '../distributors/contactLinks';
+import { getDistributorCoordinates } from '../distributors/coordinates';
 import { useAppContent } from '../../services/appContent';
 import { getOptimizedImageSrc } from '../../services/imageAssets';
 import { getDistributorsWithFallback } from '../../services/tonnerCatalog';
@@ -120,6 +121,8 @@ export default function CatalogModule({
       return searchableText.includes(search);
     });
   }, [distributors, selectedStoreCity, storeSearch]);
+  const locatedDistributorCount = filteredDistributors.filter(getDistributorCoordinates).length;
+  const pendingLocationCount = filteredDistributors.length - locatedDistributorCount;
   const currentProducts = view === 'favorites' ? favoriteProducts : visibleProducts;
   const displayedProducts = currentProducts.slice(0, productLimit);
   const hasMoreProducts = productLimit < currentProducts.length;
@@ -262,6 +265,11 @@ export default function CatalogModule({
                   : 'No encontramos puntos de venta para esa ubicación.'
                 : 'Busca por ciudad, barrio, dirección o nombre del punto de venta.'}
             </p>
+            {storesMode === 'map' && pendingLocationCount > 0 ? (
+              <p role="status">
+                {pendingLocationCount} {pendingLocationCount === 1 ? 'punto pendiente' : 'puntos pendientes'} de ubicación en el mapa. Puedes {pendingLocationCount === 1 ? 'consultarlo' : 'consultarlos'} en Lista y buscar la ruta por dirección.
+              </p>
+            ) : null}
           </section>
 
           <nav className="catalog-stores__tabs" aria-label="Vista de puntos de venta">
@@ -288,6 +296,11 @@ export default function CatalogModule({
                 <div className="catalog-map-empty">
                   <strong>Sin resultados</strong>
                   <span>Prueba con otra ciudad o revisa la escritura.</span>
+                </div>
+              ) : locatedDistributorCount === 0 ? (
+                <div className="catalog-map-empty">
+                  <strong>Ubicaciones pendientes</strong>
+                  <span>Estos puntos siguen disponibles en Lista. Usa Ruta para buscarlos por dirección.</span>
                 </div>
               ) : null}
             </section>

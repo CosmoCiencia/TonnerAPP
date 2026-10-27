@@ -26,8 +26,8 @@
 }
 
 .catalog-map-view .leaflet-control-attribution {
-  color: #8aa7ed;
-  font-size: 8px;
+  color: #334155;
+  font-size: 10px;
 }
 
 .catalog-map-pin.leaflet-div-icon {

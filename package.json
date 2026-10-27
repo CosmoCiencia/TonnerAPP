@@ -17,6 +17,7 @@
     "android": "npm run cap:sync:android && npx cap open android",
     "ios": "npm run cap:sync:ios && npx cap open ios",
     "lint": "eslint .",
+    "test:maps": "node --test tests/distributor-coordinates.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
